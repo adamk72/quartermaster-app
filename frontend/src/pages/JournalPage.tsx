@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useSessionStore } from '../stores/useSessionStore'
 import { Plus, Calendar } from 'lucide-react'
 import type { Session } from '../types'
 
 export function JournalPage() {
+  const navigate = useNavigate()
   const { sessions, loading, fetchSessions, createSession } = useSessionStore()
   const [showNew, setShowNew] = useState(false)
   const [newTitle, setNewTitle] = useState('')
@@ -25,8 +26,7 @@ export function JournalPage() {
     setShowNew(false)
     setNewTitle('')
     setNewDate('')
-    // Navigate would be ideal, but keeping it simple
-    window.location.href = `/journal/${session.id}`
+    navigate(`/journal/${session.id}`)
   }
 
   return (

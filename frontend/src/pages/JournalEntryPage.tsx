@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSessionStore } from '../stores/useSessionStore'
 import { ArrowLeft, Save, Trash2 } from 'lucide-react'
@@ -11,6 +11,7 @@ export function JournalEntryPage() {
   const [gameDate, setGameDate] = useState('')
   const [bodyHtml, setBodyHtml] = useState('')
   const [saving, setSaving] = useState(false)
+  const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
     if (id) fetchSession(Number(id))
@@ -21,8 +22,25 @@ export function JournalEntryPage() {
       setTitle(currentSession.title)
       setGameDate(currentSession.game_date)
       setBodyHtml(currentSession.body_html)
+      setDirty(false)
     }
   }, [currentSession])
+
+  useEffect(() => {
+    if (!dirty) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [dirty])
+
+  const markDirty = useCallback(<T,>(setter: React.Dispatch<React.SetStateAction<T>>) => {
+    return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setter(e.target.value as T)
+      setDirty(true)
+    }
+  }, [])
 
   const handleSave = async () => {
     if (!id) return
@@ -34,6 +52,7 @@ export function JournalEntryPage() {
       body_json: '{}',
     })
     setSaving(false)
+    setDirty(false)
   }
 
   const handleDelete = async () => {
@@ -48,7 +67,10 @@ export function JournalEntryPage() {
   return (
     <div>
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={() => navigate('/journal')} className="p-2 hover:bg-gray-100 rounded-lg">
+        <button onClick={() => {
+          if (dirty && !confirm('You have unsaved changes. Leave anyway?')) return
+          navigate('/journal')
+        }} className="p-2 hover:bg-gray-100 rounded-lg">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h2 className="text-2xl font-bold text-gray-900 flex-1">Edit Session</h2>
@@ -74,7 +96,7 @@ export function JournalEntryPage() {
             <input
               className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={markDirty(setTitle)}
             />
           </div>
           <div>
@@ -82,7 +104,7 @@ export function JournalEntryPage() {
             <input
               className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
               value={gameDate}
-              onChange={(e) => setGameDate(e.target.value)}
+              onChange={markDirty(setGameDate)}
               placeholder="M/D"
             />
           </div>
@@ -93,7 +115,7 @@ export function JournalEntryPage() {
           <textarea
             className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 min-h-[400px] font-mono text-sm"
             value={bodyHtml}
-            onChange={(e) => setBodyHtml(e.target.value)}
+            onChange={markDirty(setBodyHtml)}
             placeholder="Write your session notes here... (HTML supported)"
           />
         </div>

@@ -1,5 +1,6 @@
 ---
 name: codebase-review
+user_invocable: true
 description: Use when the user asks for a full codebase review, architecture review, best practices check, or asks to look for anti-patterns and modularity issues across the project — produces a severity-grouped list of high-level improvements
 allowed-tools:
   - Bash

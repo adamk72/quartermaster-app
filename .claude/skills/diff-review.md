@@ -1,5 +1,6 @@
 ---
-name: diff-reviewer
+name: diff-review
+user_invocable: true
 description: Use when the user asks to review code changes, review a diff, do a code review, or asks "what would you do differently" about uncommitted changes — produces an ordered list of improvement suggestions scoped strictly to the diff
 allowed-tools:
   - Bash
