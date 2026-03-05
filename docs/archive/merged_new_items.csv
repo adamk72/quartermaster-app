@@ -1,0 +1,89 @@
+Sold,Qty,Item,Credit,Debit,Game Date,Category,Who,Added to D&D Beyond,LB/GP,Total Weight (lbs),Override Weight,Override units,Calculated Units,Unit Weight,Unit Value,Singluar,Location/Vendor/Notes
+,,,,,,,,,,,,,,,,,[ALREADY TRACKED - These items are in the spreadsheet and should NOT be imported],
+,,,,,,,,,,,,,,,,,"Comprehend Languages Scroll (5/28), False Life Scroll (5/28), Goggles of Night (6/11), Potion of Water Breathing (6/11), Staff of Flowers, +1 Shortsword (Sachan), Dancing Broom (Ayloc), Orb of Direction (Ingvild), Perfume of Bewitching (Ayloc), Ruby of the War Mage (Sachan), Wind Fan (Rüya), Scroll of Gentle Repose, +1 Longbow (Sachan), 2 Diamonds (100gp each), Broom of Flying (Rüya), Hag Eye (Ayloc), Wand of the Warmage +1 (Ingvild), Pearl of Power (Ayloc), Ring of Jumping (Rüya), 100 fake rubies, Golden Statuettes x6, Gold mask (250gp), Crystal Scroll Cases x2, Silver idol w/Potion of Clairvoyance, Gloves of Missile Snaring, Ring of Protection (Sachan - from Vaelith), Spell book (Ingvild - from Vaelith), Bag of Dust of Disappearance (Sachan), Potion of Healing (Ingvild)"
+,,,,,,,,,,,,,,,,,"[DUPLICATES/RECONCILIATION NOTES - read these before importing]"
+,,,,,,,,,,,,,,,,,"NOTE: Jade bead bracelets (Jan 28) were IDed on Feb 11 as Bracers of Defense. Jade ring (man+moon) = Moon Ring of Protection. Jade ring (panther) = Ring of Animal Influence. Clay container w/flower plugs = Potion of Invisibility. 6-inch faceless statue/bottle = Elixir of Health. These are entered below with their identified names."
+,,,,,,,,,,,,,,,,,"NOTE: The +1 longsword (7/17 Andurin) in your sheet may be the same sword IDed as +1 Long Sword of Plant Slaying on 2/11/26. If so update existing row rather than adding new one."
+,,,,,,,,,,,,,,,,,"NOTE: Sceptre from Vaelith (10/22) is not in your sheet. Book and ring are tracked."
+,,,,,,,,,,,,,,,,,[NEW ITEMS TO IMPORT - start here],
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,[=== COINS / CURRENCY ===],
+FALSE,,Coins (from chest),352.40 gp,,4/9,Treasure,Party,,,,,,1,,,Coins (from chest),"640cp + 530sp + 240ep + 103gp + 7pp = 352.40 gp total"
+FALSE,,Coins (from lockbox),200 gp,,4/16,Treasure,Party,,,,,,1,,,Coins (from lockbox),"10pp + 50gp = 200 gp total"
+FALSE,,Coins (from wererats),,,,Treasure,Party,,,,,,1,,,Coins (from wererats),Amount unspecified in journal (4/30)
+FALSE,,Coins (from hag room),120 gp,,5/28,Treasure,Party,,,,,,1,,,Coins (from hag room),
+FALSE,,Coins (reward from Fil),100 gp,,9/24,Treasure,Party,,,,,,1,,,Coins (reward from Fil),In a pouch
+FALSE,,Coins (council reward),600 gp,,9/24,Treasure,Party,,,,,,1,,,Coins (council reward),100 gp each for 6 party members
+FALSE,,Coins (from tiger belly),500 gp,,2/18/26,Treasure,Party,,,,,,1,,,Coins (from tiger belly),Inside stuffed tiger
+FALSE,,Coins (bags of coin),2000 gp,,2/25/26,Treasure,Party,,,,,,1,,,Coins (bags of coin),"2 leather bags, 1000 gp each"
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,[=== GEMS AND JEWELRY ===],
+FALSE,,Sardonyx Gem,50 gp,,5/28,Treasure,Andurin,,,--,,,1,--,50,Sardonyx Gem,
+FALSE,,Tigereye Gem,30 gp,,5/28,Treasure,Andurin,,,--,,,1,--,30,Tigereye Gem,From Water Weird
+FALSE,,Plain gold bracelet,25 gp,,5/21,Treasure,Bag of Holding,,,--,,,1,--,25,Plain gold bracelet,Non-magical; from bottom of pool
+FALSE,,Turquoise gems x3,30 gp,,2/4/26,Treasure,Bag of Holding,,,--,,,3,--,10,Turquoise gem,~10 gp each estimate
+FALSE,,Silver and aquamarine necklace,125 gp,,2/25/26,Treasure,Bag of Holding,,,--,,,1,--,125,Silver and aquamarine necklace,
+FALSE,,Jasper pieces x12,120 gp,,2/25/26,Treasure,Bag of Holding,,,--,,,12,--,10,Jasper piece,10 gp each; from stomach of tree creature
+FALSE,,Gold necklaces of Vaelith,100 gp,,10/8,Treasure,Bag of Holding,,,--,,,1,--,,Gold necklaces of Vaelith,"Several from hobgoblins; captain's is extra fancy; est. ~100 gp"
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,[=== SARCOPHAGUS TREASURE (1/28/26) - from Tloques-Popolocas ===],
+FALSE,,Mask (sarcophagus),200 gp,,1/28/26,Treasure,Bag of Holding,,,--,,,1,--,200,Mask (sarcophagus),From sarcophagus body
+FALSE,,Pendant,50 gp,,1/28/26,Treasure,Bag of Holding,,,--,,,1,--,50,Pendant,From sarcophagus
+FALSE,,Spherical white onyx,15 gp,,1/28/26,Treasure,Bag of Holding,,,--,,,1,--,15,Spherical white onyx,Within jaw fragments
+FALSE,,Black obsidian and red pipestone hair tubes,50 gp,,1/28/26,Treasure,Bag of Holding,,,--,,,1,--,50,Black obsidian and red pipestone hair tubes,Worth 50 gp as a bunch
+FALSE,,Diadem of dark opals and jade discs,200 gp,,1/28/26,Treasure,Bag of Holding,,,--,,,1,--,200,Diadem of dark opals and jade discs,On corpse's forehead
+FALSE,,Jade earplugs (flower-shaped pair),30 gp,,1/28/26,Treasure,Bag of Holding,,,--,,,1,--,30,Jade earplugs (flower-shaped pair),
+FALSE,,Jade breastplate,200 gp,,1/28/26,Item,Bag of Holding,,,--,,,1,--,200,Jade breastplate,Tubular jade with bone dividers; protects like studded leather
+FALSE,,Jade beads (various shapes) x156,156 gp,,1/28/26,Treasure,Bag of Holding,,,--,,,156,--,1,Jade bead,Spheres/cylinders/tri-lobed/buds/flowers/pumpkins/melons/snake head
+FALSE,,Jade cube,150 gp,,1/28/26,Treasure,Bag of Holding,,,--,,,1,--,150,Jade cube,In right hand of corpse
+FALSE,,Spherical agate,50 gp,,1/28/26,Treasure,Bag of Holding,,,--,,,1,--,50,Spherical agate,In left hand of corpse
+FALSE,,Mother-of-pearl piece,5 gp,,1/28/26,Treasure,Bag of Holding,,,--,,,1,--,5,Mother-of-pearl piece,1-inch diameter; in clay container
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,[=== SARCOPHAGUS MAGIC ITEMS (1/28/26) - IDed on 2/11/26 ===],
+FALSE,,Bracers of Defense x2,,,1/28/26,Magic,,,,,,,2,--,--,Bracers of Defense,"+2 AC; works with Mage Armor; needs Attunement; IDed 2/11/26 (were jade bead bracelets)"
+FALSE,,Moon shaped Ring of Protection,,,1/28/26,Magic,,,,,,,1,--,--,Moon shaped Ring of Protection,"+1 AC; needs attunement; IDed 2/11/26 (was jade ring of man holding moon). DIFFERENT from Vaelith's Ring of Protection (Sachan)"
+FALSE,,Panther shaped Ring of Animal Influence,,,1/28/26,Magic,,,,,,,1,--,--,Panther shaped Ring of Animal Influence,IDed 2/11/26 (was jade ring of panther ready to strike)
+FALSE,,Potion of Invisibility,,,1/28/26,Magic,,,,,,,1,--,--,Potion of Invisibility,"IDed 2/11/26; add water=half duration, wine=full; was clay container w/flower plugs"
+FALSE,,Elixir of Health,,,1/28/26,Magic,,,,,,,1,--,--,Elixir of Health,"IDed 2/11/26; cures disease, removes blinded/deafened/paralyzed/poisoned; was 6"" faceless statue bottle"
+FALSE,,Bracelet of Rock Magic,,,1/28/26,Magic,,,,,,,1,--,--,Bracelet of Rock Magic,IDed 2/11/26
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,[=== SCROLLS ===],
+FALSE,,Scroll of Passwall,,,1/28/26,Magic,,,,,,,1,--,--,Scroll of Passwall,5th level; from the battle axe in sarcophagus room
+FALSE,,Scroll of Burning Hands,,,1/28/26,Magic,,,,,,,1,--,--,Scroll of Burning Hands,1st level; from the battle axe
+FALSE,,Scroll of Gust of Wind,,,1/28/26,Magic,,,,,,,1,--,--,Scroll of Gust of Wind,2nd level; from the battle axe
+FALSE,,Scroll of Clairvoyance,,,2/25/26,Magic,,,,,,,1,--,--,Scroll of Clairvoyance,In wooden scroll case
+FALSE,,Scroll of Stinking Cloud,,,2/25/26,Magic,,,,,,,1,--,--,Scroll of Stinking Cloud,In wooden scroll case
+FALSE,,Scroll of Protection from Feline Beasts and Were Creatures,,,2/18/26,Magic,,,,,,,1,--,--,Scroll of Protection from Feline Beasts and Were Creatures,
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,[=== OTHER MAGIC / UNKNOWN ITEMS ===],
+FALSE,,Silver powder in a jar (DANGER),,,2/11/26,Magic,Bag of Holding,,,--,,,1,--,--,Silver powder in a jar,"Drinking drops into ageless sleep for 5000 years; with 2 crystal goblets; from goliath room"
+FALSE,,Crystal goblets x2,50 gp,,2/11/26,Treasure,Bag of Holding,,,--,,,2,--,25,Crystal goblet,With the silver powder
+FALSE,,Sacrificial dagger,,,2/18/26,Magic,,,,,,,1,--,--,Sacrificial dagger,Glows with magic; TBI
+FALSE,,Mace head (high quality; broken shaft),,,2/18/26,Magic,,,,,,,1,--,--,Mace head,Glows with magic; TBI
+FALSE,,Parchment packet with dust,,,2/25/26,Magic,,,,,,,1,--,--,Parchment packet with dust,Glows with magic; TBI
+FALSE,,Bag of sparkly powder,,,9/10,Magic,,,,,,,1,--,--,Bag of sparkly powder,TBI; from Candy Cottage
+FALSE,,Sceptre (from Vaelith),,,10/22,Magic,,,,,,,,--,--,Sceptre,From Vaelith; book and ring already tracked
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,[=== NON-MAGIC ITEMS ===],
+FALSE,,+1 Elven Chain Shirt,,,8/6,Magic,,,,,,,1,--,--,+1 Elven Chain Shirt,Anyone can wear; from kindly spirit in crypt
+FALSE,,Heward's Handy Spice Pouch,,,8/6,Magic,,,,,,,1,--,--,Heward's Handy Spice Pouch,Small pouch embroidered with plants/herbs; from crypt
+FALSE,,Leaf-shaped jewelry (Fey Wild portal),,,8/20,Magic,,,,,,,1,--,--,Leaf-shaped jewelry,Allows jumping to Fey Wilds; from spirit Garin Oakwind
+FALSE,,Rare herbs,150 gp,,5/28,Treasure,Rüya,,,--,,,1,--,150,Rare herbs,
+FALSE,,Rare herbs,25 gp,,5/21,Treasure,Rüya,,,--,,,1,--,25,Rare herbs,
+FALSE,,Rare plants,25 gp,,6/4,Treasure,Rüya,,,--,,,1,--,25,Rare plants,Estimate
+FALSE,,Short bows x2,50 gp,,5/7,Item,Bag of Holding,,0.04,4,,,2,2,25,Short bow,3 found; 1 returned to Shadowstride
+FALSE,,Quivers with 20 arrows x2,2 gp,,5/7,Item,Bag of Holding,,,--,,,2,--,1,Quiver with 20 arrows,3 found; 1 returned to Shadowstride
+FALSE,,Explorer packs x2,20 gp,,5/7,Item,Bag of Holding,,,--,,,2,--,10,Explorer pack,3 found; 1 returned to Shadowstride
+FALSE,,Dagger,10 gp,,2/4/26,Item,Bag of Holding,,0.5,1,,,1,1,10,Dagger,Not-too-shabby; from pile of trash
+FALSE,,Ivory Cube (1ft/side),200 gp,,2/25/26,Treasure,Bag of Holding,,,--,,,1,--,200,Ivory Cube,Intricately carved; est. value
+FALSE,,Big Cat furs x8,200 gp,,2/25/26,Treasure,Bag of Holding,,,--,,,8,--,25,Big Cat fur,~25 gp each estimate
+FALSE,,Silvery rod of copper nickel alloy,50 gp,,2/25/26,Treasure,Bag of Holding,,,--,,,1,--,50,Silvery rod of copper nickel alloy,From stomach of tree creature; est. value
+FALSE,,Cat of nine tails (whip) x2,10 gp,,2/18/26,Item,Bag of Holding,,,--,,,2,--,5,Cat of nine tails,
+FALSE,,Stone spear with metal head,15 gp,,2/18/26,Item,Bag of Holding,,,--,,,1,--,15,Stone spear with metal head,From clay golem
+FALSE,,Clay heart,,,2/18/26,Item,Bag of Holding,,,--,,,1,--,--,Clay heart,From tiger's head; might fit clay golem
+FALSE,,Jade Statue of a cat (9 lbs),200 gp,,2/18/26,Treasure,Bag of Holding,,0.04,9,,,1,9,200,Jade Statue of a cat,
+FALSE,,Jade plaque and figurines x7,210 gp,,2/11/26,Treasure,Bag of Holding,,0.07,7,,,7,1,30,Jade figurine,"Ball game scene; sun-god in feathered robe; 1 lb each"
+FALSE,,Chalice of beaten gold with six amethysts,150 gp,,2/11/26,Treasure,Bag of Holding,,0.01,1,,,1,1,150,Chalice of beaten gold,Weighs 1 lb
+FALSE,,Silver coffer,150 gp,,2/11/26,Treasure,Bag of Holding,,0.1,15,,,1,15,150,Silver coffer,Fine workmanship; weighs 15 lbs
+FALSE,,Copper figure,50 gp,,2/11/26,Treasure,Bag of Holding,,0.1,5,,,1,5,50,Copper figure,Weighs 5 lbs
+FALSE,,+1 Long Sword of Plant Slaying,,,2/11/26,Magic,Andurin,,,3,,,1,3,--,+1 Long Sword of Plant Slaying,"+2d6 to plant creatures; CHECK: may be the +1 longsword (7/17) now IDed"
