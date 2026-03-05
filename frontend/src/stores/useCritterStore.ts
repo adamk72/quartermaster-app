@@ -1,10 +1,12 @@
 import { create } from 'zustand'
 import { api } from '../api/client'
+import { toast } from './useToastStore'
 import type { Critter } from '../types'
 
 interface CritterState {
   critters: Critter[]
   loading: boolean
+  error: string | null
 
   fetchCritters: (activeOnly?: boolean) => Promise<void>
   createCritter: (critter: Partial<Critter>) => Promise<Critter>
@@ -16,12 +18,19 @@ interface CritterState {
 export const useCritterStore = create<CritterState>((set, get) => ({
   critters: [],
   loading: false,
+  error: null,
 
   fetchCritters: async (activeOnly) => {
-    set({ loading: true })
-    const qs = activeOnly ? '?active=true' : ''
-    const critters = await api.get<Critter[]>(`/critters${qs}`)
-    set({ critters, loading: false })
+    set({ loading: true, error: null })
+    try {
+      const qs = activeOnly ? '?active=true' : ''
+      const critters = await api.get<Critter[]>(`/critters${qs}`)
+      set({ critters, loading: false })
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to fetch critters'
+      set({ error: msg, loading: false })
+      toast.error(msg)
+    }
   },
 
   createCritter: async (critter) => {

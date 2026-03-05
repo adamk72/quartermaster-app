@@ -5,10 +5,13 @@ import (
 	"encoding/hex"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/adamghill/treasure-tracking/internal/db"
 	"github.com/adamghill/treasure-tracking/internal/types"
 )
+
+const tokenLifetime = 30 * 24 * time.Hour // 30 days
 
 var InviteCode string
 
@@ -31,14 +34,15 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := generateToken()
+	expiresAt := time.Now().Add(tokenLifetime)
 	slug := strings.ToLower(strings.ReplaceAll(req.Username, " ", "-"))
 
 	// Upsert user
 	_, err := db.DB.Exec(`
-		INSERT INTO users (id, username, invite_code, session_token)
-		VALUES (?, ?, ?, ?)
-		ON CONFLICT(username) DO UPDATE SET session_token = ?`,
-		slug, req.Username, req.InviteCode, token, token,
+		INSERT INTO users (id, username, invite_code, session_token, token_expires_at)
+		VALUES (?, ?, ?, ?, ?)
+		ON CONFLICT(username) DO UPDATE SET session_token = ?, token_expires_at = ?`,
+		slug, req.Username, req.InviteCode, token, expiresAt, token, expiresAt,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to create user")

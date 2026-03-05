@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAppStore } from './stores/useAppStore'
 import { Layout } from './components/Layout/Layout'
+import { ToastContainer } from './components/Toast'
+import { ConfirmDialog } from './components/ConfirmDialog'
 import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { InventoryPage } from './pages/InventoryPage'
@@ -36,22 +38,26 @@ export function App() {
   }
 
   return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/inventory" element={<InventoryPage />} />
-        <Route path="/journal" element={<JournalPage />} />
-        <Route path="/journal/:id" element={<JournalEntryPage />} />
-        <Route path="/critters" element={<CrittersPage />} />
-        <Route path="/quests" element={<QuestsPage />} />
-        <Route path="/skills" element={<SkillsPage />} />
-        <Route path="/xp" element={<XPPage />} />
-        <Route path="/watch" element={<WatchPage />} />
-        <Route path="/consumables" element={<ConsumablesPage />} />
-        <Route path="/characters" element={<CharactersPage />} />
-        <Route path="/changelog" element={<ChangelogPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Layout>
+    <>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/journal" element={<JournalPage />} />
+          <Route path="/journal/:id" element={<JournalEntryPage />} />
+          <Route path="/critters" element={<CrittersPage />} />
+          <Route path="/quests" element={<QuestsPage />} />
+          <Route path="/skills" element={<SkillsPage />} />
+          <Route path="/xp" element={<XPPage />} />
+          <Route path="/watch" element={<WatchPage />} />
+          <Route path="/consumables" element={<ConsumablesPage />} />
+          <Route path="/characters" element={<CharactersPage />} />
+          <Route path="/changelog" element={<ChangelogPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Layout>
+      <ToastContainer />
+      <ConfirmDialog />
+    </>
   )
 }

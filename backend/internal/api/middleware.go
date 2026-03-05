@@ -32,11 +32,23 @@ func Logger(next http.Handler) http.Handler {
 	})
 }
 
+var CORSOrigin string
+
 func CORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		origin := CORSOrigin
+		if origin == "" {
+			origin = r.Header.Get("Origin")
+			// Only allow same-host origins (localhost dev or same-origin production)
+			if origin != "" && !strings.HasPrefix(origin, "http://localhost:") && !strings.HasPrefix(origin, "http://127.0.0.1:") {
+				origin = ""
+			}
+		}
+		if origin != "" {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		}
 
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusNoContent)
@@ -62,12 +74,17 @@ func Auth(next http.Handler) http.Handler {
 		}
 
 		var user types.User
+		var expiresAt *time.Time
 		err := db.DB.QueryRow(
-			"SELECT id, username, character_id, created_at FROM users WHERE session_token = ?",
+			"SELECT id, username, character_id, created_at, token_expires_at FROM users WHERE session_token = ?",
 			token,
-		).Scan(&user.ID, &user.Username, &user.CharacterID, &user.CreatedAt)
+		).Scan(&user.ID, &user.Username, &user.CharacterID, &user.CreatedAt, &expiresAt)
 		if err != nil {
 			http.Error(w, `{"error":"invalid token"}`, http.StatusUnauthorized)
+			return
+		}
+		if expiresAt != nil && time.Now().After(*expiresAt) {
+			http.Error(w, `{"error":"token expired"}`, http.StatusUnauthorized)
 			return
 		}
 

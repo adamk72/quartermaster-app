@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { Plus, Trash2 } from 'lucide-react'
+import { confirm } from '../stores/useConfirmStore'
+import { toast } from '../stores/useToastStore'
 import type { WatchSchedule, WatchSlot } from '../types'
 
 export function WatchPage() {
@@ -13,8 +15,12 @@ export function WatchPage() {
   const [slots, setSlots] = useState<Partial<WatchSlot>[]>([])
 
   const fetchSchedules = async () => {
-    const data = await api.get<WatchSchedule[]>('/watch/schedules')
-    setSchedules(data)
+    try {
+      const data = await api.get<WatchSchedule[]>('/watch/schedules')
+      setSchedules(data)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to load schedules')
+    }
     setLoading(false)
   }
 
@@ -29,17 +35,25 @@ export function WatchPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
-    await api.post('/watch/schedules', { name, active: true, slots })
-    setShowForm(false)
-    setName('')
-    setSlots([])
-    fetchSchedules()
+    try {
+      await api.post('/watch/schedules', { name, active: true, slots })
+      setShowForm(false)
+      setName('')
+      setSlots([])
+      fetchSchedules()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to create schedule')
+    }
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Delete this schedule?')) return
-    await api.del(`/watch/schedules/${id}`)
-    fetchSchedules()
+    if (!(await confirm('Delete this schedule?'))) return
+    try {
+      await api.del(`/watch/schedules/${id}`)
+      fetchSchedules()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to delete schedule')
+    }
   }
 
   if (loading) return <div className="text-center text-gray-500 py-8">Loading...</div>

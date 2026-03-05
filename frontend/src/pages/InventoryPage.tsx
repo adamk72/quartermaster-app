@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { ITEM_CATEGORIES } from '../constants'
 import { Plus, Trash2, DollarSign, Pencil, Sparkles, Undo2 } from 'lucide-react'
+import { confirm } from '../stores/useConfirmStore'
+import { toast } from '../stores/useToastStore'
 import clsx from 'clsx'
 import type { Item } from '../types'
 
@@ -203,13 +205,17 @@ export function InventoryPage() {
   }, [fetchItems, fetchSummary, fetchContainers, categoryFilter, showSold])
 
   const handleSave = async (data: Partial<Item>) => {
-    if (editItem) {
-      await updateItem(editItem.id, data)
-    } else {
-      await createItem(data)
+    try {
+      if (editItem) {
+        await updateItem(editItem.id, data)
+      } else {
+        await createItem(data)
+      }
+      setShowForm(false)
+      setEditItem(null)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to save item')
     }
-    setShowForm(false)
-    setEditItem(null)
   }
 
   return (
@@ -323,7 +329,7 @@ export function InventoryPage() {
                       )}
                       {item.sold ? (
                         <button
-                          onClick={() => unsellItem(item.id)}
+                          onClick={async () => { try { await unsellItem(item.id) } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to unsell') } }}
                           className="p-1 text-gray-400 hover:text-orange-600"
                           title="Undo sold"
                         >
@@ -331,7 +337,7 @@ export function InventoryPage() {
                         </button>
                       ) : (
                         <button
-                          onClick={() => sellItem(item.id)}
+                          onClick={async () => { try { await sellItem(item.id) } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to sell') } }}
                           className="p-1 text-gray-400 hover:text-green-600"
                           title="Mark as sold"
                         >
@@ -339,7 +345,7 @@ export function InventoryPage() {
                         </button>
                       )}
                       <button
-                        onClick={() => { if (confirm('Delete this item?')) deleteItem(item.id) }}
+                        onClick={async () => { if (await confirm('Delete this item?')) { try { await deleteItem(item.id) } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to delete') } } }}
                         className="p-1 text-gray-400 hover:text-red-600"
                         title="Delete"
                       >
@@ -367,8 +373,12 @@ export function InventoryPage() {
         <IdentifyModal
           item={identifyTarget}
           onConfirm={async (name) => {
-            await identifyItem(identifyTarget.id, name !== identifyTarget.name ? name : undefined)
-            setIdentifyTarget(null)
+            try {
+              await identifyItem(identifyTarget.id, name !== identifyTarget.name ? name : undefined)
+              setIdentifyTarget(null)
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : 'Failed to identify item')
+            }
           }}
           onClose={() => setIdentifyTarget(null)}
         />

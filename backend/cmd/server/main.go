@@ -25,6 +25,8 @@ func main() {
 		api.InviteCode = "dragons"
 	}
 
+	api.CORSOrigin = os.Getenv("CORS_ORIGIN")
+
 	uploadsDir := os.Getenv("UPLOADS_DIR")
 	if uploadsDir == "" {
 		uploadsDir = "uploads"

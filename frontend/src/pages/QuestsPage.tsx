@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 import { Plus, Trash2, Pencil } from 'lucide-react'
+import { confirm } from '../stores/useConfirmStore'
+import { toast } from '../stores/useToastStore'
 import clsx from 'clsx'
 import type { Quest } from '../types'
 import { QUEST_STATUSES } from '../constants'
@@ -14,9 +16,13 @@ export function QuestsPage() {
   const [form, setForm] = useState<Partial<Quest>>({ title: '', status: 'active', description: '' })
 
   const fetchQuests = async () => {
-    const qs = filter ? `?status=${filter}` : ''
-    const data = await api.get<Quest[]>(`/quests${qs}`)
-    setQuests(data)
+    try {
+      const qs = filter ? `?status=${filter}` : ''
+      const data = await api.get<Quest[]>(`/quests${qs}`)
+      setQuests(data)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to fetch quests')
+    }
     setLoading(false)
   }
 
@@ -24,21 +30,29 @@ export function QuestsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (editQuest) {
-      await api.put(`/quests/${editQuest.id}`, form)
-    } else {
-      await api.post('/quests', form)
+    try {
+      if (editQuest) {
+        await api.put(`/quests/${editQuest.id}`, form)
+      } else {
+        await api.post('/quests', form)
+      }
+      setShowForm(false)
+      setEditQuest(null)
+      setForm({ title: '', status: 'active', description: '' })
+      fetchQuests()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to save quest')
     }
-    setShowForm(false)
-    setEditQuest(null)
-    setForm({ title: '', status: 'active', description: '' })
-    fetchQuests()
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Delete this quest?')) return
-    await api.del(`/quests/${id}`)
-    fetchQuests()
+    if (!(await confirm('Delete this quest?'))) return
+    try {
+      await api.del(`/quests/${id}`)
+      fetchQuests()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to delete quest')
+    }
   }
 
   const statusColors: Record<string, string> = {

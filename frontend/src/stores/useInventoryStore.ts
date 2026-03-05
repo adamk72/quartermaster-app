@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { api } from '../api/client'
+import { toast } from './useToastStore'
 import type { Item, ItemSummary, Container, Character } from '../types'
 
 interface InventoryState {
@@ -51,8 +52,8 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     try {
       const summary = await api.get<ItemSummary>('/items/summary')
       set({ summary })
-    } catch {
-      // non-critical
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to fetch summary')
     }
   },
 
@@ -60,8 +61,8 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     try {
       const containers = await api.get<Container[]>('/containers')
       set({ containers })
-    } catch {
-      // non-critical
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to fetch containers')
     }
   },
 
@@ -69,8 +70,8 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     try {
       const characters = await api.get<Character[]>('/characters')
       set({ characters })
-    } catch {
-      // non-critical
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to fetch characters')
     }
   },
 

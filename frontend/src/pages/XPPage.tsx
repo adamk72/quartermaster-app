@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { Plus, Trash2 } from 'lucide-react'
+import { confirm } from '../stores/useConfirmStore'
+import { toast } from '../stores/useToastStore'
 import type { XPEntry } from '../types'
 
 interface XPTotal {
@@ -21,12 +23,16 @@ export function XPPage() {
   const [attendance, setAttendance] = useState<Record<string, boolean>>({})
 
   const fetchData = async () => {
-    const [e, t] = await Promise.all([
-      api.get<XPEntry[]>('/xp'),
-      api.get<XPTotal[]>('/xp/totals'),
-    ])
-    setEntries(e)
-    setTotals(t)
+    try {
+      const [e, t] = await Promise.all([
+        api.get<XPEntry[]>('/xp'),
+        api.get<XPTotal[]>('/xp/totals'),
+      ])
+      setEntries(e)
+      setTotals(t)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to load XP data')
+    }
     setLoading(false)
   }
 
@@ -37,23 +43,31 @@ export function XPPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
-    await api.post('/xp', {
-      ...form,
-      attendance: characters.map((c) => ({
-        character_id: c.id,
-        present: attendance[c.id] ?? true,
-      })),
-    })
-    setShowForm(false)
-    setForm({ xp_amount: 0, game_date: '', description: '' })
-    setAttendance({})
-    fetchData()
+    try {
+      await api.post('/xp', {
+        ...form,
+        attendance: characters.map((c) => ({
+          character_id: c.id,
+          present: attendance[c.id] ?? true,
+        })),
+      })
+      setShowForm(false)
+      setForm({ xp_amount: 0, game_date: '', description: '' })
+      setAttendance({})
+      fetchData()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to create XP entry')
+    }
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Delete this XP entry?')) return
-    await api.del(`/xp/${id}`)
-    fetchData()
+    if (!(await confirm('Delete this XP entry?'))) return
+    try {
+      await api.del(`/xp/${id}`)
+      fetchData()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to delete XP entry')
+    }
   }
 
   if (loading) return <div className="text-center text-gray-500 py-8">Loading...</div>

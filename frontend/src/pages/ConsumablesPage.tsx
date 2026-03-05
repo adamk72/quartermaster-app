@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { Plus, Trash2, Minus, Settings } from 'lucide-react'
+import { confirm } from '../stores/useConfirmStore'
+import { toast } from '../stores/useToastStore'
 import clsx from 'clsx'
 import type { ConsumableType, ConsumableBalance, ConsumableLedgerEntry } from '../types'
 
@@ -18,14 +20,18 @@ export function ConsumablesPage() {
   const [ledgerFilter, setLedgerFilter] = useState('')
 
   const fetchData = async () => {
-    const [b, t, l] = await Promise.all([
-      api.get<ConsumableBalance[]>('/consumables/balances'),
-      api.get<ConsumableType[]>('/consumables/types'),
-      api.get<ConsumableLedgerEntry[]>('/consumables/ledger'),
-    ])
-    setBalances(b)
-    setTypes(t)
-    setLedger(l)
+    try {
+      const [b, t, l] = await Promise.all([
+        api.get<ConsumableBalance[]>('/consumables/balances'),
+        api.get<ConsumableType[]>('/consumables/types'),
+        api.get<ConsumableLedgerEntry[]>('/consumables/ledger'),
+      ])
+      setBalances(b)
+      setTypes(t)
+      setLedger(l)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to load consumables')
+    }
     setLoading(false)
   }
 
@@ -36,34 +42,50 @@ export function ConsumablesPage() {
 
   const handleConsumeDay = async () => {
     const headCount = characters.length || 6
-    if (!confirm(`Deduct 1 day of consumables for ${headCount} people?`)) return
-    await api.post('/consumables/consume-day', { head_count: headCount, game_date: '' })
-    fetchData()
+    if (!(await confirm(`Deduct 1 day of consumables for ${headCount} people?`))) return
+    try {
+      await api.post('/consumables/consume-day', { head_count: headCount, game_date: '' })
+      fetchData()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to consume day')
+    }
   }
 
   const handleAddStock = async (e: React.FormEvent) => {
     e.preventDefault()
-    await api.post('/consumables/ledger', {
-      ...addForm,
-      direction: 'in',
-    })
-    setShowAdd(false)
-    setAddForm({ consumable_type_id: '', quantity: 0, game_date: '', description: '' })
-    fetchData()
+    try {
+      await api.post('/consumables/ledger', {
+        ...addForm,
+        direction: 'in',
+      })
+      setShowAdd(false)
+      setAddForm({ consumable_type_id: '', quantity: 0, game_date: '', description: '' })
+      fetchData()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to add stock')
+    }
   }
 
   const handleCreateType = async (e: React.FormEvent) => {
     e.preventDefault()
-    await api.post('/consumables/types', typeForm)
-    setShowTypeForm(false)
-    setTypeForm({ id: '', name: '', unit: 'units', per_person_per_day: 1 })
-    fetchData()
+    try {
+      await api.post('/consumables/types', typeForm)
+      setShowTypeForm(false)
+      setTypeForm({ id: '', name: '', unit: 'units', per_person_per_day: 1 })
+      fetchData()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to create consumable type')
+    }
   }
 
   const handleDeleteEntry = async (id: number) => {
-    if (!confirm('Delete this entry?')) return
-    await api.del(`/consumables/ledger/${id}`)
-    fetchData()
+    if (!(await confirm('Delete this entry?'))) return
+    try {
+      await api.del(`/consumables/ledger/${id}`)
+      fetchData()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to delete entry')
+    }
   }
 
   if (loading) return <div className="text-center text-gray-500 py-8">Loading...</div>

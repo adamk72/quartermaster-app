@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { api } from '../api/client'
+import { toast } from './useToastStore'
 import type { User, LoginResponse } from '../types'
 
 interface AppState {
@@ -47,9 +48,12 @@ export const useAppStore = create<AppState>((set) => ({
     try {
       const user = await api.get<User>('/auth/me')
       set({ user, loading: false })
-    } catch {
+    } catch (e) {
       localStorage.removeItem('token')
       set({ loading: false })
+      if (e instanceof Error && !e.message.includes('401')) {
+        toast.error('Session check failed: ' + e.message)
+      }
     }
   },
 

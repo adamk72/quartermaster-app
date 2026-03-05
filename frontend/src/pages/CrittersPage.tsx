@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useCritterStore } from '../stores/useCritterStore'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { Plus, Trash2, XCircle } from 'lucide-react'
+import { confirm } from '../stores/useConfirmStore'
+import { toast } from '../stores/useToastStore'
 import clsx from 'clsx'
 import type { Critter } from '../types'
 
@@ -18,9 +20,13 @@ export function CrittersPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
-    await createCritter({ ...form, hp_current: form.hp_max })
-    setShowForm(false)
-    setForm({ name: '', hp_max: 0, hp_current: 0, ac: 10 })
+    try {
+      await createCritter({ ...form, hp_current: form.hp_max })
+      setShowForm(false)
+      setForm({ name: '', hp_max: 0, hp_current: 0, ac: 10 })
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to create critter')
+    }
   }
 
   const handleHPChange = (critter: Critter, delta: number) => {
@@ -38,7 +44,7 @@ export function CrittersPage() {
         <div className="flex gap-2">
           {activeCritters.length > 0 && (
             <button
-              onClick={() => { if (confirm('Dismiss all active critters?')) dismissAll() }}
+              onClick={async () => { if (await confirm('Dismiss all active critters?')) { try { await dismissAll() } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to dismiss') } } }}
               className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
             >
               <XCircle className="w-4 h-4" /> Dismiss All
@@ -118,7 +124,7 @@ export function CrittersPage() {
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <span>AC {critter.ac}</span>
                         <button
-                          onClick={() => { if (confirm('Delete?')) deleteCritter(critter.id) }}
+                          onClick={async () => { if (await confirm('Delete this critter?')) { try { await deleteCritter(critter.id) } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to delete') } } }}
                           className="p-1 text-gray-400 hover:text-red-600"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -170,7 +176,7 @@ export function CrittersPage() {
                   <div key={c.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2 text-sm text-gray-500">
                     <span>{c.name} ({c.hp_current}/{c.hp_max})</span>
                     <button
-                      onClick={() => { if (confirm('Delete?')) deleteCritter(c.id) }}
+                      onClick={async () => { if (await confirm('Delete this critter?')) { try { await deleteCritter(c.id) } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to delete') } } }}
                       className="p-1 hover:text-red-600"
                     >
                       <Trash2 className="w-4 h-4" />

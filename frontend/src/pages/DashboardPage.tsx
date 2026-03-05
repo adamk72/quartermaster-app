@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { api } from '../api/client'
 import { Sword, Coins, Weight, Package } from 'lucide-react'
+import { toast } from '../stores/useToastStore'
 import clsx from 'clsx'
 import type { ConsumableBalance } from '../types'
 
@@ -13,7 +14,9 @@ export function DashboardPage() {
   useEffect(() => {
     fetchSummary()
     fetchCharacters()
-    api.get<ConsumableBalance[]>('/consumables/balances').then(setConsumables).catch(() => {})
+    api.get<ConsumableBalance[]>('/consumables/balances').then(setConsumables).catch((e) => {
+      toast.error(e instanceof Error ? e.message : 'Failed to load consumables')
+    })
   }, [fetchSummary, fetchCharacters])
 
   const cards = [

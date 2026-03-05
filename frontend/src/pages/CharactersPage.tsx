@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { Plus, Trash2, Pencil } from 'lucide-react'
+import { confirm } from '../stores/useConfirmStore'
+import { toast } from '../stores/useToastStore'
 import type { Character } from '../types'
 
 export function CharactersPage() {
@@ -13,19 +15,27 @@ export function CharactersPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (editChar) {
-      await updateCharacter(editChar.id, form)
-    } else {
-      await createCharacter(form)
+    try {
+      if (editChar) {
+        await updateCharacter(editChar.id, form)
+      } else {
+        await createCharacter(form)
+      }
+      setShowForm(false)
+      setEditChar(null)
+      setForm({ name: '', player_name: '', class: '', level: 1, race: '', ac: 10, hp_max: 0 })
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to save character')
     }
-    setShowForm(false)
-    setEditChar(null)
-    setForm({ name: '', player_name: '', class: '', level: 1, race: '', ac: 10, hp_max: 0 })
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this character?')) return
-    await deleteCharacter(id)
+    if (!(await confirm('Delete this character?'))) return
+    try {
+      await deleteCharacter(id)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to delete character')
+    }
   }
 
   return (
