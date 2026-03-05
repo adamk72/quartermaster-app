@@ -37,6 +37,7 @@ func RegisterRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /api/v1/items/{id}/sell", auth(handleSellItem))
 	mux.Handle("POST /api/v1/items/{id}/unsell", auth(handleUnsellItem))
 	mux.Handle("POST /api/v1/items/{id}/identify", auth(handleIdentifyItem))
+	mux.Handle("POST /api/v1/items/reorder", auth(handleReorderItems))
 
 	// Coins
 	mux.Handle("GET /api/v1/coins", auth(handleListCoins))

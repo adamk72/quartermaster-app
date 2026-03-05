@@ -46,6 +46,7 @@ type Item struct {
 	Identified       bool      `json:"identified"`
 	Singular         string    `json:"singular"`
 	Notes            string    `json:"notes"`
+	SortOrder        int       `json:"sort_order"`
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`
 }

@@ -1,11 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { ITEM_CATEGORIES } from '../constants'
-import { Plus, Trash2, DollarSign, Pencil, Sparkles, Undo2 } from 'lucide-react'
+import { Plus, Trash2, DollarSign, Pencil, Sparkles, Undo2, GripVertical, ArrowUpDown, ChevronDown } from 'lucide-react'
 import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
 import clsx from 'clsx'
 import type { Item } from '../types'
+
+type SortMode = 'custom' | 'name' | 'category' | 'date' | 'credit' | 'debit'
+
+const SORT_LABELS: Record<SortMode, string> = {
+  custom: 'Custom Order',
+  name: 'Name',
+  category: 'Category',
+  date: 'Date',
+  credit: 'Credit',
+  debit: 'Debit',
+}
 
 function ItemFormModal({
   item,
@@ -188,12 +199,19 @@ function IdentifyModal({
 }
 
 export function InventoryPage() {
-  const { items, summary, containers, loading, fetchItems, fetchSummary, fetchContainers, createItem, updateItem, deleteItem, sellItem, unsellItem, identifyItem } = useInventoryStore()
+  const { items, summary, containers, loading, fetchItems, fetchSummary, fetchContainers, createItem, updateItem, deleteItem, sellItem, unsellItem, identifyItem, reorderItems } = useInventoryStore()
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState<Item | null>(null)
   const [identifyTarget, setIdentifyTarget] = useState<Item | null>(null)
   const [categoryFilter, setCategoryFilter] = useState('')
   const [showSold, setShowSold] = useState(false)
+  const [sortMode, setSortMode] = useState<SortMode>('custom')
+  const [showSortMenu, setShowSortMenu] = useState(false)
+  const sortMenuRef = useRef<HTMLDivElement>(null)
+
+  // Drag state
+  const [dragId, setDragId] = useState<number | null>(null)
+  const [dragOverId, setDragOverId] = useState<number | null>(null)
 
   useEffect(() => {
     const params: Record<string, string> = {}
@@ -203,6 +221,73 @@ export function InventoryPage() {
     fetchSummary()
     fetchContainers()
   }, [fetchItems, fetchSummary, fetchContainers, categoryFilter, showSold])
+
+  // Close sort menu on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (sortMenuRef.current && !sortMenuRef.current.contains(e.target as Node)) {
+        setShowSortMenu(false)
+      }
+    }
+    if (showSortMenu) document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showSortMenu])
+
+  const sortedItems = useMemo(() => {
+    if (sortMode === 'custom') return items
+    const sorted = [...items]
+    switch (sortMode) {
+      case 'name':
+        sorted.sort((a, b) => a.name.localeCompare(b.name))
+        break
+      case 'category':
+        sorted.sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name))
+        break
+      case 'date':
+        sorted.sort((a, b) => (b.game_date || '').localeCompare(a.game_date || '') || a.name.localeCompare(b.name))
+        break
+      case 'credit':
+        sorted.sort((a, b) => (b.credit_gp ?? 0) - (a.credit_gp ?? 0))
+        break
+      case 'debit':
+        sorted.sort((a, b) => (b.debit_gp ?? 0) - (a.debit_gp ?? 0))
+        break
+    }
+    return sorted
+  }, [items, sortMode])
+
+  const handleDragStart = useCallback((id: number) => {
+    setDragId(id)
+  }, [])
+
+  const handleDragOver = useCallback((e: React.DragEvent, id: number) => {
+    e.preventDefault()
+    setDragOverId(id)
+  }, [])
+
+  const handleDrop = useCallback(async (targetId: number) => {
+    if (dragId == null || dragId === targetId) {
+      setDragId(null)
+      setDragOverId(null)
+      return
+    }
+    const ids = items.map((i) => i.id)
+    const fromIdx = ids.indexOf(dragId)
+    const toIdx = ids.indexOf(targetId)
+    if (fromIdx === -1 || toIdx === -1) return
+
+    ids.splice(fromIdx, 1)
+    ids.splice(toIdx, 0, dragId)
+
+    setDragId(null)
+    setDragOverId(null)
+
+    try {
+      await reorderItems(ids)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to reorder')
+    }
+  }, [dragId, items, reorderItems])
 
   const handleSave = async (data: Partial<Item>) => {
     try {
@@ -240,8 +325,8 @@ export function InventoryPage() {
         </div>
       )}
 
-      {/* Filters */}
-      <div className="flex gap-4 mb-4">
+      {/* Filters + Sort */}
+      <div className="flex gap-4 mb-4 items-center">
         <select
           className="px-3 py-2 border rounded-lg text-sm"
           value={categoryFilter}
@@ -258,6 +343,34 @@ export function InventoryPage() {
           />
           Show sold
         </label>
+
+        <div className="relative ml-auto" ref={sortMenuRef}>
+          <button
+            onClick={() => setShowSortMenu(!showSortMenu)}
+            className="flex items-center gap-2 px-3 py-2 border rounded-lg text-sm hover:bg-gray-50"
+          >
+            <ArrowUpDown className="w-4 h-4" />
+            {SORT_LABELS[sortMode]}
+            <ChevronDown className="w-3 h-3" />
+          </button>
+          {showSortMenu && (
+            <div className="absolute right-0 top-full mt-1 bg-white border rounded-lg shadow-lg py-1 z-20 min-w-[160px]">
+              {(Object.keys(SORT_LABELS) as SortMode[]).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => { setSortMode(mode); setShowSortMenu(false) }}
+                  className={clsx(
+                    'w-full text-left px-4 py-2 text-sm hover:bg-gray-50',
+                    sortMode === mode && 'text-blue-600 font-medium'
+                  )}
+                >
+                  {SORT_LABELS[mode]}
+                  {sortMode === mode && <span className="float-right text-blue-600">&#10003;</span>}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Items table */}
@@ -270,6 +383,7 @@ export function InventoryPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left">
               <tr>
+                {sortMode === 'custom' && <th className="w-8"></th>}
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Qty</th>
                 <th className="px-4 py-3 font-medium">Category</th>
@@ -281,8 +395,24 @@ export function InventoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {items.map((item) => (
-                <tr key={item.id} className={clsx(item.sold && 'bg-red-50/50')}>
+              {sortedItems.map((item) => (
+                <tr
+                  key={item.id}
+                  className={clsx(
+                    item.sold && 'bg-red-50/50',
+                    dragOverId === item.id && dragId !== item.id && 'border-t-2 border-t-blue-400',
+                  )}
+                  draggable={sortMode === 'custom'}
+                  onDragStart={() => handleDragStart(item.id)}
+                  onDragOver={(e) => handleDragOver(e, item.id)}
+                  onDrop={() => handleDrop(item.id)}
+                  onDragEnd={() => { setDragId(null); setDragOverId(null) }}
+                >
+                  {sortMode === 'custom' && (
+                    <td className="pl-2 pr-0 py-3 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500">
+                      <GripVertical className="w-4 h-4" />
+                    </td>
+                  )}
                   <td className="px-4 py-3">
                     <span className={clsx('font-medium', item.sold && 'line-through text-gray-400')}>{item.name}</span>
                     {item.sold && (

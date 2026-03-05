@@ -20,6 +20,7 @@ interface InventoryState {
   deleteItem: (id: number) => Promise<void>
   sellItem: (id: number) => Promise<void>
   unsellItem: (id: number) => Promise<void>
+  reorderItems: (itemIds: number[]) => Promise<void>
   identifyItem: (id: number, name?: string) => Promise<Item>
   createContainer: (container: Partial<Container>) => Promise<Container>
   updateContainer: (id: string, container: Partial<Container>) => Promise<Container>
@@ -110,6 +111,13 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     const { items } = get()
     set({ items: items.map((i) => (i.id === id ? { ...i, sold: false } : i)) })
     get().fetchSummary()
+  },
+
+  reorderItems: async (itemIds) => {
+    await api.post('/items/reorder', { item_ids: itemIds })
+    const { items } = get()
+    const orderMap = new Map(itemIds.map((id, i) => [id, i]))
+    set({ items: items.map((item) => ({ ...item, sort_order: orderMap.get(item.id) ?? item.sort_order })) })
   },
 
   identifyItem: async (id, name) => {

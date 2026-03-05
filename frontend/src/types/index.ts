@@ -42,6 +42,7 @@ export interface Item {
   identified: boolean
   singular: string
   notes: string
+  sort_order: number
   created_at: string
   updated_at: string
 }
