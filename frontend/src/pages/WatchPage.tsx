@@ -56,26 +56,26 @@ export function WatchPage() {
     }
   }
 
-  if (loading) return <div className="text-center text-gray-500 py-8">Loading...</div>
+  if (loading) return <div className="text-center text-parchment-muted py-8">Loading...</div>
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Watch Schedules</h2>
+        <h2 className="font-heading text-3xl font-bold text-parchment">Watch Schedules</h2>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright text-sm transition-colors"
         >
           <Plus className="w-4 h-4" /> New Schedule
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="bg-white rounded-xl shadow-sm border p-4 mb-6 space-y-4">
+        <form onSubmit={handleCreate} className="tt-card mb-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Schedule Name</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Schedule Name</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -84,20 +84,20 @@ export function WatchPage() {
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-gray-700">Slots</label>
-              <button type="button" onClick={addSlot} className="text-sm text-blue-600 hover:underline">+ Add Slot</button>
+              <label className="text-sm font-heading font-semibold text-parchment-dim">Slots</label>
+              <button type="button" onClick={addSlot} className="text-sm text-gold hover:text-gold-bright transition-colors">+ Add Slot</button>
             </div>
             {slots.map((slot, i) => (
               <div key={i} className="flex gap-2 mb-2">
                 <input
                   type="number"
-                  className="w-20 px-3 py-2 border rounded-lg text-sm"
+                  className="input-themed !w-20"
                   value={slot.watch_number ?? ''}
                   onChange={(e) => { const s = [...slots]; s[i] = { ...slot, watch_number: Number(e.target.value) }; setSlots(s) }}
                   placeholder="Watch #"
                 />
                 <select
-                  className="flex-1 px-3 py-2 border rounded-lg text-sm"
+                  className="input-themed"
                   value={slot.character_id ?? ''}
                   onChange={(e) => { const s = [...slots]; s[i] = { ...slot, character_id: e.target.value }; setSlots(s) }}
                 >
@@ -107,7 +107,7 @@ export function WatchPage() {
                 <button
                   type="button"
                   onClick={() => setSlots(slots.filter((_, j) => j !== i))}
-                  className="p-2 text-gray-400 hover:text-red-600"
+                  className="p-2 text-parchment-muted hover:text-wine transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -115,33 +115,33 @@ export function WatchPage() {
             ))}
           </div>
           <div className="flex gap-2">
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Create</button>
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-100 rounded-lg">Cancel</button>
+            <button type="submit" className="px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright transition-colors">Create</button>
+            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-surface text-parchment-dim border border-border rounded-lg hover:bg-card-hover transition-colors">Cancel</button>
           </div>
         </form>
       )}
 
       {schedules.length === 0 ? (
-        <div className="text-center text-gray-500 py-8">No watch schedules</div>
+        <div className="text-center text-parchment-muted py-8">No watch schedules</div>
       ) : (
         <div className="space-y-4">
           {schedules.map((schedule) => {
             const watchNumbers = [...new Set(schedule.slots?.map((s) => s.watch_number) ?? [])].sort((a, b) => a - b)
             return (
-              <div key={schedule.id} className="bg-white rounded-xl shadow-sm border p-4">
+              <div key={schedule.id} className="tt-card">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold">{schedule.name}</h3>
-                  <button onClick={() => handleDelete(schedule.id)} className="p-1 text-gray-400 hover:text-red-600">
+                  <h3 className="font-heading font-bold text-parchment">{schedule.name}</h3>
+                  <button onClick={() => handleDelete(schedule.id)} className="p-1 text-parchment-muted hover:text-wine transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   {watchNumbers.map((wn) => (
-                    <div key={wn} className="bg-gray-50 rounded-lg p-3">
-                      <h4 className="text-sm font-medium text-gray-500 mb-2">Watch {wn}</h4>
+                    <div key={wn} className="bg-surface border border-border rounded-lg p-3">
+                      <h4 className="text-sm font-heading font-semibold text-parchment-muted mb-2">Watch {wn}</h4>
                       <div className="space-y-1">
                         {schedule.slots?.filter((s) => s.watch_number === wn).map((slot) => (
-                          <div key={slot.id} className="text-sm">
+                          <div key={slot.id} className="text-sm text-parchment-dim">
                             {characters.find((c) => c.id === slot.character_id)?.name ?? slot.character_id}
                           </div>
                         ))}

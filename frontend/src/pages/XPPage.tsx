@@ -70,15 +70,15 @@ export function XPPage() {
     }
   }
 
-  if (loading) return <div className="text-center text-gray-500 py-8">Loading...</div>
+  if (loading) return <div className="text-center text-parchment-muted py-8">Loading...</div>
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">XP Tracker</h2>
+        <h2 className="font-heading text-3xl font-bold text-parchment">XP Tracker</h2>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright text-sm transition-colors"
         >
           <Plus className="w-4 h-4" /> Add XP
         </button>
@@ -87,22 +87,22 @@ export function XPPage() {
       {/* Totals */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {totals.map((t) => (
-          <div key={t.character_id} className="bg-white rounded-xl shadow-sm border p-4 text-center">
-            <h3 className="font-semibold text-sm">{t.character_name}</h3>
-            <p className="text-2xl font-bold text-yellow-600 mt-1">{t.total_xp.toLocaleString('en-US')}</p>
-            <p className="text-sm text-gray-500">Level {t.level}</p>
+          <div key={t.character_id} className="tt-card text-center">
+            <h3 className="font-heading font-semibold text-sm text-parchment-dim">{t.character_name}</h3>
+            <p className="text-2xl font-heading font-bold text-gold mt-1">{t.total_xp.toLocaleString('en-US')}</p>
+            <p className="text-sm text-parchment-muted">Level {t.level}</p>
           </div>
         ))}
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="bg-white rounded-xl shadow-sm border p-4 mb-6 space-y-4">
+        <form onSubmit={handleCreate} className="tt-card mb-6 space-y-4">
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">XP Amount</label>
+              <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">XP Amount</label>
               <input
                 type="number"
-                className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                className="input-themed"
                 value={form.xp_amount}
                 onChange={(e) => setForm({ ...form, xp_amount: Number(e.target.value) })}
                 required
@@ -110,28 +110,28 @@ export function XPPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Game Date</label>
+              <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Game Date</label>
               <input
-                className="w-full px-3 py-2 border rounded-lg"
+                className="input-themed"
                 value={form.game_date ?? ''}
                 onChange={(e) => setForm({ ...form, game_date: e.target.value })}
                 placeholder="M/D"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Description</label>
               <input
-                className="w-full px-3 py-2 border rounded-lg"
+                className="input-themed"
                 value={form.description ?? ''}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Attendance</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-2">Attendance</label>
             <div className="flex flex-wrap gap-3">
               {characters.map((c) => (
-                <label key={c.id} className="flex items-center gap-2 text-sm">
+                <label key={c.id} className="flex items-center gap-2 text-sm text-parchment-dim">
                   <input
                     type="checkbox"
                     checked={attendance[c.id] ?? true}
@@ -143,38 +143,38 @@ export function XPPage() {
             </div>
           </div>
           <div className="flex gap-2">
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Add</button>
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-100 rounded-lg">Cancel</button>
+            <button type="submit" className="px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright transition-colors">Add</button>
+            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-surface text-parchment-dim border border-border rounded-lg hover:bg-card-hover transition-colors">Cancel</button>
           </div>
         </form>
       )}
 
       {/* Entries */}
-      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <table className="tt-table">
+          <thead>
             <tr>
-              <th className="px-4 py-3 text-left font-medium">Date</th>
-              <th className="px-4 py-3 text-left font-medium">XP</th>
-              <th className="px-4 py-3 text-left font-medium">Description</th>
-              <th className="px-4 py-3 text-left font-medium">Attendance</th>
-              <th className="px-4 py-3 font-medium"></th>
+              <th>Date</th>
+              <th>XP</th>
+              <th>Description</th>
+              <th>Attendance</th>
+              <th></th>
             </tr>
           </thead>
-          <tbody className="divide-y">
+          <tbody>
             {entries.map((e) => (
               <tr key={e.id}>
-                <td className="px-4 py-3">{e.game_date || '--'}</td>
-                <td className="px-4 py-3 font-bold text-yellow-600">+{e.xp_amount}</td>
-                <td className="px-4 py-3">{e.description || '--'}</td>
-                <td className="px-4 py-3 text-xs">
+                <td className="text-parchment-dim">{e.game_date || '--'}</td>
+                <td className="font-heading font-bold text-gold">+{e.xp_amount}</td>
+                <td>{e.description || <span className="text-parchment-muted">--</span>}</td>
+                <td className="text-xs text-parchment-dim">
                   {e.attendance?.filter((a) => a.present).map((a) => {
                     const char = characters.find((c) => c.id === a.character_id)
                     return char?.name ?? a.character_id
                   }).join(', ') ?? 'All'}
                 </td>
-                <td className="px-4 py-3">
-                  <button onClick={() => handleDelete(e.id)} className="p-1 text-gray-400 hover:text-red-600">
+                <td>
+                  <button onClick={() => handleDelete(e.id)} className="p-1 text-parchment-muted hover:text-wine transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </td>

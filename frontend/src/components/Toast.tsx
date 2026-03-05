@@ -13,14 +13,14 @@ export function ToastContainer() {
         <div
           key={t.id}
           className={clsx(
-            'flex items-start gap-2 px-4 py-3 rounded-lg shadow-lg text-sm animate-[slideIn_0.2s_ease-out]',
-            t.type === 'error' && 'bg-red-600 text-white',
-            t.type === 'success' && 'bg-green-600 text-white',
-            t.type === 'info' && 'bg-gray-800 text-white',
+            'flex items-start gap-2 px-4 py-3 rounded-lg shadow-lg shadow-black/30 text-sm animate-[slideIn_0.2s_ease-out] border',
+            t.type === 'error' && 'bg-wine border-wine/30 text-parchment',
+            t.type === 'success' && 'bg-emerald-dim border-emerald/30 text-parchment',
+            t.type === 'info' && 'bg-card border-border text-parchment',
           )}
         >
           <span className="flex-1">{t.message}</span>
-          <button onClick={() => removeToast(t.id)} className="shrink-0 opacity-70 hover:opacity-100">
+          <button onClick={() => removeToast(t.id)} className="shrink-0 opacity-70 hover:opacity-100 transition-opacity">
             <X className="w-4 h-4" />
           </button>
         </div>

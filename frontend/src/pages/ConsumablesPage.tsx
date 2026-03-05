@@ -88,7 +88,7 @@ export function ConsumablesPage() {
     }
   }
 
-  if (loading) return <div className="text-center text-gray-500 py-8">Loading...</div>
+  if (loading) return <div className="text-center text-parchment-muted py-8">Loading...</div>
 
   const filteredLedger = ledgerFilter
     ? ledger.filter((e) => e.consumable_type_id === ledgerFilter)
@@ -97,24 +97,24 @@ export function ConsumablesPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Consumables</h2>
+        <h2 className="font-heading text-3xl font-bold text-parchment">Consumables</h2>
         <div className="flex gap-2">
           <button
             onClick={() => setShowTypeForm(true)}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+            className="flex items-center gap-2 px-3 py-2 bg-surface text-parchment-dim border border-border rounded-lg hover:bg-card-hover hover:text-parchment text-sm transition-colors"
             title="Add consumable type"
           >
             <Settings className="w-4 h-4" />
           </button>
           <button
             onClick={() => setShowAdd(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald text-parchment font-heading font-semibold rounded-lg hover:bg-emerald-dim text-sm transition-colors"
           >
             <Plus className="w-4 h-4" /> Add Stock
           </button>
           <button
             onClick={handleConsumeDay}
-            className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-amber text-base font-heading font-semibold rounded-lg hover:brightness-110 text-sm transition-colors"
           >
             <Minus className="w-4 h-4" /> Consume Day
           </button>
@@ -128,35 +128,35 @@ export function ConsumablesPage() {
           const warning = b.days_remaining >= 3 && b.days_remaining < 7
           return (
             <div key={b.consumable_type_id} className={clsx(
-              'bg-white rounded-xl shadow-sm border p-5',
-              urgent && 'border-red-300 bg-red-50',
-              warning && 'border-yellow-300 bg-yellow-50',
+              'tt-card',
+              urgent && 'border-wine/40 bg-wine/5',
+              warning && 'border-amber/40 bg-amber/5',
             )}>
               <div className="flex items-center justify-between mb-1">
-                <h3 className="font-semibold text-lg">{b.name}</h3>
-                <span className="text-sm text-gray-500">{b.unit}</span>
+                <h3 className="font-heading font-bold text-lg text-parchment">{b.name}</h3>
+                <span className="text-sm text-parchment-muted">{b.unit}</span>
               </div>
-              <div className="text-3xl font-bold mt-2">
+              <div className="text-3xl font-heading font-bold text-parchment mt-2">
                 {b.balance % 1 === 0 ? b.balance : b.balance.toFixed(1)}
               </div>
               <div className={clsx(
                 'text-sm mt-1',
-                urgent ? 'text-red-700 font-semibold' :
-                warning ? 'text-yellow-700' :
-                'text-gray-500',
+                urgent ? 'text-wine font-semibold' :
+                warning ? 'text-amber' :
+                'text-parchment-muted',
               )}>
                 {b.days_remaining >= 0
                   ? `${b.days_remaining % 1 === 0 ? b.days_remaining : b.days_remaining.toFixed(1)} days remaining`
                   : 'No daily consumption rate'}
               </div>
-              <div className="text-xs text-gray-400 mt-1">
+              <div className="text-xs text-parchment-muted mt-1">
                 {b.per_person_per_day} {b.unit}/person/day
               </div>
             </div>
           )
         })}
         {balances.length === 0 && (
-          <div className="col-span-full text-center text-gray-500 py-4">
+          <div className="col-span-full text-center text-parchment-muted py-4">
             No consumable types configured. Click the gear icon to add some.
           </div>
         )}
@@ -164,11 +164,11 @@ export function ConsumablesPage() {
 
       {/* Add type form */}
       {showTypeForm && (
-        <form onSubmit={handleCreateType} className="bg-white rounded-xl shadow-sm border p-4 mb-6 grid grid-cols-2 md:grid-cols-5 gap-4">
+        <form onSubmit={handleCreateType} className="tt-card mb-6 grid grid-cols-2 md:grid-cols-5 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ID (slug)</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">ID (slug)</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={typeForm.id ?? ''}
               onChange={(e) => setTypeForm({ ...typeForm, id: e.target.value })}
               placeholder="torches"
@@ -177,9 +177,9 @@ export function ConsumablesPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Name</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={typeForm.name ?? ''}
               onChange={(e) => setTypeForm({ ...typeForm, name: e.target.value })}
               placeholder="Torches"
@@ -187,37 +187,37 @@ export function ConsumablesPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Unit</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={typeForm.unit ?? 'units'}
               onChange={(e) => setTypeForm({ ...typeForm, unit: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Per Person/Day</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Per Person/Day</label>
             <input
               type="number"
               step="0.1"
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={typeForm.per_person_per_day ?? 1}
               onChange={(e) => setTypeForm({ ...typeForm, per_person_per_day: Number(e.target.value) })}
             />
           </div>
           <div className="flex items-end gap-2">
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Add</button>
-            <button type="button" onClick={() => setShowTypeForm(false)} className="px-4 py-2 bg-gray-100 rounded-lg">Cancel</button>
+            <button type="submit" className="px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright transition-colors">Add</button>
+            <button type="button" onClick={() => setShowTypeForm(false)} className="px-4 py-2 bg-surface text-parchment-dim border border-border rounded-lg hover:bg-card-hover transition-colors">Cancel</button>
           </div>
         </form>
       )}
 
       {/* Add stock form */}
       {showAdd && (
-        <form onSubmit={handleAddStock} className="bg-white rounded-xl shadow-sm border p-4 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <form onSubmit={handleAddStock} className="tt-card mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Type</label>
             <select
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={addForm.consumable_type_id}
               onChange={(e) => setAddForm({ ...addForm, consumable_type_id: e.target.value })}
               required
@@ -227,11 +227,11 @@ export function ConsumablesPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Quantity</label>
             <input
               type="number"
               step="0.1"
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={addForm.quantity || ''}
               onChange={(e) => setAddForm({ ...addForm, quantity: Number(e.target.value) })}
               required
@@ -239,27 +239,27 @@ export function ConsumablesPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Description</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg"
+              className="input-themed"
               value={addForm.description}
               onChange={(e) => setAddForm({ ...addForm, description: e.target.value })}
               placeholder="Purchased in town"
             />
           </div>
           <div className="flex items-end gap-2">
-            <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Add</button>
-            <button type="button" onClick={() => setShowAdd(false)} className="px-4 py-2 bg-gray-100 rounded-lg">Cancel</button>
+            <button type="submit" className="px-4 py-2 bg-emerald text-parchment font-heading font-semibold rounded-lg hover:bg-emerald-dim transition-colors">Add</button>
+            <button type="button" onClick={() => setShowAdd(false)} className="px-4 py-2 bg-surface text-parchment-dim border border-border rounded-lg hover:bg-card-hover transition-colors">Cancel</button>
           </div>
         </form>
       )}
 
       {/* Ledger */}
-      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
-          <h3 className="font-semibold">Ledger</h3>
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+          <h3 className="font-heading font-bold text-parchment">Ledger</h3>
           <select
-            className="px-3 py-1 border rounded-lg text-sm"
+            className="input-themed !w-auto"
             value={ledgerFilter}
             onChange={(e) => setLedgerFilter(e.target.value)}
           >
@@ -268,38 +268,38 @@ export function ConsumablesPage() {
           </select>
         </div>
         {filteredLedger.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">No entries yet</div>
+          <div className="p-8 text-center text-parchment-muted">No entries yet</div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left">
+          <table className="tt-table">
+            <thead>
               <tr>
-                <th className="px-4 py-2 font-medium">Type</th>
-                <th className="px-4 py-2 font-medium">Qty</th>
-                <th className="px-4 py-2 font-medium">Direction</th>
-                <th className="px-4 py-2 font-medium">Description</th>
-                <th className="px-4 py-2 font-medium">Date</th>
-                <th className="px-4 py-2 font-medium"></th>
+                <th>Type</th>
+                <th>Qty</th>
+                <th>Direction</th>
+                <th>Description</th>
+                <th>Date</th>
+                <th></th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody>
               {filteredLedger.map((e) => (
                 <tr key={e.id}>
-                  <td className="px-4 py-2">{types.find((t) => t.id === e.consumable_type_id)?.name ?? e.consumable_type_id}</td>
-                  <td className={clsx('px-4 py-2 font-mono font-bold', e.direction === 'in' ? 'text-green-600' : 'text-red-600')}>
+                  <td>{types.find((t) => t.id === e.consumable_type_id)?.name ?? e.consumable_type_id}</td>
+                  <td className={clsx('font-mono font-bold', e.direction === 'in' ? 'text-emerald' : 'text-wine')}>
                     {e.direction === 'in' ? '+' : '-'}{e.quantity}
                   </td>
-                  <td className="px-4 py-2">
+                  <td>
                     <span className={clsx(
                       'px-2 py-0.5 rounded text-xs font-medium',
-                      e.direction === 'in' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700',
+                      e.direction === 'in' ? 'bg-emerald/15 text-emerald' : 'bg-wine/15 text-wine',
                     )}>
                       {e.direction}
                     </span>
                   </td>
-                  <td className="px-4 py-2">{e.description || '--'}</td>
-                  <td className="px-4 py-2">{e.game_date || '--'}</td>
-                  <td className="px-4 py-2">
-                    <button onClick={() => handleDeleteEntry(e.id)} className="p-1 text-gray-400 hover:text-red-600">
+                  <td>{e.description || <span className="text-parchment-muted">--</span>}</td>
+                  <td className="text-parchment-dim">{e.game_date || <span className="text-parchment-muted">--</span>}</td>
+                  <td>
+                    <button onClick={() => handleDeleteEntry(e.id)} className="p-1 text-parchment-muted hover:text-wine transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </td>

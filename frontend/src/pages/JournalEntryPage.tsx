@@ -61,8 +61,8 @@ export function JournalEntryPage() {
     navigate('/journal')
   }
 
-  if (loading) return <div className="text-gray-500 py-8">Loading...</div>
-  if (!currentSession) return <div className="text-gray-500 py-8">Session not found</div>
+  if (loading) return <div className="text-parchment-muted py-8">Loading...</div>
+  if (!currentSession) return <div className="text-parchment-muted py-8">Session not found</div>
 
   return (
     <div>
@@ -70,39 +70,39 @@ export function JournalEntryPage() {
         <button onClick={() => {
           if (dirty && !confirm('You have unsaved changes. Leave anyway?')) return
           navigate('/journal')
-        }} className="p-2 hover:bg-gray-100 rounded-lg">
+        }} className="p-2 hover:bg-surface rounded-lg text-parchment-muted hover:text-parchment transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h2 className="text-2xl font-bold text-gray-900 flex-1">Edit Session</h2>
+        <h2 className="font-heading text-3xl font-bold text-parchment flex-1">Edit Session</h2>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright disabled:opacity-50 text-sm transition-colors"
         >
           <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save'}
         </button>
         <button
           onClick={handleDelete}
-          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+          className="p-2 text-parchment-muted hover:text-wine hover:bg-wine/10 rounded-lg transition-colors"
         >
           <Trash2 className="w-5 h-5" />
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
+      <div className="tt-card space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Title</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={title}
               onChange={markDirty(setTitle)}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Game Date</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Game Date</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={gameDate}
               onChange={markDirty(setGameDate)}
               placeholder="M/D"
@@ -111,9 +111,9 @@ export function JournalEntryPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+          <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Content</label>
           <textarea
-            className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 min-h-[400px] font-mono text-sm"
+            className="input-themed min-h-[400px] font-mono text-sm"
             value={bodyHtml}
             onChange={markDirty(setBodyHtml)}
             placeholder="Write your session notes here... (HTML supported)"

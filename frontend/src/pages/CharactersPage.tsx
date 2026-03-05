@@ -41,21 +41,21 @@ export function CharactersPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Characters</h2>
+        <h2 className="font-heading text-3xl font-bold text-parchment">Characters</h2>
         <button
           onClick={() => { setEditChar(null); setForm({ name: '', player_name: '', class: '', level: 1, race: '', ac: 10, hp_max: 0 }); setShowForm(true) }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright text-sm transition-colors"
         >
           <Plus className="w-4 h-4" /> Add Character
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSave} className="bg-white rounded-xl shadow-sm border p-4 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <form onSubmit={handleSave} className="tt-card mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Name</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={form.name ?? ''}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
@@ -63,86 +63,86 @@ export function CharactersPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Player</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Player</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg"
+              className="input-themed"
               value={form.player_name ?? ''}
               onChange={(e) => setForm({ ...form, player_name: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Race</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Race</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg"
+              className="input-themed"
               value={form.race ?? ''}
               onChange={(e) => setForm({ ...form, race: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Class</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Class</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg"
+              className="input-themed"
               value={form.class ?? ''}
               onChange={(e) => setForm({ ...form, class: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
-            <input type="number" className="w-full px-3 py-2 border rounded-lg"
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Level</label>
+            <input type="number" className="input-themed"
               value={form.level ?? 1}
               onChange={(e) => setForm({ ...form, level: Number(e.target.value) })} min={1} max={20}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">AC</label>
-            <input type="number" className="w-full px-3 py-2 border rounded-lg"
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">AC</label>
+            <input type="number" className="input-themed"
               value={form.ac ?? 10}
               onChange={(e) => setForm({ ...form, ac: Number(e.target.value) })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">HP Max</label>
-            <input type="number" className="w-full px-3 py-2 border rounded-lg"
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">HP Max</label>
+            <input type="number" className="input-themed"
               value={form.hp_max ?? 0}
               onChange={(e) => setForm({ ...form, hp_max: Number(e.target.value) })}
             />
           </div>
           <div className="flex items-end gap-2">
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <button type="submit" className="px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright transition-colors">
               {editChar ? 'Update' : 'Add'}
             </button>
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-100 rounded-lg">Cancel</button>
+            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-surface text-parchment-dim border border-border rounded-lg hover:bg-card-hover transition-colors">Cancel</button>
           </div>
         </form>
       )}
 
       {characters.length === 0 ? (
-        <div className="text-center text-gray-500 py-8">No characters yet</div>
+        <div className="text-center text-parchment-muted py-8">No characters yet</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {characters.map((c) => (
-            <div key={c.id} className="bg-white rounded-xl shadow-sm border p-5">
+            <div key={c.id} className="tt-card hover:border-border-light transition-colors">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-bold">{c.name}</h3>
+                <h3 className="font-heading text-lg font-bold text-parchment">{c.name}</h3>
                 <div className="flex gap-1">
                   <button
                     onClick={() => { setEditChar(c); setForm(c); setShowForm(true) }}
-                    className="p-1 text-gray-400 hover:text-blue-600"
+                    className="p-1 text-parchment-muted hover:text-sky transition-colors"
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleDelete(c.id)} className="p-1 text-gray-400 hover:text-red-600">
+                  <button onClick={() => handleDelete(c.id)} className="p-1 text-parchment-muted hover:text-wine transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-              <p className="text-sm text-gray-500 mb-3">
+              <p className="text-sm text-parchment-dim mb-3">
                 Level {c.level} {c.race} {c.class}
-                {c.player_name && <span className="ml-2">({c.player_name})</span>}
+                {c.player_name && <span className="ml-2 text-parchment-muted">({c.player_name})</span>}
               </p>
-              <div className="flex gap-4 text-sm">
-                <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded">AC {c.ac}</span>
-                <span className="px-2 py-1 bg-red-50 text-red-700 rounded">HP {c.hp_max}</span>
+              <div className="flex gap-3 text-sm">
+                <span className="px-2.5 py-1 bg-sky/10 text-sky rounded font-medium">AC {c.ac}</span>
+                <span className="px-2.5 py-1 bg-wine/10 text-wine rounded font-medium">HP {c.hp_max}</span>
               </div>
             </div>
           ))}

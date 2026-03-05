@@ -32,47 +32,47 @@ export function SkillsPage() {
   const getMaxBonus = (skillName: string) =>
     Math.max(0, ...skills.filter((s) => s.skill_name === skillName).map((s) => s.bonus))
 
-  if (loading) return <div className="text-center text-gray-500 py-8">Loading...</div>
+  if (loading) return <div className="text-center text-parchment-muted py-8">Loading...</div>
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Skill Matrix</h2>
+      <h2 className="font-heading text-3xl font-bold text-parchment mb-6">Skill Matrix</h2>
 
-      <div className="bg-white rounded-xl shadow-sm border overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
+      <div className="bg-card border border-border rounded-xl overflow-x-auto">
+        <table className="tt-table">
+          <thead>
             <tr>
-              <th className="px-4 py-3 text-left font-medium sticky left-0 bg-gray-50">Skill</th>
-              <th className="px-3 py-3 text-center font-medium" title="Number Proficient">NumP</th>
-              <th className="px-3 py-3 text-center font-medium" title="Ability Modifier">Mod</th>
+              <th className="sticky left-0 bg-surface z-10">Skill</th>
+              <th className="text-center" title="Number Proficient">NumP</th>
+              <th className="text-center" title="Ability Modifier">Mod</th>
               {characters.map((c) => (
-                <th key={c.id} className="px-4 py-3 text-center font-medium">{c.name}</th>
+                <th key={c.id} className="text-center">{c.name}</th>
               ))}
-              <th className="px-4 py-3 text-left font-medium">Best Person/Combo</th>
+              <th>Best Person/Combo</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
+          <tbody>
             {DND_SKILLS.map((skillName) => {
               const maxBonus = getMaxBonus(skillName)
               const ref = getRef(skillName)
               return (
                 <tr key={skillName}>
-                  <td className="px-4 py-2 font-medium sticky left-0 bg-white">{skillName}</td>
-                  <td className="px-3 py-2 text-center text-gray-500">{ref?.num_proficient ?? '--'}</td>
-                  <td className="px-3 py-2 text-center text-gray-500 uppercase text-xs">{ref?.modifier ?? '--'}</td>
+                  <td className="font-heading font-semibold sticky left-0 bg-card z-10">{skillName}</td>
+                  <td className="text-center text-parchment-muted">{ref?.num_proficient ?? '--'}</td>
+                  <td className="text-center text-parchment-muted uppercase text-xs">{ref?.modifier ?? '--'}</td>
                   {characters.map((c) => {
                     const skill = getSkill(c.id, skillName)
                     const bonus = skill?.bonus ?? 0
                     const isMax = bonus > 0 && bonus === maxBonus
                     return (
-                      <td key={c.id} className={clsx('px-4 py-2 text-center', isMax && 'font-bold text-green-700 bg-green-50')}>
+                      <td key={c.id} className={clsx('text-center', isMax && 'font-bold text-emerald bg-emerald/10')}>
                         {bonus >= 0 ? `+${bonus}` : bonus}
-                        {skill?.proficient && <span className="text-blue-500 ml-1">P</span>}
-                        {skill?.expertise && <span className="text-purple-500 ml-1">E</span>}
+                        {skill?.proficient && <span className="text-sky ml-1">P</span>}
+                        {skill?.expertise && <span className="text-arcane ml-1">E</span>}
                       </td>
                     )
                   })}
-                  <td className="px-4 py-2 text-gray-600 text-xs whitespace-nowrap">{ref?.best_combo ?? '--'}</td>
+                  <td className="text-parchment-dim text-xs whitespace-nowrap">{ref?.best_combo ?? '--'}</td>
                 </tr>
               )
             })}
@@ -80,10 +80,10 @@ export function SkillsPage() {
         </table>
       </div>
 
-      <p className="text-sm text-gray-500 mt-4">
-        <span className="text-blue-500 font-medium">P</span> = Proficient,{' '}
-        <span className="text-purple-500 font-medium">E</span> = Expertise,{' '}
-        <span className="text-green-700 font-bold">Green</span> = Highest in party
+      <p className="text-sm text-parchment-muted mt-4">
+        <span className="text-sky font-medium">P</span> = Proficient,{' '}
+        <span className="text-arcane font-medium">E</span> = Expertise,{' '}
+        <span className="text-emerald font-bold">Green</span> = Highest in party
       </p>
     </div>
   )

@@ -39,15 +39,15 @@ function ItemFormModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto space-y-4">
-        <h3 className="text-lg font-semibold">{item?.id ? 'Edit Item' : 'Add Item'}</h3>
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 animate-[fadeIn_0.15s_ease-out]">
+      <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl shadow-2xl shadow-black/40 p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto space-y-4 animate-[slideIn_0.2s_ease-out]">
+        <h3 className="font-heading text-lg font-semibold text-parchment">{item?.id ? 'Edit Item' : 'Add Item'}</h3>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Name</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={form.name ?? ''}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
@@ -55,19 +55,19 @@ function ItemFormModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Quantity</label>
             <input
               type="number"
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={form.quantity ?? 1}
               onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })}
               min={1}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Category</label>
             <select
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={form.category ?? 'Item'}
               onChange={(e) => setForm({ ...form, category: e.target.value as Item['category'] })}
             >
@@ -75,38 +75,38 @@ function ItemFormModal({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Credit (gp)</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Credit (gp)</label>
             <input
               type="number"
               step="0.01"
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={form.credit_gp ?? ''}
               onChange={(e) => setForm({ ...form, credit_gp: e.target.value ? Number(e.target.value) : null })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Debit (gp)</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Debit (gp)</label>
             <input
               type="number"
               step="0.01"
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={form.debit_gp ?? ''}
               onChange={(e) => setForm({ ...form, debit_gp: e.target.value ? Number(e.target.value) : null })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Game Date</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Game Date</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={form.game_date ?? ''}
               onChange={(e) => setForm({ ...form, game_date: e.target.value })}
               placeholder="M/D or M/D/YY"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Container</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Container</label>
             <select
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={form.container_id ?? ''}
               onChange={(e) => setForm({ ...form, container_id: e.target.value || null })}
             >
@@ -115,29 +115,29 @@ function ItemFormModal({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Unit Weight (lbs)</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Unit Weight (lbs)</label>
             <input
               type="number"
               step="0.01"
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={form.unit_weight_lbs ?? ''}
               onChange={(e) => setForm({ ...form, unit_weight_lbs: e.target.value ? Number(e.target.value) : null })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Unit Value (gp)</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Unit Value (gp)</label>
             <input
               type="number"
               step="0.01"
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={form.unit_value_gp ?? ''}
               onChange={(e) => setForm({ ...form, unit_value_gp: e.target.value ? Number(e.target.value) : null })}
             />
           </div>
           <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Notes</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={form.notes ?? ''}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
             />
@@ -145,10 +145,10 @@ function ItemFormModal({
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-parchment-dim bg-surface border border-border rounded-lg hover:bg-card-hover transition-colors">
             Cancel
           </button>
-          <button type="submit" className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+          <button type="submit" className="px-4 py-2 text-base bg-gold font-heading font-semibold rounded-lg hover:bg-gold-bright transition-colors">
             {item?.id ? 'Update' : 'Add'}
           </button>
         </div>
@@ -169,26 +169,27 @@ function IdentifyModal({
   const [name, setName] = useState(item.name)
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm space-y-4">
-        <h3 className="text-lg font-semibold">Identify Item</h3>
-        <p className="text-sm text-gray-600">Mark this item as identified. You can optionally rename it.</p>
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 animate-[fadeIn_0.15s_ease-out]">
+      <div className="bg-card border border-border rounded-xl shadow-2xl shadow-black/40 p-6 w-full max-w-sm space-y-4 animate-[slideIn_0.2s_ease-out]">
+        <h3 className="font-heading text-lg font-semibold text-parchment">Identify Item</h3>
+        <p className="text-sm text-parchment-muted">Mark this item as identified. You can optionally rename it.</p>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Item Name</label>
+          <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Item Name</label>
           <input
-            className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-purple-500"
+            className="input-themed"
             value={name}
             onChange={(e) => setName(e.target.value)}
             autoFocus
+            style={{ borderColor: 'rgba(139, 108, 193, 0.4)' }}
           />
         </div>
         <div className="flex justify-end gap-2 pt-2">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-parchment-dim bg-surface border border-border rounded-lg hover:bg-card-hover transition-colors">
             Cancel
           </button>
           <button
             onClick={() => onConfirm(name)}
-            className="px-4 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-700"
+            className="px-4 py-2 text-parchment bg-arcane rounded-lg hover:bg-arcane-dim transition-colors font-heading font-semibold"
           >
             Identify
           </button>
@@ -306,10 +307,10 @@ export function InventoryPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Inventory</h2>
+        <h2 className="font-heading text-3xl font-bold text-parchment">Inventory</h2>
         <button
           onClick={() => { setEditItem(null); setShowForm(true) }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright text-sm transition-colors"
         >
           <Plus className="w-4 h-4" /> Add Item
         </button>
@@ -317,25 +318,25 @@ export function InventoryPage() {
 
       {/* Summary bar */}
       {summary && (
-        <div className="flex flex-wrap gap-4 mb-4 text-sm">
-          <span className="px-3 py-1 bg-yellow-50 text-yellow-800 rounded-full">Party Coin: {summary.party_coin_gp.toFixed(2)} gp</span>
-          <span className="px-3 py-1 bg-green-50 text-green-800 rounded-full">Net Worth: {summary.net_worth_gp.toFixed(2)} gp</span>
-          <span className="px-3 py-1 bg-blue-50 text-blue-800 rounded-full">Weight: {summary.total_weight.toFixed(1)} lbs</span>
-          <span className="px-3 py-1 bg-purple-50 text-purple-800 rounded-full">{summary.item_count} items</span>
+        <div className="flex flex-wrap gap-3 mb-4 text-sm">
+          <span className="px-3 py-1.5 bg-gold/10 text-gold rounded-full font-medium">Party Coin: {summary.party_coin_gp.toFixed(2)} gp</span>
+          <span className="px-3 py-1.5 bg-emerald/10 text-emerald rounded-full font-medium">Net Worth: {summary.net_worth_gp.toFixed(2)} gp</span>
+          <span className="px-3 py-1.5 bg-sky/10 text-sky rounded-full font-medium">Weight: {summary.total_weight.toFixed(1)} lbs</span>
+          <span className="px-3 py-1.5 bg-arcane/10 text-arcane rounded-full font-medium">{summary.item_count} items</span>
         </div>
       )}
 
       {/* Filters + Sort */}
       <div className="flex gap-4 mb-4 items-center">
         <select
-          className="px-3 py-2 border rounded-lg text-sm"
+          className="input-themed !w-auto"
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
         >
           <option value="">All Categories</option>
           {ITEM_CATEGORIES.map((c) => <option key={c}>{c}</option>)}
         </select>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex items-center gap-2 text-sm text-parchment-dim">
           <input
             type="checkbox"
             checked={showSold}
@@ -347,25 +348,25 @@ export function InventoryPage() {
         <div className="relative ml-auto" ref={sortMenuRef}>
           <button
             onClick={() => setShowSortMenu(!showSortMenu)}
-            className="flex items-center gap-2 px-3 py-2 border rounded-lg text-sm hover:bg-gray-50"
+            className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg text-sm text-parchment-dim hover:bg-surface hover:text-parchment transition-colors"
           >
             <ArrowUpDown className="w-4 h-4" />
             {SORT_LABELS[sortMode]}
             <ChevronDown className="w-3 h-3" />
           </button>
           {showSortMenu && (
-            <div className="absolute right-0 top-full mt-1 bg-white border rounded-lg shadow-lg py-1 z-20 min-w-[160px]">
+            <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-xl shadow-black/30 py-1 z-20 min-w-[160px]">
               {(Object.keys(SORT_LABELS) as SortMode[]).map((mode) => (
                 <button
                   key={mode}
                   onClick={() => { setSortMode(mode); setShowSortMenu(false) }}
                   className={clsx(
-                    'w-full text-left px-4 py-2 text-sm hover:bg-gray-50',
-                    sortMode === mode && 'text-blue-600 font-medium'
+                    'w-full text-left px-4 py-2 text-sm hover:bg-surface transition-colors',
+                    sortMode === mode ? 'text-gold font-medium' : 'text-parchment-dim'
                   )}
                 >
                   {SORT_LABELS[mode]}
-                  {sortMode === mode && <span className="float-right text-blue-600">&#10003;</span>}
+                  {sortMode === mode && <span className="float-right text-gold">&#10003;</span>}
                 </button>
               ))}
             </div>
@@ -374,33 +375,33 @@ export function InventoryPage() {
       </div>
 
       {/* Items table */}
-      <div className="bg-white rounded-xl shadow-sm border overflow-x-auto">
+      <div className="bg-card border border-border rounded-xl overflow-x-auto">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading...</div>
+          <div className="p-8 text-center text-parchment-muted">Loading...</div>
         ) : items.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">No items found</div>
+          <div className="p-8 text-center text-parchment-muted">No items found</div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left">
+          <table className="tt-table">
+            <thead>
               <tr>
                 {sortMode === 'custom' && <th className="w-8"></th>}
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Qty</th>
-                <th className="px-4 py-3 font-medium">Category</th>
-                <th className="px-4 py-3 font-medium">Credit</th>
-                <th className="px-4 py-3 font-medium">Debit</th>
-                <th className="px-4 py-3 font-medium">Date</th>
-                <th className="px-4 py-3 font-medium">Container</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
+                <th>Name</th>
+                <th>Qty</th>
+                <th>Category</th>
+                <th>Credit</th>
+                <th>Debit</th>
+                <th>Date</th>
+                <th>Container</th>
+                <th>Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody>
               {sortedItems.map((item) => (
                 <tr
                   key={item.id}
                   className={clsx(
-                    item.sold && 'bg-red-50/50',
-                    dragOverId === item.id && dragId !== item.id && 'border-t-2 border-t-blue-400',
+                    item.sold && 'bg-wine/5',
+                    dragOverId === item.id && dragId !== item.id && 'border-t-2 !border-t-gold/50',
                   )}
                   draggable={sortMode === 'custom'}
                   onDragStart={() => handleDragStart(item.id)}
@@ -409,41 +410,41 @@ export function InventoryPage() {
                   onDragEnd={() => { setDragId(null); setDragOverId(null) }}
                 >
                   {sortMode === 'custom' && (
-                    <td className="pl-2 pr-0 py-3 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500">
+                    <td className="!pl-2 !pr-0 cursor-grab active:cursor-grabbing text-parchment-muted hover:text-gold transition-colors">
                       <GripVertical className="w-4 h-4" />
                     </td>
                   )}
-                  <td className="px-4 py-3">
-                    <span className={clsx('font-medium', item.sold && 'line-through text-gray-400')}>{item.name}</span>
+                  <td>
+                    <span className={clsx('font-medium', item.sold && 'line-through text-parchment-muted')}>{item.name}</span>
                     {item.sold && (
-                      <span className="ml-2 px-1.5 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded">SOLD</span>
+                      <span className="ml-2 px-1.5 py-0.5 bg-wine/20 text-wine text-xs font-medium rounded">SOLD</span>
                     )}
                     {!item.identified && (
-                      <span className="ml-2 px-1.5 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded">TBI</span>
+                      <span className="ml-2 px-1.5 py-0.5 bg-amber/20 text-amber text-xs font-medium rounded">TBI</span>
                     )}
-                    {item.notes && <p className="text-xs text-gray-500 mt-0.5">{item.notes}</p>}
+                    {item.notes && <p className="text-xs text-parchment-muted mt-0.5">{item.notes}</p>}
                   </td>
-                  <td className="px-4 py-3">{item.quantity}</td>
-                  <td className="px-4 py-3">
+                  <td>{item.quantity}</td>
+                  <td>
                     <span className={clsx(
                       'px-2 py-0.5 rounded text-xs font-medium',
-                      item.category === 'Magic' ? 'bg-purple-100 text-purple-700' :
-                      item.category === 'Treasure' ? 'bg-yellow-100 text-yellow-700' :
-                      item.category === 'Expense' ? 'bg-red-100 text-red-700' :
-                      'bg-gray-100 text-gray-700'
+                      item.category === 'Magic' ? 'bg-arcane/15 text-arcane' :
+                      item.category === 'Treasure' ? 'bg-gold/15 text-gold' :
+                      item.category === 'Expense' ? 'bg-wine/15 text-wine' :
+                      'bg-surface text-parchment-dim'
                     )}>
                       {item.category}
                     </span>
                   </td>
-                  <td className="px-4 py-3">{item.credit_gp != null ? `${item.credit_gp} gp` : '--'}</td>
-                  <td className="px-4 py-3">{item.debit_gp != null ? `${item.debit_gp} gp` : '--'}</td>
-                  <td className="px-4 py-3">{item.game_date || '--'}</td>
-                  <td className="px-4 py-3 text-xs">{containers.find((c) => c.id === item.container_id)?.name ?? '--'}</td>
-                  <td className="px-4 py-3">
+                  <td className="text-emerald">{item.credit_gp != null ? `${item.credit_gp} gp` : <span className="text-parchment-muted">--</span>}</td>
+                  <td className="text-wine">{item.debit_gp != null ? `${item.debit_gp} gp` : <span className="text-parchment-muted">--</span>}</td>
+                  <td className="text-parchment-dim">{item.game_date || <span className="text-parchment-muted">--</span>}</td>
+                  <td className="text-xs text-parchment-dim">{containers.find((c) => c.id === item.container_id)?.name ?? <span className="text-parchment-muted">--</span>}</td>
+                  <td>
                     <div className="flex gap-1">
                       <button
                         onClick={() => { setEditItem(item); setShowForm(true) }}
-                        className="p-1 text-gray-400 hover:text-blue-600"
+                        className="p-1 text-parchment-muted hover:text-sky transition-colors"
                         title="Edit"
                       >
                         <Pencil className="w-4 h-4" />
@@ -451,7 +452,7 @@ export function InventoryPage() {
                       {!item.identified && (
                         <button
                           onClick={() => setIdentifyTarget(item)}
-                          className="p-1 text-gray-400 hover:text-purple-600"
+                          className="p-1 text-parchment-muted hover:text-arcane transition-colors"
                           title="Identify"
                         >
                           <Sparkles className="w-4 h-4" />
@@ -460,7 +461,7 @@ export function InventoryPage() {
                       {item.sold ? (
                         <button
                           onClick={async () => { try { await unsellItem(item.id) } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to unsell') } }}
-                          className="p-1 text-gray-400 hover:text-orange-600"
+                          className="p-1 text-parchment-muted hover:text-amber transition-colors"
                           title="Undo sold"
                         >
                           <Undo2 className="w-4 h-4" />
@@ -468,7 +469,7 @@ export function InventoryPage() {
                       ) : (
                         <button
                           onClick={async () => { try { await sellItem(item.id) } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to sell') } }}
-                          className="p-1 text-gray-400 hover:text-green-600"
+                          className="p-1 text-parchment-muted hover:text-gold transition-colors"
                           title="Mark as sold"
                         >
                           <DollarSign className="w-4 h-4" />
@@ -476,7 +477,7 @@ export function InventoryPage() {
                       )}
                       <button
                         onClick={async () => { if (await confirm('Delete this item?')) { try { await deleteItem(item.id) } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to delete') } } }}
-                        className="p-1 text-gray-400 hover:text-red-600"
+                        className="p-1 text-parchment-muted hover:text-wine transition-colors"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />

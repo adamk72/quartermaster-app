@@ -20,27 +20,44 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-sm w-full">
+    <div className="min-h-screen flex items-center justify-center px-4 relative">
+      {/* Decorative background glow */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gold/[0.04] blur-3xl" />
+        <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] rounded-full bg-arcane/[0.03] blur-3xl" />
+      </div>
+
+      <div className="max-w-sm w-full relative z-10 animate-[slideIn_0.4s_ease-out]">
+        {/* Brand */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Treasure Tracker</h1>
-          <p className="text-gray-500 mt-2">D&D Campaign Management</p>
+          <h1 className="font-display text-4xl font-bold text-gold tracking-wide">
+            Treasure Tracker
+          </h1>
+          <div className="flex items-center justify-center gap-3 mt-3">
+            <div className="h-px w-12 bg-gradient-to-r from-transparent to-border" />
+            <p className="text-parchment-muted text-sm font-heading tracking-wider uppercase">Campaign Management</p>
+            <div className="h-px w-12 bg-gradient-to-l from-transparent to-border" />
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
+        {/* Login card */}
+        <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 space-y-5 shadow-2xl shadow-black/20">
+          {/* Decorative top edge */}
+          <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent -mt-px" />
+
           {error && (
-            <div className="bg-red-50 text-red-700 px-4 py-2 rounded-lg text-sm" onClick={clearError}>
+            <div className="bg-wine/15 text-wine border border-wine/20 px-4 py-2.5 rounded-lg text-sm" onClick={clearError}>
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1.5">Username</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="input-themed"
               placeholder="Your name"
               required
               autoFocus
@@ -48,12 +65,12 @@ export function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Invite Code</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1.5">Invite Code</label>
             <input
               type="text"
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="input-themed"
               placeholder="Enter invite code"
               required
             />
@@ -62,9 +79,9 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="w-full py-2.5 bg-gold text-base font-heading font-bold text-lg rounded-lg hover:bg-gold-bright disabled:opacity-50 transition-all duration-200 hover:shadow-lg hover:shadow-gold/10"
           >
-            {submitting ? 'Signing in...' : 'Sign In'}
+            {submitting ? 'Entering...' : 'Enter the Vault'}
           </button>
         </form>
       </div>

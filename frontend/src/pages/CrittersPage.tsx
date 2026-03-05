@@ -40,19 +40,19 @@ export function CrittersPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Critter HP Tracker</h2>
+        <h2 className="font-heading text-3xl font-bold text-parchment">Critter HP Tracker</h2>
         <div className="flex gap-2">
           {activeCritters.length > 0 && (
             <button
               onClick={async () => { if (await confirm('Dismiss all active critters?')) { try { await dismissAll() } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to dismiss') } } }}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-surface text-parchment-dim border border-border rounded-lg hover:bg-card-hover hover:text-parchment text-sm transition-colors"
             >
               <XCircle className="w-4 h-4" /> Dismiss All
             </button>
           )}
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright text-sm transition-colors"
           >
             <Plus className="w-4 h-4" /> Summon
           </button>
@@ -60,11 +60,11 @@ export function CrittersPage() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="bg-white rounded-xl shadow-sm border p-4 mb-6 grid grid-cols-2 md:grid-cols-5 gap-4">
+        <form onSubmit={handleCreate} className="tt-card mb-6 grid grid-cols-2 md:grid-cols-5 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Name</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
@@ -72,28 +72,28 @@ export function CrittersPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">HP Max</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">HP Max</label>
             <input
               type="number"
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={form.hp_max}
               onChange={(e) => setForm({ ...form, hp_max: Number(e.target.value) })}
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">AC</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">AC</label>
             <input
               type="number"
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={form.ac}
               onChange={(e) => setForm({ ...form, ac: Number(e.target.value) })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Owner</label>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Owner</label>
             <select
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-themed"
               value={form.character_id ?? ''}
               onChange={(e) => setForm({ ...form, character_id: e.target.value })}
               required
@@ -103,14 +103,14 @@ export function CrittersPage() {
             </select>
           </div>
           <div className="flex items-end gap-2">
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Add</button>
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-100 rounded-lg">Cancel</button>
+            <button type="submit" className="px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright transition-colors">Add</button>
+            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-surface text-parchment-dim border border-border rounded-lg hover:bg-card-hover transition-colors">Cancel</button>
           </div>
         </form>
       )}
 
       {loading ? (
-        <div className="text-center text-gray-500 py-8">Loading...</div>
+        <div className="text-center text-parchment-muted py-8">Loading...</div>
       ) : (
         <>
           {activeCritters.length > 0 && (
@@ -118,38 +118,38 @@ export function CrittersPage() {
               {activeCritters.map((critter) => {
                 const pct = critter.hp_max > 0 ? (critter.hp_current / critter.hp_max) * 100 : 0
                 return (
-                  <div key={critter.id} className="bg-white rounded-xl shadow-sm border p-4">
+                  <div key={critter.id} className="tt-card">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold">{critter.name}</h3>
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <span>AC {critter.ac}</span>
+                      <h3 className="font-heading font-bold text-parchment">{critter.name}</h3>
+                      <div className="flex items-center gap-2 text-sm text-parchment-muted">
+                        <span className="font-mono">AC {critter.ac}</span>
                         <button
                           onClick={async () => { if (await confirm('Delete this critter?')) { try { await deleteCritter(critter.id) } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to delete') } } }}
-                          className="p-1 text-gray-400 hover:text-red-600"
+                          className="p-1 text-parchment-muted hover:text-wine transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
-                    <div className="text-sm text-gray-500 mb-2">
+                    <div className="text-sm text-parchment-muted mb-3">
                       Owner: {characters.find((c) => c.id === critter.character_id)?.name ?? critter.character_id}
                     </div>
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => handleHPChange(critter, -1)}
-                        className="px-3 py-1 bg-red-100 text-red-700 rounded font-bold hover:bg-red-200"
+                        className="px-3 py-1 bg-wine/15 text-wine rounded font-bold hover:bg-wine/25 transition-colors"
                       >
                         -
                       </button>
                       <div className="flex-1">
-                        <div className="text-center font-mono text-lg font-bold">
+                        <div className="text-center font-mono text-lg font-bold text-parchment">
                           {critter.hp_current} / {critter.hp_max}
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                        <div className="w-full bg-surface rounded-full h-2.5 mt-1 border border-border">
                           <div
                             className={clsx(
-                              'h-2 rounded-full transition-all',
-                              pct > 50 ? 'bg-green-500' : pct > 25 ? 'bg-yellow-500' : 'bg-red-500'
+                              'h-full rounded-full transition-all duration-300',
+                              pct > 50 ? 'bg-emerald' : pct > 25 ? 'bg-amber' : 'bg-wine'
                             )}
                             style={{ width: `${pct}%` }}
                           />
@@ -157,7 +157,7 @@ export function CrittersPage() {
                       </div>
                       <button
                         onClick={() => handleHPChange(critter, 1)}
-                        className="px-3 py-1 bg-green-100 text-green-700 rounded font-bold hover:bg-green-200"
+                        className="px-3 py-1 bg-emerald/15 text-emerald rounded font-bold hover:bg-emerald/25 transition-colors"
                       >
                         +
                       </button>
@@ -170,14 +170,14 @@ export function CrittersPage() {
 
           {inactiveCritters.length > 0 && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-500 mb-3">Dismissed</h3>
+              <h3 className="font-heading text-lg font-semibold text-parchment-muted mb-3">Dismissed</h3>
               <div className="space-y-2">
                 {inactiveCritters.map((c) => (
-                  <div key={c.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2 text-sm text-gray-500">
+                  <div key={c.id} className="flex items-center justify-between bg-surface border border-border rounded-lg px-4 py-2 text-sm text-parchment-muted">
                     <span>{c.name} ({c.hp_current}/{c.hp_max})</span>
                     <button
                       onClick={async () => { if (await confirm('Delete this critter?')) { try { await deleteCritter(c.id) } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to delete') } } }}
-                      className="p-1 hover:text-red-600"
+                      className="p-1 hover:text-wine transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -188,7 +188,7 @@ export function CrittersPage() {
           )}
 
           {critters.length === 0 && (
-            <div className="text-center text-gray-500 py-8">No critters summoned</div>
+            <div className="text-center text-parchment-muted py-8">No critters summoned</div>
           )}
         </>
       )}

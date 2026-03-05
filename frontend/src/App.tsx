@@ -28,7 +28,7 @@ export function App() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-gray-500">Loading...</div>
+        <div className="font-display text-lg text-gold animate-pulse">Loading...</div>
       </div>
     )
   }
