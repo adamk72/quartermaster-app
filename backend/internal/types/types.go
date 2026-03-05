@@ -117,6 +117,13 @@ type Skill struct {
 	Expertise   bool   `json:"expertise"`
 }
 
+type SkillReference struct {
+	SkillName     string `json:"skill_name"`
+	NumProficient int    `json:"num_proficient"`
+	Modifier      string `json:"modifier"`
+	BestCombo     string `json:"best_combo"`
+}
+
 type XPEntry struct {
 	ID          int            `json:"id"`
 	SessionID   *int           `json:"session_id"`

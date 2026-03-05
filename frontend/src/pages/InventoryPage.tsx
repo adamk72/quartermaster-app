@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { ITEM_CATEGORIES } from '../constants'
-import { Plus, Trash2, DollarSign, Pencil, Sparkles } from 'lucide-react'
+import { Plus, Trash2, DollarSign, Pencil, Sparkles, Undo2 } from 'lucide-react'
 import clsx from 'clsx'
 import type { Item } from '../types'
 
@@ -186,7 +186,7 @@ function IdentifyModal({
 }
 
 export function InventoryPage() {
-  const { items, summary, containers, loading, fetchItems, fetchSummary, fetchContainers, createItem, updateItem, deleteItem, sellItem, identifyItem } = useInventoryStore()
+  const { items, summary, containers, loading, fetchItems, fetchSummary, fetchContainers, createItem, updateItem, deleteItem, sellItem, unsellItem, identifyItem } = useInventoryStore()
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState<Item | null>(null)
   const [identifyTarget, setIdentifyTarget] = useState<Item | null>(null)
@@ -276,9 +276,12 @@ export function InventoryPage() {
             </thead>
             <tbody className="divide-y">
               {items.map((item) => (
-                <tr key={item.id} className={clsx(item.sold && 'opacity-50 bg-gray-50')}>
+                <tr key={item.id} className={clsx(item.sold && 'bg-red-50/50')}>
                   <td className="px-4 py-3">
-                    <span className="font-medium">{item.name}</span>
+                    <span className={clsx('font-medium', item.sold && 'line-through text-gray-400')}>{item.name}</span>
+                    {item.sold && (
+                      <span className="ml-2 px-1.5 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded">SOLD</span>
+                    )}
                     {!item.identified && (
                       <span className="ml-2 px-1.5 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded">TBI</span>
                     )}
@@ -318,7 +321,15 @@ export function InventoryPage() {
                           <Sparkles className="w-4 h-4" />
                         </button>
                       )}
-                      {!item.sold && (
+                      {item.sold ? (
+                        <button
+                          onClick={() => unsellItem(item.id)}
+                          className="p-1 text-gray-400 hover:text-orange-600"
+                          title="Undo sold"
+                        >
+                          <Undo2 className="w-4 h-4" />
+                        </button>
+                      ) : (
                         <button
                           onClick={() => sellItem(item.id)}
                           className="p-1 text-gray-400 hover:text-green-600"

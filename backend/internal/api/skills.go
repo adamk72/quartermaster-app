@@ -24,6 +24,23 @@ func handleListSkills(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, skills)
 }
 
+func handleListSkillReferences(w http.ResponseWriter, r *http.Request) {
+	rows, err := db.DB.Query("SELECT skill_name, num_proficient, modifier, best_combo FROM skill_reference ORDER BY skill_name")
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to query skill references")
+		return
+	}
+	defer rows.Close()
+
+	refs := []types.SkillReference{}
+	for rows.Next() {
+		var sr types.SkillReference
+		rows.Scan(&sr.SkillName, &sr.NumProficient, &sr.Modifier, &sr.BestCombo)
+		refs = append(refs, sr)
+	}
+	writeJSON(w, http.StatusOK, refs)
+}
+
 func handleUpdateSkills(w http.ResponseWriter, r *http.Request) {
 	charID := r.PathValue("character_id")
 

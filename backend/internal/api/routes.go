@@ -35,6 +35,7 @@ func RegisterRoutes(mux *http.ServeMux) {
 	mux.Handle("PUT /api/v1/items/{id}", auth(handleUpdateItem))
 	mux.Handle("DELETE /api/v1/items/{id}", auth(handleDeleteItem))
 	mux.Handle("POST /api/v1/items/{id}/sell", auth(handleSellItem))
+	mux.Handle("POST /api/v1/items/{id}/unsell", auth(handleUnsellItem))
 	mux.Handle("POST /api/v1/items/{id}/identify", auth(handleIdentifyItem))
 
 	// Coins
@@ -60,6 +61,7 @@ func RegisterRoutes(mux *http.ServeMux) {
 
 	// Skills
 	mux.Handle("GET /api/v1/skills", auth(handleListSkills))
+	mux.Handle("GET /api/v1/skills/reference", auth(handleListSkillReferences))
 	mux.Handle("PUT /api/v1/skills/{character_id}", auth(handleUpdateSkills))
 
 	// XP

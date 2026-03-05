@@ -3,23 +3,31 @@ import { api } from '../api/client'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { DND_SKILLS } from '../constants'
 import clsx from 'clsx'
-import type { Skill } from '../types'
+import type { Skill, SkillReference } from '../types'
 
 export function SkillsPage() {
   const { characters, fetchCharacters } = useInventoryStore()
   const [skills, setSkills] = useState<Skill[]>([])
+  const [refs, setRefs] = useState<SkillReference[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchCharacters()
-    api.get<Skill[]>('/skills').then((data) => {
-      setSkills(data)
+    Promise.all([
+      api.get<Skill[]>('/skills'),
+      api.get<SkillReference[]>('/skills/reference'),
+    ]).then(([skillData, refData]) => {
+      setSkills(skillData)
+      setRefs(refData)
       setLoading(false)
     })
   }, [fetchCharacters])
 
   const getSkill = (charId: string, skillName: string) =>
     skills.find((s) => s.character_id === charId && s.skill_name === skillName)
+
+  const getRef = (skillName: string) =>
+    refs.find((r) => r.skill_name === skillName)
 
   const getMaxBonus = (skillName: string) =>
     Math.max(0, ...skills.filter((s) => s.skill_name === skillName).map((s) => s.bonus))
@@ -35,17 +43,23 @@ export function SkillsPage() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-4 py-3 text-left font-medium sticky left-0 bg-gray-50">Skill</th>
+              <th className="px-3 py-3 text-center font-medium" title="Number Proficient">NumP</th>
+              <th className="px-3 py-3 text-center font-medium" title="Ability Modifier">Mod</th>
               {characters.map((c) => (
                 <th key={c.id} className="px-4 py-3 text-center font-medium">{c.name}</th>
               ))}
+              <th className="px-4 py-3 text-left font-medium">Best Person/Combo</th>
             </tr>
           </thead>
           <tbody className="divide-y">
             {DND_SKILLS.map((skillName) => {
               const maxBonus = getMaxBonus(skillName)
+              const ref = getRef(skillName)
               return (
                 <tr key={skillName}>
                   <td className="px-4 py-2 font-medium sticky left-0 bg-white">{skillName}</td>
+                  <td className="px-3 py-2 text-center text-gray-500">{ref?.num_proficient ?? '--'}</td>
+                  <td className="px-3 py-2 text-center text-gray-500 uppercase text-xs">{ref?.modifier ?? '--'}</td>
                   {characters.map((c) => {
                     const skill = getSkill(c.id, skillName)
                     const bonus = skill?.bonus ?? 0
@@ -58,6 +72,7 @@ export function SkillsPage() {
                       </td>
                     )
                   })}
+                  <td className="px-4 py-2 text-gray-600 text-xs whitespace-nowrap">{ref?.best_combo ?? '--'}</td>
                 </tr>
               )
             })}

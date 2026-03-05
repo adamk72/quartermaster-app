@@ -113,6 +113,13 @@ export interface Skill {
   expertise: boolean
 }
 
+export interface SkillReference {
+  skill_name: string
+  num_proficient: number
+  modifier: string
+  best_combo: string
+}
+
 export interface XPEntry {
   id: number
   session_id: number | null

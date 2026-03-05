@@ -176,6 +176,26 @@ func handleSellItem(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "sold"})
 }
 
+func handleUnsellItem(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	result, err := db.DB.Exec("UPDATE items SET sold = 0, updated_at = ? WHERE id = ?", time.Now(), id)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to unsell item")
+		return
+	}
+	if n, _ := result.RowsAffected(); n == 0 {
+		writeError(w, http.StatusNotFound, "item not found")
+		return
+	}
+
+	user := GetUser(r)
+	if user != nil {
+		LogChange(&user.ID, "items", id, "update", `{"sold":false}`)
+	}
+
+	writeJSON(w, http.StatusOK, map[string]string{"status": "unsold"})
+}
+
 func handleIdentifyItem(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
