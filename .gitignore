@@ -1,0 +1,12 @@
+node_modules/
+dist/
+data/campaign.db
+data/campaign.db-shm
+data/campaign.db-wal
+*.tsbuildinfo
+uploads/*
+!uploads/.gitkeep
+.env
+*.log
+.DS_Store
+frontend/node_modules/
