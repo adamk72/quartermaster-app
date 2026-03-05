@@ -20,6 +20,7 @@ export function XPPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState<Partial<XPEntry>>({ xp_amount: 0, game_date: '', description: '' })
+  const [xpInput, setXpInput] = useState('')
   const [attendance, setAttendance] = useState<Record<string, boolean>>({})
 
   const fetchData = async () => {
@@ -46,6 +47,7 @@ export function XPPage() {
     try {
       await api.post('/xp', {
         ...form,
+        xp_amount: Number(xpInput) || 0,
         attendance: characters.map((c) => ({
           character_id: c.id,
           present: attendance[c.id] ?? true,
@@ -53,6 +55,7 @@ export function XPPage() {
       })
       setShowForm(false)
       setForm({ xp_amount: 0, game_date: '', description: '' })
+      setXpInput('')
       setAttendance({})
       fetchData()
     } catch (e) {
@@ -103,8 +106,9 @@ export function XPPage() {
               <input
                 type="number"
                 className="input-themed"
-                value={form.xp_amount}
-                onChange={(e) => setForm({ ...form, xp_amount: Number(e.target.value) })}
+                value={xpInput}
+                onChange={(e) => setXpInput(e.target.value)}
+                placeholder="0"
                 required
                 autoFocus
               />
