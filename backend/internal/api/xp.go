@@ -21,14 +21,18 @@ func handleListXP(w http.ResponseWriter, r *http.Request) {
 	entries := []types.XPEntry{}
 	for rows.Next() {
 		var e types.XPEntry
-		rows.Scan(&e.ID, &e.SessionID, &e.GameDate, &e.XPAmount, &e.Description, &e.CreatedAt)
+		if err := rows.Scan(&e.ID, &e.SessionID, &e.GameDate, &e.XPAmount, &e.Description, &e.CreatedAt); err != nil {
+			continue
+		}
 
 		// Load attendance
-		aRows, _ := db.DB.Query("SELECT id, xp_entry_id, character_id, present FROM xp_attendance WHERE xp_entry_id = ?", e.ID)
-		if aRows != nil {
+		aRows, err := db.DB.Query("SELECT id, xp_entry_id, character_id, present FROM xp_attendance WHERE xp_entry_id = ?", e.ID)
+		if err == nil {
 			for aRows.Next() {
 				var a types.XPAttendance
-				aRows.Scan(&a.ID, &a.XPEntryID, &a.CharacterID, &a.Present)
+				if err := aRows.Scan(&a.ID, &a.XPEntryID, &a.CharacterID, &a.Present); err != nil {
+					continue
+				}
 				e.Attendance = append(e.Attendance, a)
 			}
 			aRows.Close()
@@ -99,19 +103,35 @@ func handleUpdateXP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Replace attendance
-	db.DB.Exec("DELETE FROM xp_attendance WHERE xp_entry_id = ?", id)
+	// Replace attendance in a transaction
 	idInt, _ := strconv.Atoi(id)
+	tx, err := db.DB.Begin()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to begin transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Exec("DELETE FROM xp_attendance WHERE xp_entry_id = ?", id); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to delete existing attendance")
+		return
+	}
 	for i := range e.Attendance {
 		e.Attendance[i].XPEntryID = idInt
-		aResult, _ := db.DB.Exec(
+		aResult, err := tx.Exec(
 			"INSERT INTO xp_attendance (xp_entry_id, character_id, present) VALUES (?, ?, ?)",
 			idInt, e.Attendance[i].CharacterID, e.Attendance[i].Present,
 		)
-		if aResult != nil {
-			aID, _ := aResult.LastInsertId()
-			e.Attendance[i].ID = int(aID)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to insert attendance")
+			return
 		}
+		aID, _ := aResult.LastInsertId()
+		e.Attendance[i].ID = int(aID)
+	}
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to commit attendance")
+		return
 	}
 
 	user := GetUser(r)
@@ -186,7 +206,9 @@ func handleXPTotals(w http.ResponseWriter, r *http.Request) {
 	totals := []XPTotal{}
 	for rows.Next() {
 		var t XPTotal
-		rows.Scan(&t.CharacterID, &t.CharacterName, &t.TotalXP)
+		if err := rows.Scan(&t.CharacterID, &t.CharacterName, &t.TotalXP); err != nil {
+			continue
+		}
 		t.Level = xpToLevel(t.TotalXP)
 		totals = append(totals, t)
 	}

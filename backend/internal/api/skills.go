@@ -18,7 +18,9 @@ func handleListSkills(w http.ResponseWriter, r *http.Request) {
 	skills := []types.Skill{}
 	for rows.Next() {
 		var s types.Skill
-		rows.Scan(&s.ID, &s.CharacterID, &s.SkillName, &s.Bonus, &s.Proficient, &s.Expertise)
+		if err := rows.Scan(&s.ID, &s.CharacterID, &s.SkillName, &s.Bonus, &s.Proficient, &s.Expertise); err != nil {
+			continue
+		}
 		skills = append(skills, s)
 	}
 	writeJSON(w, http.StatusOK, skills)
@@ -35,7 +37,9 @@ func handleListSkillReferences(w http.ResponseWriter, r *http.Request) {
 	refs := []types.SkillReference{}
 	for rows.Next() {
 		var sr types.SkillReference
-		rows.Scan(&sr.SkillName, &sr.NumProficient, &sr.Modifier, &sr.BestCombo)
+		if err := rows.Scan(&sr.SkillName, &sr.NumProficient, &sr.Modifier, &sr.BestCombo); err != nil {
+			continue
+		}
 		refs = append(refs, sr)
 	}
 	writeJSON(w, http.StatusOK, refs)
@@ -56,14 +60,22 @@ func handleUpdateSkills(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	defer tx.Rollback()
+
 	// Delete existing skills for this character and re-insert
-	tx.Exec("DELETE FROM skills WHERE character_id = ?", charID)
+	if _, err := tx.Exec("DELETE FROM skills WHERE character_id = ?", charID); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to delete existing skills")
+		return
+	}
 
 	for _, s := range skills {
-		tx.Exec(
+		if _, err := tx.Exec(
 			"INSERT INTO skills (character_id, skill_name, bonus, proficient, expertise) VALUES (?, ?, ?, ?, ?)",
 			charID, s.SkillName, s.Bonus, s.Proficient, s.Expertise,
-		)
+		); err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to insert skill")
+			return
+		}
 	}
 
 	if err := tx.Commit(); err != nil {

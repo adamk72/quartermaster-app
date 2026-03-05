@@ -55,7 +55,9 @@ func handleListItems(w http.ResponseWriter, r *http.Request) {
 	items := []types.Item{}
 	for rows.Next() {
 		var item types.Item
-		rows.Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.Singular, &item.Notes, &item.CreatedAt, &item.UpdatedAt)
+		if err := rows.Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.Singular, &item.Notes, &item.CreatedAt, &item.UpdatedAt); err != nil {
+			continue
+		}
 		items = append(items, item)
 	}
 	writeJSON(w, http.StatusOK, items)
@@ -238,8 +240,11 @@ func handleIdentifyItem(w http.ResponseWriter, r *http.Request) {
 
 	// Return the updated item
 	var item types.Item
-	db.DB.QueryRow("SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, singular, notes, created_at, updated_at FROM items WHERE id = ?", id).
-		Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.Singular, &item.Notes, &item.CreatedAt, &item.UpdatedAt)
+	if err := db.DB.QueryRow("SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, singular, notes, created_at, updated_at FROM items WHERE id = ?", id).
+		Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.Singular, &item.Notes, &item.CreatedAt, &item.UpdatedAt); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to reload identified item")
+		return
+	}
 
 	writeJSON(w, http.StatusOK, item)
 }
@@ -247,13 +252,25 @@ func handleIdentifyItem(w http.ResponseWriter, r *http.Request) {
 func handleItemSummary(w http.ResponseWriter, r *http.Request) {
 	var summary types.ItemSummary
 
-	db.DB.QueryRow("SELECT COALESCE(SUM(COALESCE(credit_gp,0)) - SUM(COALESCE(debit_gp,0)), 0) FROM items WHERE sold = 0").Scan(&summary.PartyCoinGP)
+	if err := db.DB.QueryRow("SELECT COALESCE(SUM(COALESCE(credit_gp,0)) - SUM(COALESCE(debit_gp,0)), 0) FROM items WHERE sold = 0").Scan(&summary.PartyCoinGP); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to query party coin total")
+		return
+	}
 
-	db.DB.QueryRow("SELECT COALESCE(SUM(COALESCE(credit_gp,0)) - SUM(COALESCE(debit_gp,0)), 0) + COALESCE(SUM(COALESCE(unit_value_gp,0) * quantity), 0) FROM items WHERE sold = 0").Scan(&summary.NetWorthGP)
+	if err := db.DB.QueryRow("SELECT COALESCE(SUM(COALESCE(credit_gp,0)) - SUM(COALESCE(debit_gp,0)), 0) + COALESCE(SUM(COALESCE(unit_value_gp,0) * quantity), 0) FROM items WHERE sold = 0").Scan(&summary.NetWorthGP); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to query net worth")
+		return
+	}
 
-	db.DB.QueryRow("SELECT COALESCE(SUM(COALESCE(weight_override, COALESCE(unit_weight_lbs,0) * quantity)), 0) FROM items WHERE sold = 0").Scan(&summary.TotalWeight)
+	if err := db.DB.QueryRow("SELECT COALESCE(SUM(COALESCE(weight_override, COALESCE(unit_weight_lbs,0) * quantity)), 0) FROM items WHERE sold = 0").Scan(&summary.TotalWeight); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to query total weight")
+		return
+	}
 
-	db.DB.QueryRow("SELECT COUNT(*) FROM items WHERE sold = 0").Scan(&summary.ItemCount)
+	if err := db.DB.QueryRow("SELECT COUNT(*) FROM items WHERE sold = 0").Scan(&summary.ItemCount); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to query item count")
+		return
+	}
 
 	writeJSON(w, http.StatusOK, summary)
 }

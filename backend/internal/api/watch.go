@@ -21,14 +21,18 @@ func handleListWatchSchedules(w http.ResponseWriter, r *http.Request) {
 	schedules := []types.WatchSchedule{}
 	for rows.Next() {
 		var s types.WatchSchedule
-		rows.Scan(&s.ID, &s.Name, &s.Active, &s.CreatedAt)
+		if err := rows.Scan(&s.ID, &s.Name, &s.Active, &s.CreatedAt); err != nil {
+			continue
+		}
 
 		// Load slots
-		slotRows, _ := db.DB.Query("SELECT id, schedule_id, watch_number, character_id, sort_order FROM watch_slots WHERE schedule_id = ? ORDER BY watch_number, sort_order", s.ID)
-		if slotRows != nil {
+		slotRows, err := db.DB.Query("SELECT id, schedule_id, watch_number, character_id, sort_order FROM watch_slots WHERE schedule_id = ? ORDER BY watch_number, sort_order", s.ID)
+		if err == nil {
 			for slotRows.Next() {
 				var slot types.WatchSlot
-				slotRows.Scan(&slot.ID, &slot.ScheduleID, &slot.WatchNumber, &slot.CharacterID, &slot.SortOrder)
+				if err := slotRows.Scan(&slot.ID, &slot.ScheduleID, &slot.WatchNumber, &slot.CharacterID, &slot.SortOrder); err != nil {
+					continue
+				}
 				s.Slots = append(s.Slots, slot)
 			}
 			slotRows.Close()
@@ -97,19 +101,35 @@ func handleUpdateWatchSchedule(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Replace slots
-	db.DB.Exec("DELETE FROM watch_slots WHERE schedule_id = ?", id)
+	// Replace slots in a transaction
 	idInt, _ := strconv.Atoi(id)
+	tx, err := db.DB.Begin()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to begin transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Exec("DELETE FROM watch_slots WHERE schedule_id = ?", id); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to delete existing slots")
+		return
+	}
 	for i := range s.Slots {
 		s.Slots[i].ScheduleID = idInt
-		slotResult, _ := db.DB.Exec(
+		slotResult, err := tx.Exec(
 			"INSERT INTO watch_slots (schedule_id, watch_number, character_id, sort_order) VALUES (?, ?, ?, ?)",
 			idInt, s.Slots[i].WatchNumber, s.Slots[i].CharacterID, s.Slots[i].SortOrder,
 		)
-		if slotResult != nil {
-			slotID, _ := slotResult.LastInsertId()
-			s.Slots[i].ID = int(slotID)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to insert slot")
+			return
 		}
+		slotID, _ := slotResult.LastInsertId()
+		s.Slots[i].ID = int(slotID)
+	}
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to commit slots")
+		return
 	}
 
 	user := GetUser(r)

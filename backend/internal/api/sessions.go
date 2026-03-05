@@ -7,11 +7,16 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/adamghill/treasure-tracking/internal/db"
 	"github.com/adamghill/treasure-tracking/internal/types"
 )
+
+var allowedImageTypes = map[string]bool{
+	".jpg": true, ".jpeg": true, ".png": true, ".gif": true, ".webp": true,
+}
 
 func handleListSessions(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.DB.Query("SELECT id, game_date, title, body_json, body_html, xp_gained, created_by, created_at, updated_at FROM sessions ORDER BY game_date DESC")
@@ -24,7 +29,9 @@ func handleListSessions(w http.ResponseWriter, r *http.Request) {
 	sessions := []types.Session{}
 	for rows.Next() {
 		var s types.Session
-		rows.Scan(&s.ID, &s.GameDate, &s.Title, &s.BodyJSON, &s.BodyHTML, &s.XPGained, &s.CreatedBy, &s.CreatedAt, &s.UpdatedAt)
+		if err := rows.Scan(&s.ID, &s.GameDate, &s.Title, &s.BodyJSON, &s.BodyHTML, &s.XPGained, &s.CreatedBy, &s.CreatedAt, &s.UpdatedAt); err != nil {
+			continue
+		}
 		sessions = append(sessions, s)
 	}
 	writeJSON(w, http.StatusOK, sessions)
@@ -46,7 +53,9 @@ func handleGetSession(w http.ResponseWriter, r *http.Request) {
 		defer imgRows.Close()
 		for imgRows.Next() {
 			var img types.SessionImage
-			imgRows.Scan(&img.ID, &img.SessionID, &img.Filename, &img.Caption, &img.SortOrder)
+			if err := imgRows.Scan(&img.ID, &img.SessionID, &img.Filename, &img.Caption, &img.SortOrder); err != nil {
+				continue
+			}
 			s.Images = append(s.Images, img)
 		}
 	}
@@ -151,7 +160,14 @@ func handleUploadImage(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	filename := fmt.Sprintf("%d_%s", time.Now().UnixNano(), header.Filename)
+	// Sanitize filename: strip path components and validate extension
+	baseName := filepath.Base(header.Filename)
+	ext := strings.ToLower(filepath.Ext(baseName))
+	if !allowedImageTypes[ext] {
+		writeError(w, http.StatusBadRequest, "unsupported image type: only jpg, png, gif, webp allowed")
+		return
+	}
+	filename := fmt.Sprintf("%d_%s", time.Now().UnixNano(), baseName)
 	destPath := filepath.Join(UploadsDir, filename)
 
 	dest, err := os.Create(destPath)
@@ -160,7 +176,10 @@ func handleUploadImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer dest.Close()
-	io.Copy(dest, file)
+	if _, err := io.Copy(dest, file); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to write image data")
+		return
+	}
 
 	caption := r.FormValue("caption")
 	sidInt, _ := strconv.Atoi(sessionID)

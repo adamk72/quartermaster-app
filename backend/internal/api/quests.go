@@ -41,7 +41,9 @@ func writeQuestRows(w http.ResponseWriter, rows interface {
 	quests := []types.Quest{}
 	for rows.Next() {
 		var q types.Quest
-		rows.Scan(&q.ID, &q.Title, &q.Description, &q.Status, &q.GameDateAdded, &q.GameDateCompleted, &q.Notes, &q.SortOrder, &q.CreatedAt, &q.UpdatedAt)
+		if err := rows.Scan(&q.ID, &q.Title, &q.Description, &q.Status, &q.GameDateAdded, &q.GameDateCompleted, &q.Notes, &q.SortOrder, &q.CreatedAt, &q.UpdatedAt); err != nil {
+			continue
+		}
 		quests = append(quests, q)
 	}
 	writeJSON(w, http.StatusOK, quests)

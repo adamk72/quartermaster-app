@@ -27,7 +27,9 @@ func handleListCritters(w http.ResponseWriter, r *http.Request) {
 	critters := []types.Critter{}
 	for rows.Next() {
 		var c types.Critter
-		rows.Scan(&c.ID, &c.Name, &c.CharacterID, &c.HPCurrent, &c.HPMax, &c.AC, &c.Notes, &c.Active, &c.CreatedAt, &c.UpdatedAt)
+		if err := rows.Scan(&c.ID, &c.Name, &c.CharacterID, &c.HPCurrent, &c.HPMax, &c.AC, &c.Notes, &c.Active, &c.CreatedAt, &c.UpdatedAt); err != nil {
+			continue
+		}
 		critters = append(critters, c)
 	}
 	writeJSON(w, http.StatusOK, critters)

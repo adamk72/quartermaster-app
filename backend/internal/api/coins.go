@@ -21,7 +21,9 @@ func handleListCoins(w http.ResponseWriter, r *http.Request) {
 	entries := []types.CoinLedgerEntry{}
 	for rows.Next() {
 		var e types.CoinLedgerEntry
-		rows.Scan(&e.ID, &e.GameDate, &e.Description, &e.CP, &e.SP, &e.EP, &e.GP, &e.PP, &e.Direction, &e.ItemID, &e.Notes, &e.CreatedAt)
+		if err := rows.Scan(&e.ID, &e.GameDate, &e.Description, &e.CP, &e.SP, &e.EP, &e.GP, &e.PP, &e.Direction, &e.ItemID, &e.Notes, &e.CreatedAt); err != nil {
+			continue
+		}
 		entries = append(entries, e)
 	}
 	writeJSON(w, http.StatusOK, entries)
@@ -84,7 +86,10 @@ func handleCoinBalance(w http.ResponseWriter, r *http.Request) {
 			COALESCE(SUM(CASE WHEN direction='in' THEN pp ELSE -pp END), 0)
 		FROM coin_ledger
 	`)
-	row.Scan(&balance.CP, &balance.SP, &balance.EP, &balance.GP, &balance.PP)
+	if err := row.Scan(&balance.CP, &balance.SP, &balance.EP, &balance.GP, &balance.PP); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to query coin balance")
+		return
+	}
 
 	balance.TotalGP = float64(balance.CP)*0.01 + float64(balance.SP)*0.1 + float64(balance.EP)*0.5 + float64(balance.GP) + float64(balance.PP)*10
 

@@ -23,7 +23,9 @@ func handleListConsumableTypes(w http.ResponseWriter, r *http.Request) {
 	ctypes := []types.ConsumableType{}
 	for rows.Next() {
 		var ct types.ConsumableType
-		rows.Scan(&ct.ID, &ct.Name, &ct.Unit, &ct.PerPersonPerDay, &ct.SortOrder)
+		if err := rows.Scan(&ct.ID, &ct.Name, &ct.Unit, &ct.PerPersonPerDay, &ct.SortOrder); err != nil {
+			continue
+		}
 		ctypes = append(ctypes, ct)
 	}
 	writeJSON(w, http.StatusOK, ctypes)
@@ -133,7 +135,9 @@ func handleListConsumableLedger(w http.ResponseWriter, r *http.Request) {
 	entries := []types.ConsumableLedgerEntry{}
 	for rows.Next() {
 		var e types.ConsumableLedgerEntry
-		rows.Scan(&e.ID, &e.ConsumableTypeID, &e.Quantity, &e.Direction, &e.GameDate, &e.Description, &e.HeadCount, &e.Notes, &e.CreatedAt)
+		if err := rows.Scan(&e.ID, &e.ConsumableTypeID, &e.Quantity, &e.Direction, &e.GameDate, &e.Description, &e.HeadCount, &e.Notes, &e.CreatedAt); err != nil {
+			continue
+		}
 		entries = append(entries, e)
 	}
 	writeJSON(w, http.StatusOK, entries)
@@ -189,7 +193,10 @@ func handleDeleteConsumableLedgerEntry(w http.ResponseWriter, r *http.Request) {
 func handleConsumableBalances(w http.ResponseWriter, r *http.Request) {
 	// Count active party members
 	var activeCount int
-	db.DB.QueryRow("SELECT COUNT(*) FROM characters").Scan(&activeCount)
+	if err := db.DB.QueryRow("SELECT COUNT(*) FROM characters").Scan(&activeCount); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to count characters")
+		return
+	}
 	if activeCount == 0 {
 		activeCount = 1
 	}
@@ -212,7 +219,9 @@ func handleConsumableBalances(w http.ResponseWriter, r *http.Request) {
 	balances := []types.ConsumableBalance{}
 	for rows.Next() {
 		var b types.ConsumableBalance
-		rows.Scan(&b.ConsumableTypeID, &b.Name, &b.Unit, &b.PerPersonPerDay, &b.Balance)
+		if err := rows.Scan(&b.ConsumableTypeID, &b.Name, &b.Unit, &b.PerPersonPerDay, &b.Balance); err != nil {
+			continue
+		}
 		if b.PerPersonPerDay > 0 && activeCount > 0 {
 			dailyUsage := b.PerPersonPerDay * float64(activeCount)
 			if dailyUsage > 0 {
@@ -235,8 +244,7 @@ func handleConsumeDay(w http.ResponseWriter, r *http.Request) {
 
 	if req.HeadCount <= 0 {
 		// Default to number of characters
-		db.DB.QueryRow("SELECT COUNT(*) FROM characters").Scan(&req.HeadCount)
-		if req.HeadCount <= 0 {
+		if err := db.DB.QueryRow("SELECT COUNT(*) FROM characters").Scan(&req.HeadCount); err != nil || req.HeadCount <= 0 {
 			writeError(w, http.StatusBadRequest, "head_count required (no characters found)")
 			return
 		}
@@ -256,7 +264,9 @@ func handleConsumeDay(w http.ResponseWriter, r *http.Request) {
 	for typeRows.Next() {
 		var id, name string
 		var perPerson float64
-		typeRows.Scan(&id, &name, &perPerson)
+		if err := typeRows.Scan(&id, &name, &perPerson); err != nil {
+			continue
+		}
 
 		qty := perPerson * float64(req.HeadCount)
 		if qty <= 0 {
