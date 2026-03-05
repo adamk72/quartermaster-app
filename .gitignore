@@ -3,6 +3,9 @@ dist/
 data/campaign.db
 data/campaign.db-shm
 data/campaign.db-wal
+backend/data/campaign.db
+backend/data/campaign.db-shm
+backend/data/campaign.db-wal
 *.tsbuildinfo
 uploads/*
 !uploads/.gitkeep
