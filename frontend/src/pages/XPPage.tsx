@@ -89,7 +89,7 @@ export function XPPage() {
         {totals.map((t) => (
           <div key={t.character_id} className="bg-white rounded-xl shadow-sm border p-4 text-center">
             <h3 className="font-semibold text-sm">{t.character_name}</h3>
-            <p className="text-2xl font-bold text-yellow-600 mt-1">{t.total_xp.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-yellow-600 mt-1">{t.total_xp.toLocaleString('en-US')}</p>
             <p className="text-sm text-gray-500">Level {t.level}</p>
           </div>
         ))}

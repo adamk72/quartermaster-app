@@ -47,7 +47,7 @@ export function ChangelogPage() {
                 {entries.map((e) => (
                   <tr key={e.id}>
                     <td className="px-4 py-3 text-xs text-gray-500">
-                      {new Date(e.created_at).toLocaleString()}
+                      {new Date(e.created_at).toLocaleString('en-US')}
                     </td>
                     <td className="px-4 py-3">{e.user_id ?? 'system'}</td>
                     <td className="px-4 py-3">
