@@ -428,7 +428,9 @@ export function InventoryPage() {
                   <td>
                     <span className={clsx(
                       'px-2 py-0.5 rounded text-xs font-medium',
-                      item.category === 'Magic' ? 'bg-arcane/15 text-arcane' :
+                      item.category === 'Magic' || item.category === 'Implements' ? 'bg-arcane/15 text-arcane' :
+                      item.category === 'Potions' ? 'bg-emerald/15 text-emerald' :
+                      item.category === 'Weapons & Armor' ? 'bg-sky/15 text-sky' :
                       item.category === 'Treasure' ? 'bg-gold/15 text-gold' :
                       item.category === 'Expense' ? 'bg-wine/15 text-wine' :
                       'bg-surface text-parchment-dim'

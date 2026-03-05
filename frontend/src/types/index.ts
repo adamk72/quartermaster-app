@@ -32,7 +32,7 @@ export interface Item {
   credit_gp: number | null
   debit_gp: number | null
   game_date: string
-  category: 'Magic' | 'Item' | 'Treasure' | 'Expense' | 'Coin'
+  category: 'Magic' | 'Implements' | 'Potions' | 'Weapons & Armor' | 'Item' | 'Treasure' | 'Expense' | 'Coin'
   container_id: string | null
   sold: boolean
   unit_weight_lbs: number | null
