@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "character_id": null,
+    "created_at": "2026-03-05T04:12:44Z",
+    "id": "test",
+    "invite_code": "dragons",
+    "session_token": "df602da39a46bb818b4cc9024f7136b6b9279f644cab42f5eed542173ee4c4d7",
+    "token_expires_at": null,
+    "username": "test"
+  },
+  {
+    "character_id": null,
+    "created_at": "2026-03-05T04:34:02Z",
+    "id": "rüya",
+    "invite_code": "dragons",
+    "session_token": "61c816d3f94e9fc5f6902e8d486df4b8d0566db009553ed6e583627ebda0738e",
+    "token_expires_at": "2026-04-04T01:39:17.611894-05:00",
+    "username": "Rüya"
+  }
+]

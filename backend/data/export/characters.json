@@ -2,7 +2,7 @@
   {
     "ac": 10,
     "class": "Fighter",
-    "created_at": "2026-03-05T04:02:12Z",
+    "created_at": "2026-03-05T04:12:32Z",
     "hp_max": 0,
     "id": "andurin",
     "level": 5,
@@ -10,12 +10,12 @@
     "notes": "{}",
     "player_name": "",
     "race": "Human",
-    "updated_at": "2026-03-05T04:02:12Z"
+    "updated_at": "2026-03-05T04:12:32Z"
   },
   {
     "ac": 10,
     "class": "Rogue",
-    "created_at": "2026-03-05T04:02:12Z",
+    "created_at": "2026-03-05T04:12:32Z",
     "hp_max": 0,
     "id": "ayloc",
     "level": 5,
@@ -23,12 +23,12 @@
     "notes": "{}",
     "player_name": "",
     "race": "Halfling",
-    "updated_at": "2026-03-05T04:02:12Z"
+    "updated_at": "2026-03-05T04:12:32Z"
   },
   {
     "ac": 10,
     "class": "Cleric",
-    "created_at": "2026-03-05T04:02:12Z",
+    "created_at": "2026-03-05T04:12:32Z",
     "hp_max": 0,
     "id": "ruya",
     "level": 5,
@@ -36,12 +36,12 @@
     "notes": "{}",
     "player_name": "",
     "race": "Human",
-    "updated_at": "2026-03-05T04:02:12Z"
+    "updated_at": "2026-03-05T04:12:32Z"
   },
   {
     "ac": 10,
     "class": "Ranger",
-    "created_at": "2026-03-05T04:02:12Z",
+    "created_at": "2026-03-05T04:12:32Z",
     "hp_max": 0,
     "id": "sachan",
     "level": 5,
@@ -49,12 +49,12 @@
     "notes": "{}",
     "player_name": "",
     "race": "Elf",
-    "updated_at": "2026-03-05T04:02:12Z"
+    "updated_at": "2026-03-05T04:12:32Z"
   },
   {
     "ac": 10,
     "class": "Wizard",
-    "created_at": "2026-03-05T04:02:12Z",
+    "created_at": "2026-03-05T04:12:32Z",
     "hp_max": 0,
     "id": "ingvild",
     "level": 5,
@@ -62,12 +62,12 @@
     "notes": "{}",
     "player_name": "",
     "race": "Human",
-    "updated_at": "2026-03-05T04:02:12Z"
+    "updated_at": "2026-03-05T04:12:32Z"
   },
   {
     "ac": 10,
     "class": "Barbarian",
-    "created_at": "2026-03-05T04:02:12Z",
+    "created_at": "2026-03-05T04:12:32Z",
     "hp_max": 0,
     "id": "hrothgar",
     "level": 5,
@@ -75,6 +75,6 @@
     "notes": "{}",
     "player_name": "",
     "race": "Half-Orc",
-    "updated_at": "2026-03-05T04:02:12Z"
+    "updated_at": "2026-03-05T04:12:32Z"
   }
 ]
