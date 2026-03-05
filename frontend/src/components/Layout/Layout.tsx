@@ -33,7 +33,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <button onClick={() => setSidebarOpen(true)} className="p-1 text-parchment-dim hover:text-gold transition-colors">
           <Menu className="w-6 h-6" />
         </button>
-        <h1 className="font-display text-lg font-bold text-gold">Treasure Tracker</h1>
+        <h1 className="font-display text-lg font-bold text-gold">Quartermaster</h1>
         <div className="w-6" />
       </div>
 
@@ -54,7 +54,7 @@ export function Layout({ children }: { children: ReactNode }) {
       >
         {/* Brand */}
         <div className="flex items-center justify-between p-5 border-b border-border">
-          <h1 className="font-display text-lg font-bold text-gold tracking-wide">Treasure Tracker</h1>
+          <h1 className="font-display text-lg font-bold text-gold tracking-wide">Quartermaster</h1>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-1 text-parchment-muted hover:text-parchment transition-colors">
             <X className="w-5 h-5" />
           </button>

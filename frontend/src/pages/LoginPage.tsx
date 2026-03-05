@@ -31,7 +31,7 @@ export function LoginPage() {
         {/* Brand */}
         <div className="text-center mb-8">
           <h1 className="font-display text-4xl font-bold text-gold tracking-wide">
-            Treasure Tracker
+            Quartermaster
           </h1>
           <div className="flex items-center justify-center gap-3 mt-3">
             <div className="h-px w-12 bg-gradient-to-r from-transparent to-border" />
