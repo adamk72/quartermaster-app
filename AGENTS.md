@@ -39,6 +39,9 @@ All endpoints under `/api/v1/`. Auth via `Authorization: Bearer <token>`.
 - **`/diff-review`** — Reviews current git diff (staged + unstaged changes). Scoped strictly to changed code. Outputs impact-ordered suggestions with a top-3 priority list. Use for pre-commit or PR-level review.
 - **`/codebase-review`** — Full codebase architectural review. Focuses on modularity and dark patterns (code anti-patterns + UI dark patterns). Fast, high-level pass grouped by severity (Critical / Warning / Suggestion). Use for periodic health checks.
 
+## Git Conventions
+- Do NOT add `Co-Authored-By` trailers to commit messages. Keep commits clean and single-line where appropriate.
+
 ## Conventions
 - Party members: Andurin, Ayloc, Ruya, Sachan, Ingvild, Hrothgar
 - Currency: 1pp = 10gp, 1ep = 0.5gp, 1sp = 0.1gp, 1cp = 0.01gp
