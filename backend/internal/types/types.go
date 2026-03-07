@@ -230,6 +230,12 @@ type ConsumeDayRequest struct {
 	Notes     string `json:"notes"`
 }
 
+type Setting struct {
+	Key       string    `json:"key"`
+	Value     string    `json:"value"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type User struct {
 	ID           string    `json:"id"`
 	Username     string    `json:"username"`

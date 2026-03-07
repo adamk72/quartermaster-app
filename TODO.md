@@ -12,13 +12,13 @@
 ## Backlog
 
 ### Low Priority / Future
-- [ ] Allow changing the invite code dynamically (currently hardcoded via `INVITE_CODE` env var at server startup, defaulting to "dragons"). Could be an admin setting or API endpoint.
+- [x] Allow changing the invite code dynamically — now stored in `settings` DB table, editable from Settings page. Env var seeds the initial value only.
 - [ ] AI treasure parser (speculative): a text field where raw GM treasure text can be pasted and parsed into structured inventory entries. The GM's loot descriptions are usually a prose blob (e.g. "6 pairs of jade earplugs worth 15 gp each, an alabaster statuette worth 50 gp...") — AI could extract items, quantities, and values automatically. Not committed to adding AI to the app yet; revisit when the rest of the system is more mature.
 - [ ] Undo on delete: when something is deleted, show a brief undo toast/popup for a few seconds so the action can be reversed. Similar to the existing undo system — extend it app-wide if not already.
 - [ ] Session Journal delete uses a native browser `alert()` instead of the app's toast system — replace with a toast confirmation or modal consistent with the rest of the app.
 
 ### General
-- [ ] Remove hardcoded character/item references to make the app generic: party member names are baked into seed files and `constants.ts`, and likely have hidden dependencies elsewhere. The app should work for any campaign with any characters — all campaign-specific data should come from the database, not code.
+- [x] Remove hardcoded character/item references to make the app generic: `PARTY_MEMBERS` constant removed from `constants.ts`. Seed files and migrations are historical bootstrapping tools, not runtime code.
 - [x] Replace inventory "category" with a flexible label system (multi-label, user-defined, color-coded) similar to GitLab/Linear. Likely requires a Settings or Admin area for managing labels and other future admin concerns.
 - [ ] Investigate concurrency issue: what happens when two users reorder inventory simultaneously (last-write-wins conflict on `sort_order`).
 - [ ] HP adjustment UX (shared for critters and characters): alongside +/- buttons, allow the user to type a number and apply it as heal or damage (e.g. "take 12 damage" / "heal 8"). Should be a consistent component reused across both.

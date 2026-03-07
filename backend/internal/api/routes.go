@@ -114,6 +114,11 @@ func RegisterRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /api/v1/consumables/balances", auth(handleConsumableBalances))
 	mux.Handle("POST /api/v1/consumables/consume-day", auth(handleConsumeDay))
 
+	// Settings — any authenticated user can read/update. Fine for now given the
+	// "any player can edit anything" model, but may need an admin-only guard later.
+	mux.Handle("GET /api/v1/settings", auth(handleListSettings))
+	mux.Handle("PUT /api/v1/settings/{key}", auth(handleUpdateSetting))
+
 	// Changelog
 	mux.Handle("GET /api/v1/changelog", auth(handleListChangelog))
 

@@ -26,8 +26,8 @@
 - [x] Settings/Admin area for managing labels
 
 ## Phase 7: Make the App Generic
-- [ ] Remove hardcoded character references from constants.ts, seed files, migration 004
-- [ ] Dynamic invite code — changeable via admin setting or API
+- [x] Remove hardcoded character references from constants.ts
+- [x] Dynamic invite code — changeable via admin setting (settings table + Settings page UI)
 
 ## Phase 8: Multi-User Robustness
 - [ ] Concurrency investigation — optimistic locking, conflict detection

@@ -7,7 +7,7 @@ Multi-user webapp replacing Google Sheets + Docs for tracking a weekly D&D campa
 - **Frontend**: React 19 + Vite + TypeScript + Tailwind CSS v4 + Zustand 5 + React Router + Lucide React
 - **Backend**: Go 1.23 with stdlib `net/http` (Go 1.22+ route patterns)
 - **Database**: SQLite via `github.com/mattn/go-sqlite3`
-- **Auth**: Invite code + username -> session token (default code: "dragons")
+- **Auth**: Invite code + username -> session token. Invite code stored in `settings` table (seeded from `INVITE_CODE` env var, default "dragons"), editable from Settings page.
 - **Package manager**: pnpm (frontend)
 
 ## Project Structure

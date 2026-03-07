@@ -13,8 +13,6 @@ import (
 
 const tokenLifetime = 30 * 24 * time.Hour // 30 days
 
-var InviteCode string
-
 func handleLogin(w http.ResponseWriter, r *http.Request) {
 	var req types.LoginRequest
 	if err := readJSON(r, &req); err != nil {
@@ -28,7 +26,12 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.InviteCode != InviteCode {
+	inviteCode, err := GetSetting("invite_code")
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "invite code not configured")
+		return
+	}
+	if req.InviteCode != inviteCode {
 		writeError(w, http.StatusForbidden, "invalid invite code")
 		return
 	}
@@ -38,7 +41,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	slug := strings.ToLower(strings.ReplaceAll(req.Username, " ", "-"))
 
 	// Upsert user
-	_, err := db.DB.Exec(`
+	_, err = db.DB.Exec(`
 		INSERT INTO users (id, username, invite_code, session_token, token_expires_at)
 		VALUES (?, ?, ?, ?, ?)
 		ON CONFLICT(username) DO UPDATE SET session_token = ?, token_expires_at = ?`,

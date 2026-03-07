@@ -20,11 +20,6 @@ func main() {
 		dbPath = "data/campaign.db"
 	}
 
-	api.InviteCode = os.Getenv("INVITE_CODE")
-	if api.InviteCode == "" {
-		api.InviteCode = "dragons"
-	}
-
 	api.CORSOrigin = os.Getenv("CORS_ORIGIN")
 
 	uploadsDir := os.Getenv("UPLOADS_DIR")
@@ -45,13 +40,21 @@ func main() {
 	}
 	defer db.Close()
 
+	// Seed invite code from env var (only if not already set in DB)
+	inviteCode := os.Getenv("INVITE_CODE")
+	if inviteCode == "" {
+		inviteCode = "dragons"
+	}
+	if _, err := db.DB.Exec("INSERT OR IGNORE INTO settings (key, value) VALUES ('invite_code', ?)", inviteCode); err != nil {
+		log.Fatalf("Failed to seed invite code: %v", err)
+	}
+
 	mux := http.NewServeMux()
 	api.RegisterRoutes(mux)
 
 	handler := api.Chain(mux, api.Logger, api.CORS)
 
 	log.Printf("Server starting on :%s", port)
-	log.Printf("Invite code: %s", api.InviteCode)
 	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		log.Fatal(err)
 	}
