@@ -5,7 +5,7 @@ import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
 import clsx from 'clsx'
 import type { Quest } from '../types'
-import { QUEST_STATUSES } from '../constants'
+import { QUEST_STATUSES, QUEST_STATUS_COLORS } from '../constants'
 
 export function QuestsPage() {
   const [quests, setQuests] = useState<Quest[]>([])
@@ -53,13 +53,6 @@ export function QuestsPage() {
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed to delete quest')
     }
-  }
-
-  const statusColors: Record<string, string> = {
-    active: 'bg-sky/15 text-sky',
-    completed: 'bg-emerald/15 text-emerald',
-    failed: 'bg-wine/15 text-wine',
-    on_hold: 'bg-amber/15 text-amber',
   }
 
   return (
@@ -146,7 +139,7 @@ export function QuestsPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <h3 className="font-heading font-bold text-parchment">{q.title}</h3>
-                  <span className={clsx('px-2 py-0.5 rounded text-xs font-medium capitalize', statusColors[q.status] ?? 'bg-surface text-parchment-dim')}>
+                  <span className={clsx('px-2 py-0.5 rounded text-xs font-medium capitalize', QUEST_STATUS_COLORS[q.status] ?? 'bg-surface text-parchment-dim')}>
                     {q.status.replace('_', ' ')}
                   </span>
                 </div>

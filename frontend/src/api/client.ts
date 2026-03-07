@@ -1,4 +1,6 @@
-class ApiError extends Error {
+import { AUTH_TOKEN_KEY, API_BASE } from '../constants'
+
+export class ApiError extends Error {
   status: number
   constructor(message: string, status: number) {
     super(message)
@@ -7,7 +9,7 @@ class ApiError extends Error {
   }
 }
 
-const getToken = (): string | null => localStorage.getItem('token')
+const getToken = (): string | null => localStorage.getItem(AUTH_TOKEN_KEY)
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = {
@@ -19,7 +21,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  const res = await fetch(`/api/v1${path}`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
@@ -35,7 +37,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     }
 
     if (res.status === 401) {
-      localStorage.removeItem('token')
+      localStorage.removeItem(AUTH_TOKEN_KEY)
     }
 
     throw new ApiError(message, res.status)
@@ -59,18 +61,28 @@ export const api = {
       headers['Authorization'] = `Bearer ${token}`
     }
 
-    const res = await fetch(`/api/v1${path}`, {
+    const res = await fetch(`${API_BASE}${path}`, {
       method: 'POST',
       headers,
       body: formData,
     })
 
     if (!res.ok) {
-      throw new ApiError(`Upload failed: ${res.status}`, res.status)
+      let message = `Upload failed: ${res.status}`
+      try {
+        const err = await res.json() as { error?: string }
+        if (err.error) message = err.error
+      } catch {
+        // ignore parse error
+      }
+
+      if (res.status === 401) {
+        localStorage.removeItem(AUTH_TOKEN_KEY)
+      }
+
+      throw new ApiError(message, res.status)
     }
 
     return res.json() as Promise<T>
   },
 }
-
-export { ApiError }

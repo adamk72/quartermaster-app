@@ -3,9 +3,8 @@ import { useInventoryStore } from '../stores/useInventoryStore'
 import { Plus, Trash2, Pencil, Sparkles } from 'lucide-react'
 import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
+import { MAX_ATTUNEMENT_SLOTS } from '../constants'
 import type { Character } from '../types'
-
-const MAX_ATTUNEMENT_SLOTS = 3
 
 export function CharactersPage() {
   const { characters, items, fetchCharacters, fetchItems, createCharacter, updateCharacter, deleteCharacter } = useInventoryStore()

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSessionStore } from '../stores/useSessionStore'
+import { confirm } from '../stores/useConfirmStore'
 import { ArrowLeft, Save, Trash2 } from 'lucide-react'
 
 export function JournalEntryPage() {
@@ -56,7 +57,7 @@ export function JournalEntryPage() {
   }
 
   const handleDelete = async () => {
-    if (!id || !confirm('Delete this journal entry?')) return
+    if (!id || !(await confirm('Delete this journal entry?'))) return
     await deleteSession(Number(id))
     navigate('/journal')
   }
@@ -67,8 +68,8 @@ export function JournalEntryPage() {
   return (
     <div>
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={() => {
-          if (dirty && !confirm('You have unsaved changes. Leave anyway?')) return
+        <button onClick={async () => {
+          if (dirty && !(await confirm('You have unsaved changes. Leave anyway?'))) return
           navigate('/journal')
         }} className="p-2 hover:bg-surface rounded-lg text-parchment-muted hover:text-parchment transition-colors">
           <ArrowLeft className="w-5 h-5" />

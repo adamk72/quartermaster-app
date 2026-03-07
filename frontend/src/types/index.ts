@@ -53,6 +53,7 @@ export interface Item {
   credit_gp: number | null
   debit_gp: number | null
   game_date: string
+  /** @deprecated Use labels instead. Kept for backward compat with DB. */
   category: string
   container_id: string | null
   sold: boolean
@@ -235,6 +236,13 @@ export interface ConsumableBalance {
   per_person_per_day: number
   balance: number
   days_remaining: number
+}
+
+export interface XPTotal {
+  character_id: string
+  character_name: string
+  total_xp: number
+  level: number
 }
 
 export interface ItemSummary {

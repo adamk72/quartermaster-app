@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { useLabelStore } from '../stores/useLabelStore'
-import { CONTAINER_TYPES } from '../constants'
+import { CONTAINER_TYPES, MAX_ATTUNEMENT_SLOTS, hexWithAlpha } from '../constants'
 import { Plus, Trash2, DollarSign, Pencil, Sparkles, Undo2, GripVertical, ArrowUpDown, ChevronDown, Search, Package } from 'lucide-react'
 import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
@@ -9,6 +9,13 @@ import clsx from 'clsx'
 import type { Item, Container, Mount, Label } from '../types'
 
 type SortMode = 'custom' | 'name' | 'labels' | 'date' | 'credit' | 'debit'
+
+function getContainerDisplayName(container: Container, characters: { id: string; name: string }[], mounts: Mount[]): string {
+  const charOwner = container.character_id ? characters.find((ch) => ch.id === container.character_id) : null
+  const mountOwner = container.mount_id ? mounts.find((m) => m.id === container.mount_id) : null
+  const owner = charOwner ?? mountOwner
+  return owner && !container.name.includes(owner.name) ? `${owner.name}'s ${container.name}` : container.name
+}
 
 const SORT_LABELS: Record<SortMode, string> = {
   custom: 'Custom Order',
@@ -35,7 +42,7 @@ function ItemFormModal({
   onClose: () => void
 }) {
   const [form, setForm] = useState<Partial<Item>>(
-    item ?? { name: '', quantity: 1, category: 'Item', game_date: '', sold: false, label_ids: [] }
+    item ?? { name: '', quantity: 1, game_date: '', sold: false, label_ids: [] }
   )
   const [selectedLabelIds, setSelectedLabelIds] = useState<Set<string>>(
     new Set(item?.labels?.map((l) => l.id) ?? item?.label_ids ?? [])
@@ -46,7 +53,7 @@ function ItemFormModal({
   const attunedCount = canAttune
     ? allItems.filter((i) => i.attuned_to === selectedContainer.character_id && i.id !== item?.id).length
     : 0
-  const attunementFull = attunedCount >= 3
+  const attunementFull = attunedCount >= MAX_ATTUNEMENT_SLOTS
 
   const handleContainerChange = (containerId: string | null) => {
     const next = containers.find((c) => c.id === containerId)
@@ -100,7 +107,7 @@ function ItemFormModal({
                     disabled={attunementFull && !form.attuned_to}
                     onChange={(e) => setForm({ ...form, attuned_to: e.target.checked ? selectedContainer.character_id : null })}
                   />
-                  Attuned {attunementFull && !form.attuned_to ? '(3/3)' : `(${attunedCount + (form.attuned_to ? 1 : 0)}/3)`}
+                  Attuned {attunementFull && !form.attuned_to ? `(${MAX_ATTUNEMENT_SLOTS}/${MAX_ATTUNEMENT_SLOTS})` : `(${attunedCount + (form.attuned_to ? 1 : 0)}/${MAX_ATTUNEMENT_SLOTS})`}
                 </label>
               )}
             </div>
@@ -136,7 +143,7 @@ function ItemFormModal({
                       ? 'border-transparent text-base'
                       : 'border-border text-parchment-muted hover:text-parchment hover:border-border-light bg-transparent'
                   )}
-                  style={selectedLabelIds.has(l.id) ? { backgroundColor: l.color + '30', color: l.color, borderColor: l.color + '50' } : undefined}
+                  style={selectedLabelIds.has(l.id) ? { backgroundColor: hexWithAlpha(l.color, '30'), color: l.color, borderColor: hexWithAlpha(l.color, '50') } : undefined}
                 >
                   {l.name}
                 </button>
@@ -715,21 +722,15 @@ export function InventoryPage() {
             </button>
             {showMoveMenu && (
               <div className="absolute left-0 top-full mt-1 bg-card border border-border rounded-lg shadow-xl shadow-black/30 py-1 z-20 min-w-[200px] max-h-60 overflow-y-auto">
-                {containers.map((c) => {
-                  const charOwner = c.character_id ? characters.find((ch) => ch.id === c.character_id) : null
-                  const mountOwner = c.mount_id ? mounts.find((m) => m.id === c.mount_id) : null
-                  const owner = charOwner ?? mountOwner
-                  const label = owner && !c.name.includes(owner.name) ? `${owner.name}'s ${c.name}` : c.name
-                  return (
+                {containers.map((c) => (
                     <button
                       key={c.id}
                       onClick={() => handleBulkMove(c.id)}
                       className="w-full text-left px-4 py-2 text-sm text-parchment-dim hover:bg-surface transition-colors"
                     >
-                      {label}
+                      {getContainerDisplayName(c, characters, mounts)}
                     </button>
-                  )
-                })}
+                  ))}
               </div>
             )}
           </div>
@@ -810,7 +811,7 @@ export function InventoryPage() {
                         <span
                           key={l.id}
                           className="px-2 py-0.5 rounded text-xs font-medium"
-                          style={{ backgroundColor: l.color + '25', color: l.color }}
+                          style={{ backgroundColor: hexWithAlpha(l.color, '25'), color: l.color }}
                         >
                           {l.name}
                         </span>
@@ -826,10 +827,7 @@ export function InventoryPage() {
                   <td className="text-xs text-parchment-dim">{(() => {
                     const container = containers.find((c) => c.id === item.container_id)
                     if (!container) return <span className="text-parchment-muted">--</span>
-                    const charOwner = container.character_id ? characters.find((ch) => ch.id === container.character_id) : null
-                    const mountOwner = container.mount_id ? mounts.find((m) => m.id === container.mount_id) : null
-                    const owner = charOwner ?? mountOwner
-                    return owner && !container.name.includes(owner.name) ? `${owner.name}'s ${container.name}` : container.name
+                    return getContainerDisplayName(container, characters, mounts)
                   })()}</td>
                   <td>
                     <div className="flex gap-1">

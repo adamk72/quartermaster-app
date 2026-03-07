@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api/client'
+import { CHANGELOG_PAGE_SIZE } from '../constants'
 import clsx from 'clsx'
 import type { ChangelogEntry } from '../types'
 
@@ -7,7 +8,7 @@ export function ChangelogPage() {
   const [entries, setEntries] = useState<ChangelogEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [offset, setOffset] = useState(0)
-  const limit = 50
+  const limit = CHANGELOG_PAGE_SIZE
 
   const fetchChangelog = async () => {
     const data = await api.get<ChangelogEntry[]>(`/changelog?limit=${limit}&offset=${offset}`)

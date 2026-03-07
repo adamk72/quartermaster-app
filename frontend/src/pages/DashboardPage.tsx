@@ -4,6 +4,7 @@ import { useInventoryStore } from '../stores/useInventoryStore'
 import { api } from '../api/client'
 import { Sword, Coins, Weight, Package, BookOpen, Bug, ScrollText, Star, Apple } from 'lucide-react'
 import { toast } from '../stores/useToastStore'
+import { CONSUMABLE_URGENT_DAYS, CONSUMABLE_WARNING_DAYS } from '../constants'
 import clsx from 'clsx'
 import type { ConsumableBalance } from '../types'
 
@@ -60,8 +61,8 @@ export function DashboardPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {consumables.map((b) => {
-              const urgent = b.days_remaining >= 0 && b.days_remaining < 3
-              const warning = b.days_remaining >= 3 && b.days_remaining < 7
+              const urgent = b.days_remaining >= 0 && b.days_remaining < CONSUMABLE_URGENT_DAYS
+              const warning = b.days_remaining >= CONSUMABLE_URGENT_DAYS && b.days_remaining < CONSUMABLE_WARNING_DAYS
               return (
                 <div key={b.consumable_type_id} className={clsx(
                   'tt-card',

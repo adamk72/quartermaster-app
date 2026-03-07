@@ -5,6 +5,7 @@ import { useInventoryStore } from '../stores/useInventoryStore'
 import { confirm } from '../stores/useConfirmStore'
 import { Trash2, Split } from 'lucide-react'
 import clsx from 'clsx'
+import { DENOM_TO_CP, TREASURE_LABEL_ID } from '../constants'
 import type { CoinBalance, CoinLedgerEntry, ItemSummary, Character } from '../types'
 
 const DENOM_ORDER = ['pp', 'gp', 'ep', 'sp', 'cp'] as const
@@ -37,9 +38,7 @@ export function WealthPage() {
 
   useEffect(() => { fetchAll(); fetchItems({ sold: 'false' }); fetchCharacters() }, [fetchAll])
 
-  // Gems & jewelry: items with 'treasure' label that are unsold
-  // NOTE: Assumes the seeded 'treasure' label exists; breaks if deleted via Settings
-  const gemsAndJewelry = items.filter((i) => i.labels?.some((l) => l.id === 'treasure') && !i.sold)
+  const gemsAndJewelry = items.filter((i) => i.labels?.some((l) => l.id === TREASURE_LABEL_ID) && !i.sold)
   const gemsTotal = gemsAndJewelry.reduce((sum, i) => sum + (i.unit_value_gp ?? 0) * i.quantity, 0)
 
   const handleDeleteEntry = async (id: number) => {
@@ -249,10 +248,7 @@ function CoinConvertForm({ onDone }: { onDone: () => void }) {
   const [amount, setAmount] = useState(0)
   const [submitting, setSubmitting] = useState(false)
 
-  // Conversion rates to cp (base unit)
-  const toCp: Record<string, number> = { cp: 1, sp: 10, ep: 50, gp: 100, pp: 1000 }
-
-  const convertedAmount = amount > 0 ? Math.floor((amount * (toCp[fromDenom] ?? 1)) / (toCp[toDenom] ?? 1)) : 0
+  const convertedAmount = amount > 0 ? Math.floor((amount * (DENOM_TO_CP[fromDenom] ?? 1)) / (DENOM_TO_CP[toDenom] ?? 1)) : 0
 
   const handleConvert = async () => {
     if (amount <= 0 || fromDenom === toDenom) return

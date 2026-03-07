@@ -4,14 +4,7 @@ import { useInventoryStore } from '../stores/useInventoryStore'
 import { Plus, Trash2 } from 'lucide-react'
 import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
-import type { XPEntry } from '../types'
-
-interface XPTotal {
-  character_id: string
-  character_name: string
-  total_xp: number
-  level: number
-}
+import type { XPEntry, XPTotal } from '../types'
 
 export function XPPage() {
   const { characters, fetchCharacters } = useInventoryStore()

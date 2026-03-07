@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import { api } from '../api/client'
+import { api, ApiError } from '../api/client'
+import { AUTH_TOKEN_KEY } from '../constants'
 import { toast } from './useToastStore'
 import type { User, LoginResponse } from '../types'
 
@@ -26,7 +27,7 @@ export const useAppStore = create<AppState>((set) => ({
         username,
         invite_code: inviteCode,
       })
-      localStorage.setItem('token', res.token)
+      localStorage.setItem(AUTH_TOKEN_KEY, res.token)
       set({ user: res.user })
     } catch (e) {
       set({ error: e instanceof Error ? e.message : 'Login failed' })
@@ -35,12 +36,12 @@ export const useAppStore = create<AppState>((set) => ({
   },
 
   logout: () => {
-    localStorage.removeItem('token')
+    localStorage.removeItem(AUTH_TOKEN_KEY)
     set({ user: null })
   },
 
   checkAuth: async () => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem(AUTH_TOKEN_KEY)
     if (!token) {
       set({ loading: false })
       return
@@ -49,10 +50,10 @@ export const useAppStore = create<AppState>((set) => ({
       const user = await api.get<User>('/auth/me')
       set({ user, loading: false })
     } catch (e) {
-      localStorage.removeItem('token')
+      localStorage.removeItem(AUTH_TOKEN_KEY)
       set({ loading: false })
-      if (e instanceof Error && !e.message.includes('401')) {
-        toast.error('Session check failed: ' + e.message)
+      if (!(e instanceof ApiError && e.status === 401)) {
+        toast.error('Session check failed: ' + (e instanceof Error ? e.message : 'Unknown error'))
       }
     }
   },

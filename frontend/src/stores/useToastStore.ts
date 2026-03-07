@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { TOAST_DURATION_MS } from '../constants'
 
 export interface Toast {
   id: number
@@ -20,7 +21,7 @@ export const useToastStore = create<ToastState>((set, get) => ({
   addToast: (type, message) => {
     const id = ++nextId
     set({ toasts: [...get().toasts, { id, type, message }] })
-    setTimeout(() => get().removeToast(id), 4000)
+    setTimeout(() => get().removeToast(id), TOAST_DURATION_MS)
   },
 
   removeToast: (id) => {

@@ -3,6 +3,7 @@ import { useLabelStore } from '../stores/useLabelStore'
 import { Pencil, Trash2 } from 'lucide-react'
 import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
+import { DEFAULT_LABEL_COLOR, hexWithAlpha } from '../constants'
 import type { Label } from '../types'
 
 function LabelForm({
@@ -15,7 +16,7 @@ function LabelForm({
   onCancel: () => void
 }) {
   const [form, setForm] = useState<Partial<Label>>(
-    label ?? { name: '', color: '#7d7568' }
+    label ?? { name: '', color: DEFAULT_LABEL_COLOR }
   )
 
   return (
@@ -38,7 +39,7 @@ function LabelForm({
         <div className="flex items-center gap-2">
           <input
             type="color"
-            value={form.color ?? '#7d7568'}
+            value={form.color ?? DEFAULT_LABEL_COLOR}
             onChange={(e) => setForm({ ...form, color: e.target.value })}
             className="w-10 h-10 rounded border border-border cursor-pointer bg-transparent"
           />
@@ -132,7 +133,7 @@ export function SettingsPage() {
                   />
                   <span
                     className="px-2.5 py-0.5 rounded text-xs font-medium"
-                    style={{ backgroundColor: label.color + '25', color: label.color }}
+                    style={{ backgroundColor: hexWithAlpha(label.color, '25'), color: label.color }}
                   >
                     {label.name}
                   </span>
