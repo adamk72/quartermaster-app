@@ -6,6 +6,7 @@
 ## Backlog
 
 ### Low Priority / Future
+- [ ] Allow changing the invite code dynamically (currently hardcoded via `INVITE_CODE` env var at server startup, defaulting to "dragons"). Could be an admin setting or API endpoint.
 - [ ] AI treasure parser (speculative): a text field where raw GM treasure text can be pasted and parsed into structured inventory entries. The GM's loot descriptions are usually a prose blob (e.g. "6 pairs of jade earplugs worth 15 gp each, an alabaster statuette worth 50 gp...") — AI could extract items, quantities, and values automatically. Not committed to adding AI to the app yet; revisit when the rest of the system is more mature.
 - [ ] Undo on delete: when something is deleted, show a brief undo toast/popup for a few seconds so the action can be reversed. Similar to the existing undo system — extend it app-wide if not already.
 - [ ] Session Journal delete uses a native browser `alert()` instead of the app's toast system — replace with a toast confirmation or modal consistent with the rest of the app.
@@ -49,3 +50,8 @@
 - [ ] Consumables UX review: the current consumables model is unclear and needs rethinking — how they're tracked, used, and distinguished from regular inventory. Revisit the design before implementing further.
 - [ ] Dashboard: align/fix layout of the consumables summary boxes.
 - [ ] Fix watch list model: a "slot" should represent a shared time period (e.g. a night has 3 watches, each watch has 2–3 characters on it together). Currently the data model may not reflect this correctly. Future enhancement: make the system race-aware for rest requirements (e.g. elves only need 4 hours so can cover two watch slots).
+- [ ] Loot splitting: auto-divide coins/treasure evenly among present characters after a haul. Happens nearly every session and is tedious to do manually. Could tie into the coin ledger and attendance tracking that already exist.
+- [ ] Attunement tracking: track which magic items are attuned per character (D&D 3-item limit). Magic items are already flagged with category; add an `attuned_to` character reference on items and surface attunement slots on character sheets.
+- [ ] Inventory search: add text search across item names and notes. Currently only category filtering exists; pain grows every session as items accumulate.
+- [ ] Spell slot tracking: track remaining spell slots per character per day. At minimum, a per-level slot grid that can be ticked off during play. Needs new DB table(s) and a UI section on character sheets or a dedicated page.
+- [ ] Monster condition tracking: allow players to help the DM track status conditions (blinded, charmed, poisoned, etc.) on critters during combat. D&D Beyond only lets players track conditions on their own characters, and the table's physical color-coded system breaks down when multiple conditions overlap (limited palette, one color at a time). The app's existing critter model could be extended with a conditions list per critter — players can add/remove conditions, and the DM gets a clear at-a-glance view of all active conditions on each monster.
