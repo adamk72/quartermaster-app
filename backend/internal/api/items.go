@@ -5,14 +5,54 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/adamk72/quartermaster-app/internal/db"
 	"github.com/adamk72/quartermaster-app/internal/types"
 )
 
+const maxAttunementSlots = 3
+
+// validateAttunement checks that the character exists, hasn't exceeded the attunement limit,
+// and that the item is in a 'character'-type container owned by that character (on their person).
+// excludeItemID is the item being updated (0 for new items) so it isn't counted against the limit.
+func validateAttunement(charID string, containerID *string, excludeItemID int) error {
+	var exists bool
+	if err := db.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM characters WHERE id = ?)", charID).Scan(&exists); err != nil || !exists {
+		return fmt.Errorf("character %q not found", charID)
+	}
+
+	// Item must be in a character-type container owned by the attuning character
+	if containerID == nil || *containerID == "" {
+		return fmt.Errorf("item must be in a container owned by %q to attune", charID)
+	}
+	var cType string
+	var cCharID *string
+	err := db.DB.QueryRow("SELECT type, character_id FROM containers WHERE id = ?", *containerID).Scan(&cType, &cCharID)
+	if err != nil {
+		return fmt.Errorf("container not found")
+	}
+	if cType != "character" {
+		return fmt.Errorf("item must be on the character's person to attune (not in a %s)", cType)
+	}
+	if cCharID == nil || *cCharID != charID {
+		return fmt.Errorf("item must be in a container owned by the attuning character")
+	}
+
+	var count int
+	query := "SELECT COUNT(*) FROM items WHERE attuned_to = ? AND id != ?"
+	if err := db.DB.QueryRow(query, charID, excludeItemID).Scan(&count); err != nil {
+		return fmt.Errorf("failed to check attunement count")
+	}
+	if count >= maxAttunementSlots {
+		return fmt.Errorf("character already has %d attuned items (max %d)", count, maxAttunementSlots)
+	}
+	return nil
+}
+
 func handleListItems(w http.ResponseWriter, r *http.Request) {
-	query := "SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, singular, notes, sort_order, created_at, updated_at FROM items"
+	query := "SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at FROM items"
 
 	var args []any
 	var conditions []string
@@ -55,7 +95,7 @@ func handleListItems(w http.ResponseWriter, r *http.Request) {
 	items := []types.Item{}
 	for rows.Next() {
 		var item types.Item
-		if err := rows.Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt); err != nil {
+		if err := rows.Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt); err != nil {
 			continue
 		}
 		items = append(items, item)
@@ -66,8 +106,8 @@ func handleListItems(w http.ResponseWriter, r *http.Request) {
 func handleGetItem(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	var item types.Item
-	err := db.DB.QueryRow("SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, singular, notes, sort_order, created_at, updated_at FROM items WHERE id = ?", id).
-		Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt)
+	err := db.DB.QueryRow("SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at FROM items WHERE id = ?", id).
+		Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "item not found")
 		return
@@ -82,15 +122,26 @@ func handleCreateItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if item.AttunedTo != nil && *item.AttunedTo != "" {
+		if err := validateAttunement(*item.AttunedTo, item.ContainerID, 0); err != nil {
+			writeError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+	}
+
 	now := time.Now()
 	item.CreatedAt = now
 	item.UpdatedAt = now
 
 	result, err := db.DB.Exec(
-		"INSERT INTO items (name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, singular, notes, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(sort_order),0)+1 FROM items), ?, ?)",
-		item.Name, item.Quantity, item.CreditGP, item.DebitGP, item.GameDate, item.Category, item.ContainerID, item.Sold, item.UnitWeightLbs, item.UnitValueGP, item.WeightOverride, item.AddedToDnDBeyond, item.Identified, item.Singular, item.Notes, item.CreatedAt, item.UpdatedAt,
+		"INSERT INTO items (name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(sort_order),0)+1 FROM items), ?, ?)",
+		item.Name, item.Quantity, item.CreditGP, item.DebitGP, item.GameDate, item.Category, item.ContainerID, item.Sold, item.UnitWeightLbs, item.UnitValueGP, item.WeightOverride, item.AddedToDnDBeyond, item.Identified, item.AttunedTo, item.Singular, item.Notes, item.CreatedAt, item.UpdatedAt,
 	)
 	if err != nil {
+		if strings.Contains(err.Error(), "FOREIGN KEY constraint failed") {
+			writeError(w, http.StatusBadRequest, "invalid reference: check container_id and attuned_to values")
+			return
+		}
 		writeError(w, http.StatusInternalServerError, fmt.Sprintf("failed to create item: %v", err))
 		return
 	}
@@ -114,12 +165,24 @@ func handleUpdateItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if item.AttunedTo != nil && *item.AttunedTo != "" {
+		idInt, _ := strconv.Atoi(id)
+		if err := validateAttunement(*item.AttunedTo, item.ContainerID, idInt); err != nil {
+			// Clear invalid attunement (e.g. legacy data from before container rule)
+			item.AttunedTo = nil
+		}
+	}
+
 	item.UpdatedAt = time.Now()
 	result, err := db.DB.Exec(
-		"UPDATE items SET name=?, quantity=?, credit_gp=?, debit_gp=?, game_date=?, category=?, container_id=?, sold=?, unit_weight_lbs=?, unit_value_gp=?, weight_override=?, added_to_dndbeyond=?, identified=?, singular=?, notes=?, sort_order=?, updated_at=? WHERE id=?",
-		item.Name, item.Quantity, item.CreditGP, item.DebitGP, item.GameDate, item.Category, item.ContainerID, item.Sold, item.UnitWeightLbs, item.UnitValueGP, item.WeightOverride, item.AddedToDnDBeyond, item.Identified, item.Singular, item.Notes, item.SortOrder, item.UpdatedAt, id,
+		"UPDATE items SET name=?, quantity=?, credit_gp=?, debit_gp=?, game_date=?, category=?, container_id=?, sold=?, unit_weight_lbs=?, unit_value_gp=?, weight_override=?, added_to_dndbeyond=?, identified=?, attuned_to=?, singular=?, notes=?, sort_order=?, updated_at=? WHERE id=?",
+		item.Name, item.Quantity, item.CreditGP, item.DebitGP, item.GameDate, item.Category, item.ContainerID, item.Sold, item.UnitWeightLbs, item.UnitValueGP, item.WeightOverride, item.AddedToDnDBeyond, item.Identified, item.AttunedTo, item.Singular, item.Notes, item.SortOrder, item.UpdatedAt, id,
 	)
 	if err != nil {
+		if strings.Contains(err.Error(), "FOREIGN KEY constraint failed") {
+			writeError(w, http.StatusBadRequest, "invalid reference: check container_id and attuned_to values")
+			return
+		}
 		writeError(w, http.StatusInternalServerError, "failed to update item")
 		return
 	}
@@ -240,8 +303,8 @@ func handleIdentifyItem(w http.ResponseWriter, r *http.Request) {
 
 	// Return the updated item
 	var item types.Item
-	if err := db.DB.QueryRow("SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, singular, notes, sort_order, created_at, updated_at FROM items WHERE id = ?", id).
-		Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt); err != nil {
+	if err := db.DB.QueryRow("SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at FROM items WHERE id = ?", id).
+		Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to reload identified item")
 		return
 	}

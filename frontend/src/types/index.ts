@@ -18,6 +18,7 @@ export interface Container {
   type: 'character' | 'bag' | 'mount' | 'cache' | 'vendor'
   character_id: string | null
   weight_limit: number | null
+  location: string
   notes: string
   created_at: string
   updated_at: string
@@ -40,6 +41,7 @@ export interface Item {
   weight_override: number | null
   added_to_dndbeyond: boolean
   identified: boolean
+  attuned_to: string | null
   singular: string
   notes: string
   sort_order: number

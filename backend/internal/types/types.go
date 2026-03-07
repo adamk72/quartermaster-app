@@ -22,6 +22,7 @@ type Container struct {
 	Type        string    `json:"type"`
 	CharacterID *string   `json:"character_id"`
 	WeightLimit *float64  `json:"weight_limit"`
+	Location    string    `json:"location"`
 	Notes       string    `json:"notes"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
@@ -44,6 +45,7 @@ type Item struct {
 	WeightOverride   *float64  `json:"weight_override"`
 	AddedToDnDBeyond bool      `json:"added_to_dndbeyond"`
 	Identified       bool      `json:"identified"`
+	AttunedTo        *string   `json:"attuned_to"`
 	Singular         string    `json:"singular"`
 	Notes            string    `json:"notes"`
 	SortOrder        int       `json:"sort_order"`

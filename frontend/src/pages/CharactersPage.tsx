@@ -1,17 +1,31 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useInventoryStore } from '../stores/useInventoryStore'
-import { Plus, Trash2, Pencil } from 'lucide-react'
+import { Plus, Trash2, Pencil, Sparkles } from 'lucide-react'
 import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
 import type { Character } from '../types'
 
+const MAX_ATTUNEMENT_SLOTS = 3
+
 export function CharactersPage() {
-  const { characters, fetchCharacters, createCharacter, updateCharacter, deleteCharacter } = useInventoryStore()
+  const { characters, items, fetchCharacters, fetchItems, createCharacter, updateCharacter, deleteCharacter } = useInventoryStore()
   const [showForm, setShowForm] = useState(false)
   const [editChar, setEditChar] = useState<Character | null>(null)
   const [form, setForm] = useState<Partial<Character>>({ name: '', player_name: '', class: '', level: 1, race: '', ac: 10, hp_max: 0 })
 
-  useEffect(() => { fetchCharacters() }, [fetchCharacters])
+  useEffect(() => { fetchCharacters(); fetchItems() }, [fetchCharacters, fetchItems])
+
+  const attunementByCharacter = useMemo(() => {
+    const map = new Map<string, typeof items>()
+    for (const item of items) {
+      if (item.attuned_to) {
+        const existing = map.get(item.attuned_to) ?? []
+        existing.push(item)
+        map.set(item.attuned_to, existing)
+      }
+    }
+    return map
+  }, [items])
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -144,6 +158,29 @@ export function CharactersPage() {
                 <span className="px-2.5 py-1 bg-sky/10 text-sky rounded font-medium">AC {c.ac}</span>
                 <span className="px-2.5 py-1 bg-wine/10 text-wine rounded font-medium">HP {c.hp_max}</span>
               </div>
+              {/* Attunement slots */}
+              {(() => {
+                const attuned = attunementByCharacter.get(c.id) ?? []
+                return (
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-arcane" />
+                      <span className="text-xs font-heading font-semibold text-parchment-dim">
+                        Attunement ({attuned.length}/{MAX_ATTUNEMENT_SLOTS})
+                      </span>
+                    </div>
+                    {attuned.length > 0 ? (
+                      <ul className="space-y-0.5">
+                        {attuned.map((item) => (
+                          <li key={item.id} className="text-xs text-arcane">{item.name}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-xs text-parchment-muted">No attuned items</p>
+                    )}
+                  </div>
+                )
+              })()}
             </div>
           ))}
         </div>

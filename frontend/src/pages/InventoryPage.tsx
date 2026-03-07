@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useInventoryStore } from '../stores/useInventoryStore'
-import { ITEM_CATEGORIES } from '../constants'
-import { Plus, Trash2, DollarSign, Pencil, Sparkles, Undo2, GripVertical, ArrowUpDown, ChevronDown } from 'lucide-react'
+import { ITEM_CATEGORIES, CONTAINER_TYPES } from '../constants'
+import { Plus, Trash2, DollarSign, Pencil, Sparkles, Undo2, GripVertical, ArrowUpDown, ChevronDown, Search, Package } from 'lucide-react'
 import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
 import clsx from 'clsx'
-import type { Item } from '../types'
+import type { Item, Container } from '../types'
 
 type SortMode = 'custom' | 'name' | 'category' | 'date' | 'credit' | 'debit'
 
@@ -21,11 +21,13 @@ const SORT_LABELS: Record<SortMode, string> = {
 function ItemFormModal({
   item,
   containers,
+  allItems,
   onSave,
   onClose,
 }: {
   item: Partial<Item> | null
-  containers: { id: string; name: string }[]
+  containers: Container[]
+  allItems: Item[]
   onSave: (data: Partial<Item>) => void
   onClose: () => void
 }) {
@@ -33,9 +35,31 @@ function ItemFormModal({
     item ?? { name: '', quantity: 1, category: 'Item', game_date: '', sold: false }
   )
 
+  const selectedContainer = containers.find((c) => c.id === form.container_id)
+  const canAttune = selectedContainer?.type === 'character' && !!selectedContainer.character_id
+  const attunedCount = canAttune
+    ? allItems.filter((i) => i.attuned_to === selectedContainer.character_id && i.id !== item?.id).length
+    : 0
+  const attunementFull = attunedCount >= 3
+
+  const handleContainerChange = (containerId: string | null) => {
+    const next = containers.find((c) => c.id === containerId)
+    const shouldClearAttunement = !next || next.type !== 'character' || !next.character_id
+    setForm({
+      ...form,
+      container_id: containerId,
+      attuned_to: shouldClearAttunement ? null : form.attuned_to,
+    })
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSave(form)
+    // Auto-set attuned_to from container owner when attuned
+    const data = { ...form }
+    if (data.attuned_to && canAttune) {
+      data.attuned_to = selectedContainer.character_id
+    }
+    onSave(data)
   }
 
   return (
@@ -45,7 +69,27 @@ function ItemFormModal({
 
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
-            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Name</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-heading font-semibold text-parchment-dim">Name</label>
+              {canAttune && (
+                <label
+                  htmlFor="attuned-check"
+                  className={clsx(
+                    'flex items-center gap-1.5 text-sm font-heading font-semibold cursor-pointer',
+                    attunementFull && !form.attuned_to ? 'text-parchment-muted' : 'text-arcane'
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    id="attuned-check"
+                    checked={!!form.attuned_to}
+                    disabled={attunementFull && !form.attuned_to}
+                    onChange={(e) => setForm({ ...form, attuned_to: e.target.checked ? selectedContainer.character_id : null })}
+                  />
+                  Attuned {attunementFull && !form.attuned_to ? '(3/3)' : `(${attunedCount + (form.attuned_to ? 1 : 0)}/3)`}
+                </label>
+              )}
+            </div>
             <input
               className="input-themed"
               value={form.name ?? ''}
@@ -108,7 +152,7 @@ function ItemFormModal({
             <select
               className="input-themed"
               value={form.container_id ?? ''}
-              onChange={(e) => setForm({ ...form, container_id: e.target.value || null })}
+              onChange={(e) => handleContainerChange(e.target.value || null)}
             >
               <option value="">None</option>
               {containers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -199,12 +243,142 @@ function IdentifyModal({
   )
 }
 
+function ContainerManagerModal({
+  containers,
+  characters,
+  onSave,
+  onDelete,
+  onClose,
+}: {
+  containers: Container[]
+  characters: { id: string; name: string }[]
+  onSave: (data: Partial<Container>, id?: string) => void
+  onDelete: (id: string) => void
+  onClose: () => void
+}) {
+  const [editId, setEditId] = useState<string | null>(null)
+  const [form, setForm] = useState<Partial<Container>>({ name: '', type: 'bag', notes: '', location: '' })
+
+  const startEdit = (c: Container) => {
+    setEditId(c.id)
+    setForm(c)
+  }
+  const startNew = () => {
+    setEditId(null)
+    setForm({ name: '', type: 'bag', notes: '', location: '' })
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSave(form, editId ?? undefined)
+    startNew()
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 animate-[fadeIn_0.15s_ease-out]">
+      <div className="bg-card border border-border rounded-xl shadow-2xl shadow-black/40 p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto space-y-4 animate-[slideIn_0.2s_ease-out]">
+        <div className="flex items-center justify-between">
+          <h3 className="font-heading text-lg font-semibold text-parchment">Manage Containers</h3>
+          <button onClick={onClose} className="text-parchment-muted hover:text-parchment transition-colors text-xl">&times;</button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Name</label>
+            <input className="input-themed" value={form.name ?? ''} onChange={(e) => setForm({ ...form, name: e.target.value })} required autoFocus />
+          </div>
+          <div>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Type</label>
+            <select className="input-themed" value={form.type ?? 'bag'} onChange={(e) => setForm({ ...form, type: e.target.value as Container['type'] })}>
+              {CONTAINER_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Owner</label>
+            <select className="input-themed" value={form.character_id ?? ''} onChange={(e) => setForm({ ...form, character_id: e.target.value || null })}>
+              <option value="">None</option>
+              {characters.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Weight Limit</label>
+            <input type="number" step="0.1" className="input-themed" value={form.weight_limit ?? ''} onChange={(e) => setForm({ ...form, weight_limit: e.target.value ? Number(e.target.value) : null })} />
+          </div>
+          <div>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Location</label>
+            <input className="input-themed" value={form.location ?? ''} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="e.g. Waterdeep safehouse" />
+          </div>
+          <div>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Notes</label>
+            <input className="input-themed" value={form.notes ?? ''} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+          </div>
+          <div className="col-span-2 flex gap-2">
+            <button type="submit" className="px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright transition-colors text-sm">
+              {editId ? 'Update' : 'Add'} Container
+            </button>
+            {editId && (
+              <button type="button" onClick={startNew} className="px-4 py-2 bg-surface text-parchment-dim border border-border rounded-lg hover:bg-card-hover transition-colors text-sm">
+                Cancel Edit
+              </button>
+            )}
+          </div>
+        </form>
+
+        <div className="border-t border-border pt-4">
+          {containers.length === 0 ? (
+            <p className="text-sm text-parchment-muted">No containers yet</p>
+          ) : (
+            <table className="tt-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Owner</th>
+                  <th>Location</th>
+                  <th>Limit</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {containers.map((c) => (
+                  <tr key={c.id}>
+                    <td className="font-medium">{c.name}</td>
+                    <td><span className="px-2 py-0.5 rounded text-xs bg-surface text-parchment-dim">{c.type}</span></td>
+                    <td className="text-sm text-parchment-dim">{characters.find((ch) => ch.id === c.character_id)?.name ?? '--'}</td>
+                    <td className="text-sm text-parchment-dim">{c.location || '--'}</td>
+                    <td className="text-sm text-parchment-dim">{c.weight_limit != null ? `${c.weight_limit} lbs` : '--'}</td>
+                    <td>
+                      <div className="flex gap-1">
+                        <button onClick={() => startEdit(c)} className="p-1 text-parchment-muted hover:text-sky transition-colors" title="Edit">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={async () => { if (await confirm('Delete this container? Items in it will become unassigned.')) onDelete(c.id) }}
+                          className="p-1 text-parchment-muted hover:text-wine transition-colors" title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function InventoryPage() {
-  const { items, summary, containers, loading, fetchItems, fetchSummary, fetchContainers, createItem, updateItem, deleteItem, sellItem, unsellItem, identifyItem, reorderItems } = useInventoryStore()
+  const { items, summary, containers, characters, loading, fetchItems, fetchSummary, fetchContainers, fetchCharacters, createItem, updateItem, deleteItem, sellItem, unsellItem, identifyItem, reorderItems, createContainer, updateContainer, deleteContainer } = useInventoryStore()
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState<Item | null>(null)
   const [identifyTarget, setIdentifyTarget] = useState<Item | null>(null)
+  const [showContainerManager, setShowContainerManager] = useState(false)
   const [categoryFilter, setCategoryFilter] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [showSold, setShowSold] = useState(false)
   const [sortMode, setSortMode] = useState<SortMode>('custom')
   const [showSortMenu, setShowSortMenu] = useState(false)
@@ -221,7 +395,8 @@ export function InventoryPage() {
     fetchItems(params)
     fetchSummary()
     fetchContainers()
-  }, [fetchItems, fetchSummary, fetchContainers, categoryFilter, showSold])
+    fetchCharacters()
+  }, [fetchItems, fetchSummary, fetchContainers, fetchCharacters, categoryFilter, showSold])
 
   // Close sort menu on outside click
   useEffect(() => {
@@ -235,8 +410,18 @@ export function InventoryPage() {
   }, [showSortMenu])
 
   const sortedItems = useMemo(() => {
-    if (sortMode === 'custom') return items
-    const sorted = [...items]
+    let filtered = items
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      filtered = items.filter((i) =>
+        i.name.toLowerCase().includes(q) ||
+        (i.notes && i.notes.toLowerCase().includes(q)) ||
+        i.category.toLowerCase().includes(q) ||
+        (i.container_id && containers.find((c) => c.id === i.container_id)?.name.toLowerCase().includes(q))
+      )
+    }
+    if (sortMode === 'custom') return filtered
+    const sorted = [...filtered]
     switch (sortMode) {
       case 'name':
         sorted.sort((a, b) => a.name.localeCompare(b.name))
@@ -255,7 +440,7 @@ export function InventoryPage() {
         break
     }
     return sorted
-  }, [items, sortMode])
+  }, [items, containers, sortMode, searchQuery])
 
   const handleDragStart = useCallback((id: number) => {
     setDragId(id)
@@ -308,12 +493,20 @@ export function InventoryPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="font-heading text-3xl font-bold text-parchment">Inventory</h2>
-        <button
-          onClick={() => { setEditItem(null); setShowForm(true) }}
-          className="flex items-center gap-2 px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright text-sm transition-colors"
-        >
-          <Plus className="w-4 h-4" /> Add Item
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowContainerManager(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-surface text-parchment-dim border border-border font-heading font-semibold rounded-lg hover:bg-card-hover text-sm transition-colors"
+          >
+            <Package className="w-4 h-4" /> Containers
+          </button>
+          <button
+            onClick={() => { setEditItem(null); setShowForm(true) }}
+            className="flex items-center gap-2 px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright text-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" /> Add Item
+          </button>
+        </div>
       </div>
 
       {/* Summary bar */}
@@ -327,7 +520,16 @@ export function InventoryPage() {
       )}
 
       {/* Filters + Sort */}
-      <div className="flex gap-4 mb-4 items-center">
+      <div className="flex gap-4 mb-4 items-center flex-wrap">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-parchment-muted" />
+          <input
+            className="input-themed !pl-9 !w-[200px]"
+            placeholder="Search items..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
         <select
           className="input-themed !w-auto"
           value={categoryFilter}
@@ -422,6 +624,11 @@ export function InventoryPage() {
                     {!item.identified && (
                       <span className="ml-2 px-1.5 py-0.5 bg-amber/20 text-amber text-xs font-medium rounded">TBI</span>
                     )}
+                    {item.attuned_to && (
+                      <span className="ml-2 px-1.5 py-0.5 bg-arcane/20 text-arcane text-xs font-medium rounded">
+                        {characters.find((c) => c.id === item.attuned_to)?.name ?? 'Attuned'}
+                      </span>
+                    )}
                     {item.notes && <p className="text-xs text-parchment-muted mt-0.5">{item.notes}</p>}
                   </td>
                   <td>{item.quantity}</td>
@@ -441,7 +648,12 @@ export function InventoryPage() {
                   <td className="text-emerald">{item.credit_gp != null ? `${item.credit_gp} gp` : <span className="text-parchment-muted">--</span>}</td>
                   <td className="text-wine">{item.debit_gp != null ? `${item.debit_gp} gp` : <span className="text-parchment-muted">--</span>}</td>
                   <td className="text-parchment-dim">{item.game_date || <span className="text-parchment-muted">--</span>}</td>
-                  <td className="text-xs text-parchment-dim">{containers.find((c) => c.id === item.container_id)?.name ?? <span className="text-parchment-muted">--</span>}</td>
+                  <td className="text-xs text-parchment-dim">{(() => {
+                    const container = containers.find((c) => c.id === item.container_id)
+                    if (!container) return <span className="text-parchment-muted">--</span>
+                    const owner = container.character_id ? characters.find((ch) => ch.id === container.character_id) : null
+                    return owner && !container.name.includes(owner.name) ? `${owner.name}'s ${container.name}` : container.name
+                  })()}</td>
                   <td>
                     <div className="flex gap-1">
                       <button
@@ -497,6 +709,7 @@ export function InventoryPage() {
         <ItemFormModal
           item={editItem}
           containers={containers}
+          allItems={items}
           onSave={handleSave}
           onClose={() => { setShowForm(false); setEditItem(null) }}
         />
@@ -514,6 +727,32 @@ export function InventoryPage() {
             }
           }}
           onClose={() => setIdentifyTarget(null)}
+        />
+      )}
+
+      {showContainerManager && (
+        <ContainerManagerModal
+          containers={containers}
+          characters={characters}
+          onSave={async (data, id) => {
+            try {
+              if (id) {
+                await updateContainer(id, data)
+              } else {
+                await createContainer(data)
+              }
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : 'Failed to save container')
+            }
+          }}
+          onDelete={async (id) => {
+            try {
+              await deleteContainer(id)
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : 'Failed to delete container')
+            }
+          }}
+          onClose={() => setShowContainerManager(false)}
         />
       )}
     </div>
