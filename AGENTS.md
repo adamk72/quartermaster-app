@@ -48,6 +48,9 @@ All endpoints under `/api/v1/`. Auth via `Authorization: Bearer <token>`.
 ## App Naming
 - If the user updates the app name, ask whether the Go module path (`github.com/adamk72/quartermaster-app` in `go.mod` and all import statements) should be updated to match.
 
+## Coding Principles
+- **Avoid hardcoding values.** Hardcoded strings, IDs, or magic values usually indicate that not enough context has been gathered about the broader system. Before hardcoding, ask the user how the value should be sourced (database, config, user input, etc.). Hardcoding is a signal to pause and ask questions.
+
 ## Conventions
 - Party members: Andurin, Ayloc, Ruya, Sachan, Ingvild, Hrothgar
 - Currency: 1pp = 10gp, 1ep = 0.5gp, 1sp = 0.1gp, 1cp = 0.01gp

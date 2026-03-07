@@ -59,6 +59,7 @@ func handleGetContainer(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	loadItemLabels(c.Items)
 	writeJSON(w, http.StatusOK, c)
 }
 

@@ -1,6 +1,5 @@
 export const PARTY_MEMBERS = ['Andurin', 'Ayloc', 'Ruya', 'Sachan', 'Ingvild', 'Hrothgar'] as const
 
-export const ITEM_CATEGORIES = ['Implements', 'Potions', 'Weapons & Armor', 'Item', 'Treasure', 'Expense', 'Coin', 'Magic'] as const
 
 export const CONTAINER_TYPES = ['character', 'bag', 'mount', 'cache', 'vendor'] as const
 

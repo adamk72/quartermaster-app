@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAppStore } from '../../stores/useAppStore'
 import {
   Sword, BookOpen, Bug, ScrollText, Brain, Star,
-  Shield, Users, History, LayoutDashboard, Menu, X, LogOut, Apple, Coins,
+  Shield, Users, History, LayoutDashboard, Menu, X, LogOut, Apple, Coins, Settings,
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -20,6 +20,7 @@ const navItems = [
   { path: '/consumables', label: 'Consumables', icon: Apple },
   { path: '/characters', label: 'Characters', icon: Users },
   { path: '/changelog', label: 'Changelog', icon: History },
+  { path: '/settings', label: 'Settings', icon: Settings },
 ]
 
 export function Layout({ children }: { children: ReactNode }) {

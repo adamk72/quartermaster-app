@@ -37,6 +37,15 @@ export interface Mount {
   updated_at: string
 }
 
+export interface Label {
+  id: string
+  name: string
+  color: string
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
 export interface Item {
   id: number
   name: string
@@ -44,7 +53,7 @@ export interface Item {
   credit_gp: number | null
   debit_gp: number | null
   game_date: string
-  category: 'Magic' | 'Implements' | 'Potions' | 'Weapons & Armor' | 'Item' | 'Treasure' | 'Expense' | 'Coin'
+  category: string
   container_id: string | null
   sold: boolean
   unit_weight_lbs: number | null
@@ -58,6 +67,8 @@ export interface Item {
   sort_order: number
   created_at: string
   updated_at: string
+  labels: Label[]
+  label_ids?: string[]
 }
 
 export interface CoinLedgerEntry {

@@ -52,17 +52,22 @@ func validateAttunement(charID string, containerID *string, excludeItemID int) e
 }
 
 func handleListItems(w http.ResponseWriter, r *http.Request) {
-	query := "SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at FROM items"
+	query := "SELECT DISTINCT i.id, i.name, i.quantity, i.credit_gp, i.debit_gp, i.game_date, i.category, i.container_id, i.sold, i.unit_weight_lbs, i.unit_value_gp, i.weight_override, i.added_to_dndbeyond, i.identified, i.attuned_to, i.singular, i.notes, i.sort_order, i.created_at, i.updated_at FROM items i"
 
 	var args []any
 	var conditions []string
+	var joins []string
 
-	if cat := r.URL.Query().Get("category"); cat != "" {
-		conditions = append(conditions, "category = ?")
+	if label := r.URL.Query().Get("label"); label != "" {
+		joins = append(joins, "JOIN item_labels il ON il.item_id = i.id")
+		conditions = append(conditions, "il.label_id = ?")
+		args = append(args, label)
+	} else if cat := r.URL.Query().Get("category"); cat != "" {
+		conditions = append(conditions, "i.category = ?")
 		args = append(args, cat)
 	}
 	if sold := r.URL.Query().Get("sold"); sold != "" {
-		conditions = append(conditions, "sold = ?")
+		conditions = append(conditions, "i.sold = ?")
 		if sold == "true" {
 			args = append(args, 1)
 		} else {
@@ -70,20 +75,17 @@ func handleListItems(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if cid := r.URL.Query().Get("container_id"); cid != "" {
-		conditions = append(conditions, "container_id = ?")
+		conditions = append(conditions, "i.container_id = ?")
 		args = append(args, cid)
 	}
 
-	if len(conditions) > 0 {
-		query += " WHERE "
-		for i, c := range conditions {
-			if i > 0 {
-				query += " AND "
-			}
-			query += c
-		}
+	for _, j := range joins {
+		query += " " + j
 	}
-	query += " ORDER BY sort_order, name"
+	if len(conditions) > 0 {
+		query += " WHERE " + strings.Join(conditions, " AND ")
+	}
+	query += " ORDER BY i.sort_order, i.name"
 
 	rows, err := db.DB.Query(query, args...)
 	if err != nil {
@@ -100,6 +102,7 @@ func handleListItems(w http.ResponseWriter, r *http.Request) {
 		}
 		items = append(items, item)
 	}
+	loadItemLabels(items)
 	writeJSON(w, http.StatusOK, items)
 }
 
@@ -112,7 +115,9 @@ func handleGetItem(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "item not found")
 		return
 	}
-	writeJSON(w, http.StatusOK, item)
+	singleItems := []types.Item{item}
+	loadItemLabels(singleItems)
+	writeJSON(w, http.StatusOK, singleItems[0])
 }
 
 func handleCreateItem(w http.ResponseWriter, r *http.Request) {
@@ -148,6 +153,17 @@ func handleCreateItem(w http.ResponseWriter, r *http.Request) {
 
 	id, _ := result.LastInsertId()
 	item.ID = int(id)
+
+	if len(item.LabelIDs) > 0 {
+		if err := saveItemLabels(item.ID, item.LabelIDs); err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to save labels")
+			return
+		}
+	}
+
+	singleItems := []types.Item{item}
+	loadItemLabels(singleItems)
+	item = singleItems[0]
 
 	user := GetUser(r)
 	if user != nil {
@@ -191,13 +207,25 @@ func handleUpdateItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	idInt, _ := strconv.Atoi(id)
+	item.ID = idInt
+
+	if item.LabelIDs != nil {
+		if err := saveItemLabels(item.ID, item.LabelIDs); err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to save labels")
+			return
+		}
+	}
+
+	singleItems := []types.Item{item}
+	loadItemLabels(singleItems)
+	item = singleItems[0]
+
 	user := GetUser(r)
 	if user != nil {
 		LogChange(&user.ID, "items", id, "update", "{}")
 	}
 
-	idInt, _ := strconv.Atoi(id)
-	item.ID = idInt
 	writeJSON(w, http.StatusOK, item)
 }
 
@@ -296,6 +324,13 @@ func handleIdentifyItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Add 'magic' label if not already present.
+	// NOTE: This assumes the seeded 'magic' label exists. If it has been deleted
+	// via Settings, this INSERT silently does nothing (OR IGNORE + FK constraint).
+	// A future improvement could prevent deletion of built-in labels.
+	idInt, _ := strconv.Atoi(id)
+	db.DB.Exec("INSERT OR IGNORE INTO item_labels (item_id, label_id) VALUES (?, 'magic')", idInt)
+
 	user := GetUser(r)
 	if user != nil {
 		LogChange(&user.ID, "items", id, "update", fmt.Sprintf(`{"identified":true,"name":%q}`, req.Name))
@@ -309,7 +344,9 @@ func handleIdentifyItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, item)
+	singleItems := []types.Item{item}
+	loadItemLabels(singleItems)
+	writeJSON(w, http.StatusOK, singleItems[0])
 }
 
 func handleReorderItems(w http.ResponseWriter, r *http.Request) {

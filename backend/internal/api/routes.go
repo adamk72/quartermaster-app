@@ -42,6 +42,12 @@ func RegisterRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /api/v1/items/bulk-delete", auth(handleBulkDeleteItems))
 	mux.Handle("POST /api/v1/items/bulk-move", auth(handleBulkMoveItems))
 
+	// Labels
+	mux.Handle("GET /api/v1/labels", auth(handleListLabels))
+	mux.Handle("POST /api/v1/labels", auth(handleCreateLabel))
+	mux.Handle("PUT /api/v1/labels/{id}", auth(handleUpdateLabel))
+	mux.Handle("DELETE /api/v1/labels/{id}", auth(handleDeleteLabel))
+
 	// Coins
 	mux.Handle("GET /api/v1/coins", auth(handleListCoins))
 	mux.Handle("POST /api/v1/coins", auth(handleCreateCoin))

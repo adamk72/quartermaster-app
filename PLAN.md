@@ -22,8 +22,8 @@
 - [x] Dedicated view with per-denomination totals, coin conversion, gems & jewelry
 
 ## Phase 6: Label System (replaces categories)
-- [ ] Flexible multi-label, user-defined, color-coded tags (replaces single `category` column)
-- [ ] Settings/Admin area for managing labels
+- [x] Flexible multi-label, user-defined, color-coded tags (replaces single `category` column)
+- [x] Settings/Admin area for managing labels
 
 ## Phase 7: Make the App Generic
 - [ ] Remove hardcoded character references from constants.ts, seed files, migration 004

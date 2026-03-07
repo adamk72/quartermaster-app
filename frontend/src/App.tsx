@@ -18,6 +18,7 @@ import { CharactersPage } from './pages/CharactersPage'
 import { ConsumablesPage } from './pages/ConsumablesPage'
 import { ChangelogPage } from './pages/ChangelogPage'
 import { WealthPage } from './pages/WealthPage'
+import { SettingsPage } from './pages/SettingsPage'
 
 export function App() {
   const { user, loading, checkAuth } = useAppStore()
@@ -55,6 +56,7 @@ export function App() {
           <Route path="/consumables" element={<ConsumablesPage />} />
           <Route path="/characters" element={<CharactersPage />} />
           <Route path="/changelog" element={<ChangelogPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

@@ -31,6 +31,15 @@ type Container struct {
 	TotalWeight float64   `json:"total_weight,omitempty"`
 }
 
+type Label struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Color     string    `json:"color"`
+	SortOrder int       `json:"sort_order"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type Item struct {
 	ID               int       `json:"id"`
 	Name             string    `json:"name"`
@@ -52,6 +61,8 @@ type Item struct {
 	SortOrder        int       `json:"sort_order"`
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`
+	Labels           []Label   `json:"labels"`
+	LabelIDs         []string  `json:"label_ids,omitempty"`
 }
 
 type CoinLedgerEntry struct {

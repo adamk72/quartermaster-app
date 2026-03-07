@@ -37,8 +37,9 @@ export function WealthPage() {
 
   useEffect(() => { fetchAll(); fetchItems({ sold: 'false' }); fetchCharacters() }, [fetchAll])
 
-  // Gems & jewelry: items with category Treasure that are unsold
-  const gemsAndJewelry = items.filter((i) => i.category === 'Treasure' && !i.sold)
+  // Gems & jewelry: items with 'treasure' label that are unsold
+  // NOTE: Assumes the seeded 'treasure' label exists; breaks if deleted via Settings
+  const gemsAndJewelry = items.filter((i) => i.labels?.some((l) => l.id === 'treasure') && !i.sold)
   const gemsTotal = gemsAndJewelry.reduce((sum, i) => sum + (i.unit_value_gp ?? 0) * i.quantity, 0)
 
   const handleDeleteEntry = async (id: number) => {

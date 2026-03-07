@@ -1,18 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useInventoryStore } from '../stores/useInventoryStore'
-import { ITEM_CATEGORIES, CONTAINER_TYPES } from '../constants'
+import { useLabelStore } from '../stores/useLabelStore'
+import { CONTAINER_TYPES } from '../constants'
 import { Plus, Trash2, DollarSign, Pencil, Sparkles, Undo2, GripVertical, ArrowUpDown, ChevronDown, Search, Package } from 'lucide-react'
 import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
 import clsx from 'clsx'
-import type { Item, Container, Mount } from '../types'
+import type { Item, Container, Mount, Label } from '../types'
 
-type SortMode = 'custom' | 'name' | 'category' | 'date' | 'credit' | 'debit'
+type SortMode = 'custom' | 'name' | 'labels' | 'date' | 'credit' | 'debit'
 
 const SORT_LABELS: Record<SortMode, string> = {
   custom: 'Custom Order',
   name: 'Name',
-  category: 'Category',
+  labels: 'Labels',
   date: 'Date',
   credit: 'Credit',
   debit: 'Debit',
@@ -22,17 +23,22 @@ function ItemFormModal({
   item,
   containers,
   allItems,
+  labels,
   onSave,
   onClose,
 }: {
   item: Partial<Item> | null
   containers: Container[]
   allItems: Item[]
+  labels: Label[]
   onSave: (data: Partial<Item>) => void
   onClose: () => void
 }) {
   const [form, setForm] = useState<Partial<Item>>(
-    item ?? { name: '', quantity: 1, category: 'Item', game_date: '', sold: false }
+    item ?? { name: '', quantity: 1, category: 'Item', game_date: '', sold: false, label_ids: [] }
+  )
+  const [selectedLabelIds, setSelectedLabelIds] = useState<Set<string>>(
+    new Set(item?.labels?.map((l) => l.id) ?? item?.label_ids ?? [])
   )
 
   const selectedContainer = containers.find((c) => c.id === form.container_id)
@@ -52,10 +58,18 @@ function ItemFormModal({
     })
   }
 
+  const toggleLabel = (labelId: string) => {
+    setSelectedLabelIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(labelId)) next.delete(labelId)
+      else next.add(labelId)
+      return next
+    })
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Auto-set attuned_to from container owner when attuned
-    const data = { ...form }
+    const data = { ...form, label_ids: [...selectedLabelIds] }
     if (data.attuned_to && canAttune) {
       data.attuned_to = selectedContainer.character_id
     }
@@ -108,15 +122,26 @@ function ItemFormModal({
               min={1}
             />
           </div>
-          <div>
-            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Category</label>
-            <select
-              className="input-themed"
-              value={form.category ?? 'Item'}
-              onChange={(e) => setForm({ ...form, category: e.target.value as Item['category'] })}
-            >
-              {ITEM_CATEGORIES.map((c) => <option key={c}>{c}</option>)}
-            </select>
+          <div className="col-span-2">
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Labels</label>
+            <div className="flex flex-wrap gap-1.5">
+              {labels.map((l) => (
+                <button
+                  key={l.id}
+                  type="button"
+                  onClick={() => toggleLabel(l.id)}
+                  className={clsx(
+                    'px-2.5 py-1 rounded-full text-xs font-medium border transition-all',
+                    selectedLabelIds.has(l.id)
+                      ? 'border-transparent text-base'
+                      : 'border-border text-parchment-muted hover:text-parchment hover:border-border-light bg-transparent'
+                  )}
+                  style={selectedLabelIds.has(l.id) ? { backgroundColor: l.color + '30', color: l.color, borderColor: l.color + '50' } : undefined}
+                >
+                  {l.name}
+                </button>
+              ))}
+            </div>
           </div>
           <div>
             <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Credit (gp)</label>
@@ -400,6 +425,7 @@ function ContainerManagerModal({
 
 export function InventoryPage() {
   const { items, summary, containers, characters, mounts, loading, fetchItems, fetchSummary, fetchContainers, fetchCharacters, fetchMounts, createItem, updateItem, deleteItem, sellItem, unsellItem, identifyItem, reorderItems, bulkSellItems, bulkDeleteItems, bulkMoveItems, createContainer, updateContainer, deleteContainer } = useInventoryStore()
+  const { labels, fetchLabels } = useLabelStore()
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState<Item | null>(null)
   const [identifyTarget, setIdentifyTarget] = useState<Item | null>(null)
@@ -407,7 +433,7 @@ export function InventoryPage() {
 
   // Multi-select
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
-  const [categoryFilter, setCategoryFilter] = useState('')
+  const [labelFilter, setLabelFilter] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [showSold, setShowSold] = useState(false)
   const [sortMode, setSortMode] = useState<SortMode>('custom')
@@ -420,14 +446,16 @@ export function InventoryPage() {
 
   useEffect(() => {
     const params: Record<string, string> = {}
-    if (categoryFilter) params['category'] = categoryFilter
+    if (labelFilter) params['label'] = labelFilter
     if (!showSold) params['sold'] = 'false'
     fetchItems(params)
     fetchSummary()
     fetchContainers()
     fetchCharacters()
     fetchMounts()
-  }, [fetchItems, fetchSummary, fetchContainers, fetchCharacters, fetchMounts, categoryFilter, showSold])
+  }, [fetchItems, fetchSummary, fetchContainers, fetchCharacters, fetchMounts, labelFilter, showSold])
+
+  useEffect(() => { fetchLabels() }, [fetchLabels])
 
   // Close sort menu on outside click
   useEffect(() => {
@@ -447,7 +475,7 @@ export function InventoryPage() {
       filtered = items.filter((i) =>
         i.name.toLowerCase().includes(q) ||
         (i.notes && i.notes.toLowerCase().includes(q)) ||
-        i.category.toLowerCase().includes(q) ||
+        (i.labels && i.labels.some((l) => l.name.toLowerCase().includes(q))) ||
         (i.container_id && containers.find((c) => c.id === i.container_id)?.name.toLowerCase().includes(q))
       )
     }
@@ -457,8 +485,12 @@ export function InventoryPage() {
       case 'name':
         sorted.sort((a, b) => a.name.localeCompare(b.name))
         break
-      case 'category':
-        sorted.sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name))
+      case 'labels':
+        sorted.sort((a, b) => {
+          const aLabel = a.labels?.[0]?.name ?? ''
+          const bLabel = b.labels?.[0]?.name ?? ''
+          return aLabel.localeCompare(bLabel) || a.name.localeCompare(b.name)
+        })
         break
       case 'date':
         sorted.sort((a, b) => (b.game_date || '').localeCompare(a.game_date || '') || a.name.localeCompare(b.name))
@@ -626,11 +658,11 @@ export function InventoryPage() {
         </div>
         <select
           className="input-themed !w-auto"
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
+          value={labelFilter}
+          onChange={(e) => setLabelFilter(e.target.value)}
         >
-          <option value="">All Categories</option>
-          {ITEM_CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+          <option value="">All Labels</option>
+          {labels.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
         </select>
         <label className="flex items-center gap-2 text-sm text-parchment-dim">
           <input
@@ -726,7 +758,7 @@ export function InventoryPage() {
                 {sortMode === 'custom' && <th className="w-8"></th>}
                 <th>Name</th>
                 <th>Qty</th>
-                <th>Category</th>
+                <th>Labels</th>
                 <th>Credit</th>
                 <th>Debit</th>
                 <th>Date</th>
@@ -773,17 +805,20 @@ export function InventoryPage() {
                   </td>
                   <td>{item.quantity}</td>
                   <td>
-                    <span className={clsx(
-                      'px-2 py-0.5 rounded text-xs font-medium',
-                      item.category === 'Magic' || item.category === 'Implements' ? 'bg-arcane/15 text-arcane' :
-                      item.category === 'Potions' ? 'bg-emerald/15 text-emerald' :
-                      item.category === 'Weapons & Armor' ? 'bg-sky/15 text-sky' :
-                      item.category === 'Treasure' ? 'bg-gold/15 text-gold' :
-                      item.category === 'Expense' ? 'bg-wine/15 text-wine' :
-                      'bg-surface text-parchment-dim'
-                    )}>
-                      {item.category}
-                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {item.labels?.map((l) => (
+                        <span
+                          key={l.id}
+                          className="px-2 py-0.5 rounded text-xs font-medium"
+                          style={{ backgroundColor: l.color + '25', color: l.color }}
+                        >
+                          {l.name}
+                        </span>
+                      ))}
+                      {(!item.labels || item.labels.length === 0) && (
+                        <span className="text-parchment-muted text-xs">--</span>
+                      )}
+                    </div>
                   </td>
                   <td className="text-emerald">{item.credit_gp != null ? `${item.credit_gp} gp` : <span className="text-parchment-muted">--</span>}</td>
                   <td className="text-wine">{item.debit_gp != null ? `${item.debit_gp} gp` : <span className="text-parchment-muted">--</span>}</td>
@@ -852,6 +887,7 @@ export function InventoryPage() {
           item={editItem}
           containers={containers}
           allItems={items}
+          labels={labels}
           onSave={handleSave}
           onClose={() => { setShowForm(false); setEditItem(null) }}
         />
