@@ -1,13 +1,14 @@
 import { create } from 'zustand'
 import { api } from '../api/client'
 import { toast } from './useToastStore'
-import type { Item, ItemSummary, Container, Character } from '../types'
+import type { Item, ItemSummary, Container, Character, Mount } from '../types'
 
 interface InventoryState {
   items: Item[]
   summary: ItemSummary | null
   containers: Container[]
   characters: Character[]
+  mounts: Mount[]
   loading: boolean
   error: string | null
 
@@ -15,6 +16,7 @@ interface InventoryState {
   fetchSummary: () => Promise<void>
   fetchContainers: () => Promise<void>
   fetchCharacters: () => Promise<void>
+  fetchMounts: () => Promise<void>
   createItem: (item: Partial<Item>) => Promise<Item>
   updateItem: (id: number, item: Partial<Item>) => Promise<Item>
   deleteItem: (id: number) => Promise<void>
@@ -22,12 +24,18 @@ interface InventoryState {
   unsellItem: (id: number) => Promise<void>
   reorderItems: (itemIds: number[]) => Promise<void>
   identifyItem: (id: number, name?: string) => Promise<Item>
+  bulkSellItems: (itemIds: number[]) => Promise<void>
+  bulkDeleteItems: (itemIds: number[]) => Promise<void>
+  bulkMoveItems: (itemIds: number[], containerId: string) => Promise<void>
   createContainer: (container: Partial<Container>) => Promise<Container>
   updateContainer: (id: string, container: Partial<Container>) => Promise<Container>
   deleteContainer: (id: string) => Promise<void>
   createCharacter: (char: Partial<Character>) => Promise<Character>
   updateCharacter: (id: string, char: Partial<Character>) => Promise<Character>
   deleteCharacter: (id: string) => Promise<void>
+  createMount: (mount: Partial<Mount>) => Promise<Mount>
+  updateMount: (id: string, mount: Partial<Mount>) => Promise<Mount>
+  deleteMount: (id: string) => Promise<void>
 }
 
 export const useInventoryStore = create<InventoryState>((set, get) => ({
@@ -35,6 +43,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   summary: null,
   containers: [],
   characters: [],
+  mounts: [],
   loading: false,
   error: null,
 
@@ -127,6 +136,29 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     return updated
   },
 
+  bulkSellItems: async (itemIds) => {
+    await api.post('/items/bulk-sell', { item_ids: itemIds })
+    const { items } = get()
+    const idSet = new Set(itemIds)
+    set({ items: items.map((i) => idSet.has(i.id) ? { ...i, sold: true } : i) })
+    get().fetchSummary()
+  },
+
+  bulkDeleteItems: async (itemIds) => {
+    await api.post('/items/bulk-delete', { item_ids: itemIds })
+    const { items } = get()
+    const idSet = new Set(itemIds)
+    set({ items: items.filter((i) => !idSet.has(i.id)) })
+    get().fetchSummary()
+  },
+
+  bulkMoveItems: async (itemIds, containerId) => {
+    await api.post('/items/bulk-move', { item_ids: itemIds, container_id: containerId })
+    const { items } = get()
+    const idSet = new Set(itemIds)
+    set({ items: items.map((i) => idSet.has(i.id) ? { ...i, container_id: containerId || null, attuned_to: null } : i) })
+  },
+
   createContainer: async (container) => {
     const created = await api.post<Container>('/containers', container)
     const { containers } = get()
@@ -165,5 +197,34 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     await api.del(`/characters/${id}`)
     const { characters } = get()
     set({ characters: characters.filter((c) => c.id !== id) })
+  },
+
+  fetchMounts: async () => {
+    try {
+      const mounts = await api.get<Mount[]>('/mounts')
+      set({ mounts })
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to fetch mounts')
+    }
+  },
+
+  createMount: async (mount) => {
+    const created = await api.post<Mount>('/mounts', mount)
+    const { mounts } = get()
+    set({ mounts: [...mounts, created] })
+    return created
+  },
+
+  updateMount: async (id, mount) => {
+    const updated = await api.put<Mount>(`/mounts/${id}`, mount)
+    const { mounts } = get()
+    set({ mounts: mounts.map((m) => (m.id === id ? updated : m)) })
+    return updated
+  },
+
+  deleteMount: async (id) => {
+    await api.del(`/mounts/${id}`)
+    const { mounts } = get()
+    set({ mounts: mounts.filter((m) => m.id !== id) })
   },
 }))

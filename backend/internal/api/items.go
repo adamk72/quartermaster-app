@@ -352,6 +352,153 @@ func handleReorderItems(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func handleBulkSellItems(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		ItemIDs []int `json:"item_ids"`
+	}
+	if err := readJSON(r, &req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if len(req.ItemIDs) == 0 {
+		writeError(w, http.StatusBadRequest, "item_ids required")
+		return
+	}
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to begin transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	now := time.Now()
+	for _, id := range req.ItemIDs {
+		if _, err := tx.Exec("UPDATE items SET sold = 1, updated_at = ? WHERE id = ?", now, id); err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to sell items")
+			return
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to commit bulk sell")
+		return
+	}
+
+	user := GetUser(r)
+	if user != nil {
+		LogChange(&user.ID, "items", "bulk", "update", `{"sold":true}`)
+	}
+
+	writeJSON(w, http.StatusOK, map[string]string{"status": "sold"})
+}
+
+func handleBulkDeleteItems(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		ItemIDs []int `json:"item_ids"`
+	}
+	if err := readJSON(r, &req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if len(req.ItemIDs) == 0 {
+		writeError(w, http.StatusBadRequest, "item_ids required")
+		return
+	}
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to begin transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	for _, id := range req.ItemIDs {
+		if _, err := tx.Exec("DELETE FROM items WHERE id = ?", id); err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to delete items")
+			return
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to commit bulk delete")
+		return
+	}
+
+	user := GetUser(r)
+	if user != nil {
+		LogChange(&user.ID, "items", "bulk", "delete", "{}")
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func handleBulkMoveItems(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		ItemIDs     []int  `json:"item_ids"`
+		ContainerID string `json:"container_id"`
+	}
+	if err := readJSON(r, &req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if len(req.ItemIDs) == 0 {
+		writeError(w, http.StatusBadRequest, "item_ids required")
+		return
+	}
+
+	// Validate container exists (empty string means unassign)
+	var containerID *string
+	var destCharacterID *string
+	if req.ContainerID != "" {
+		var exists bool
+		if err := db.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM containers WHERE id = ?)", req.ContainerID).Scan(&exists); err != nil || !exists {
+			writeError(w, http.StatusBadRequest, "container not found")
+			return
+		}
+		containerID = &req.ContainerID
+		// Look up the destination container's owner for attunement preservation
+		var charID *string
+		db.DB.QueryRow("SELECT character_id FROM containers WHERE id = ?", req.ContainerID).Scan(&charID)
+		destCharacterID = charID
+	}
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to begin transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	now := time.Now()
+	for _, id := range req.ItemIDs {
+		// Clear attunement only if the item is attuned to a different character than the destination container's owner
+		if destCharacterID != nil {
+			if _, err := tx.Exec("UPDATE items SET container_id = ?, attuned_to = CASE WHEN attuned_to = ? THEN attuned_to ELSE NULL END, updated_at = ? WHERE id = ?", containerID, *destCharacterID, now, id); err != nil {
+				writeError(w, http.StatusInternalServerError, "failed to move items")
+				return
+			}
+		} else {
+			if _, err := tx.Exec("UPDATE items SET container_id = ?, attuned_to = NULL, updated_at = ? WHERE id = ?", containerID, now, id); err != nil {
+				writeError(w, http.StatusInternalServerError, "failed to move items")
+				return
+			}
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to commit bulk move")
+		return
+	}
+
+	user := GetUser(r)
+	if user != nil {
+		LogChange(&user.ID, "items", "bulk", "update", fmt.Sprintf(`{"container_id":%q}`, req.ContainerID))
+	}
+
+	writeJSON(w, http.StatusOK, map[string]string{"status": "moved"})
+}
+
 func handleItemSummary(w http.ResponseWriter, r *http.Request) {
 	var summary types.ItemSummary
 

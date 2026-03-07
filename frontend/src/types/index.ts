@@ -17,6 +17,7 @@ export interface Container {
   name: string
   type: 'character' | 'bag' | 'mount' | 'cache' | 'vendor'
   character_id: string | null
+  mount_id: string | null
   weight_limit: number | null
   location: string
   notes: string
@@ -24,6 +25,16 @@ export interface Container {
   updated_at: string
   items?: Item[]
   total_weight?: number
+}
+
+export interface Mount {
+  id: string
+  name: string
+  carrying_capacity: number | null
+  notes: string
+  active: boolean
+  created_at: string
+  updated_at: string
 }
 
 export interface Item {

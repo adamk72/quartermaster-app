@@ -5,7 +5,7 @@ import { Plus, Trash2, DollarSign, Pencil, Sparkles, Undo2, GripVertical, ArrowU
 import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
 import clsx from 'clsx'
-import type { Item, Container } from '../types'
+import type { Item, Container, Mount } from '../types'
 
 type SortMode = 'custom' | 'name' | 'category' | 'date' | 'credit' | 'debit'
 
@@ -246,12 +246,14 @@ function IdentifyModal({
 function ContainerManagerModal({
   containers,
   characters,
+  mounts,
   onSave,
   onDelete,
   onClose,
 }: {
   containers: Container[]
   characters: { id: string; name: string }[]
+  mounts: Mount[]
   onSave: (data: Partial<Container>, id?: string) => void
   onDelete: (id: string) => void
   onClose: () => void
@@ -268,10 +270,28 @@ function ContainerManagerModal({
     setForm({ name: '', type: 'bag', notes: '', location: '' })
   }
 
+  const handleOwnerChange = (value: string) => {
+    if (!value) {
+      setForm({ ...form, character_id: null, mount_id: null })
+    } else if (value.startsWith('mount:')) {
+      setForm({ ...form, character_id: null, mount_id: value.slice(6) })
+    } else {
+      setForm({ ...form, character_id: value, mount_id: null })
+    }
+  }
+
+  const ownerValue = form.character_id ?? (form.mount_id ? `mount:${form.mount_id}` : '')
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onSave(form, editId ?? undefined)
     startNew()
+  }
+
+  const getOwnerName = (c: Container) => {
+    if (c.character_id) return characters.find((ch) => ch.id === c.character_id)?.name ?? '--'
+    if (c.mount_id) return mounts.find((m) => m.id === c.mount_id)?.name ?? '--'
+    return '--'
   }
 
   return (
@@ -295,9 +315,16 @@ function ContainerManagerModal({
           </div>
           <div>
             <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Owner</label>
-            <select className="input-themed" value={form.character_id ?? ''} onChange={(e) => setForm({ ...form, character_id: e.target.value || null })}>
+            <select className="input-themed" value={ownerValue} onChange={(e) => handleOwnerChange(e.target.value)}>
               <option value="">None</option>
-              {characters.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              <optgroup label="Characters">
+                {characters.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </optgroup>
+              {mounts.length > 0 && (
+                <optgroup label="Pack Animals">
+                  {mounts.map((m) => <option key={m.id} value={`mount:${m.id}`}>{m.name}</option>)}
+                </optgroup>
+              )}
             </select>
           </div>
           <div>
@@ -344,7 +371,7 @@ function ContainerManagerModal({
                   <tr key={c.id}>
                     <td className="font-medium">{c.name}</td>
                     <td><span className="px-2 py-0.5 rounded text-xs bg-surface text-parchment-dim">{c.type}</span></td>
-                    <td className="text-sm text-parchment-dim">{characters.find((ch) => ch.id === c.character_id)?.name ?? '--'}</td>
+                    <td className="text-sm text-parchment-dim">{getOwnerName(c)}</td>
                     <td className="text-sm text-parchment-dim">{c.location || '--'}</td>
                     <td className="text-sm text-parchment-dim">{c.weight_limit != null ? `${c.weight_limit} lbs` : '--'}</td>
                     <td>
@@ -372,11 +399,14 @@ function ContainerManagerModal({
 }
 
 export function InventoryPage() {
-  const { items, summary, containers, characters, loading, fetchItems, fetchSummary, fetchContainers, fetchCharacters, createItem, updateItem, deleteItem, sellItem, unsellItem, identifyItem, reorderItems, createContainer, updateContainer, deleteContainer } = useInventoryStore()
+  const { items, summary, containers, characters, mounts, loading, fetchItems, fetchSummary, fetchContainers, fetchCharacters, fetchMounts, createItem, updateItem, deleteItem, sellItem, unsellItem, identifyItem, reorderItems, bulkSellItems, bulkDeleteItems, bulkMoveItems, createContainer, updateContainer, deleteContainer } = useInventoryStore()
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState<Item | null>(null)
   const [identifyTarget, setIdentifyTarget] = useState<Item | null>(null)
   const [showContainerManager, setShowContainerManager] = useState(false)
+
+  // Multi-select
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [categoryFilter, setCategoryFilter] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [showSold, setShowSold] = useState(false)
@@ -396,7 +426,8 @@ export function InventoryPage() {
     fetchSummary()
     fetchContainers()
     fetchCharacters()
-  }, [fetchItems, fetchSummary, fetchContainers, fetchCharacters, categoryFilter, showSold])
+    fetchMounts()
+  }, [fetchItems, fetchSummary, fetchContainers, fetchCharacters, fetchMounts, categoryFilter, showSold])
 
   // Close sort menu on outside click
   useEffect(() => {
@@ -474,6 +505,69 @@ export function InventoryPage() {
       toast.error(e instanceof Error ? e.message : 'Failed to reorder')
     }
   }, [dragId, items, reorderItems])
+
+  const toggleSelect = useCallback((id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) =>
+      prev.size === sortedItems.length ? new Set() : new Set(sortedItems.map((i) => i.id))
+    )
+  }, [sortedItems])
+
+  const handleBulkSell = async () => {
+    const ids = [...selectedIds]
+    try {
+      await bulkSellItems(ids)
+      setSelectedIds(new Set())
+      toast.success(`Sold ${ids.length} items`)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to sell items')
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    const ids = [...selectedIds]
+    if (!(await confirm(`Delete ${ids.length} items? This cannot be undone.`))) return
+    try {
+      await bulkDeleteItems(ids)
+      setSelectedIds(new Set())
+      toast.success(`Deleted ${ids.length} items`)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to delete items')
+    }
+  }
+
+  const [showMoveMenu, setShowMoveMenu] = useState(false)
+  const moveMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (moveMenuRef.current && !moveMenuRef.current.contains(e.target as Node)) {
+        setShowMoveMenu(false)
+      }
+    }
+    if (showMoveMenu) document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showMoveMenu])
+
+  const handleBulkMove = async (containerId: string) => {
+    const ids = [...selectedIds]
+    try {
+      await bulkMoveItems(ids, containerId)
+      setSelectedIds(new Set())
+      setShowMoveMenu(false)
+      toast.success(`Moved ${ids.length} items`)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to move items')
+    }
+  }
 
   const handleSave = async (data: Partial<Item>) => {
     try {
@@ -576,6 +670,46 @@ export function InventoryPage() {
         </div>
       </div>
 
+      {/* Bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 mb-4 px-4 py-3 bg-gold/10 border border-gold/30 rounded-lg animate-[fadeIn_0.15s_ease-out]">
+          <span className="text-sm font-heading font-semibold text-gold">{selectedIds.size} selected</span>
+          <button onClick={handleBulkSell} className="px-3 py-1.5 bg-gold text-base font-heading font-semibold rounded text-sm hover:bg-gold-bright transition-colors">
+            Sell
+          </button>
+          <div className="relative" ref={moveMenuRef}>
+            <button onClick={() => setShowMoveMenu(!showMoveMenu)} className="px-3 py-1.5 bg-sky/20 text-sky font-heading font-semibold rounded text-sm hover:bg-sky/30 transition-colors">
+              Move to...
+            </button>
+            {showMoveMenu && (
+              <div className="absolute left-0 top-full mt-1 bg-card border border-border rounded-lg shadow-xl shadow-black/30 py-1 z-20 min-w-[200px] max-h-60 overflow-y-auto">
+                {containers.map((c) => {
+                  const charOwner = c.character_id ? characters.find((ch) => ch.id === c.character_id) : null
+                  const mountOwner = c.mount_id ? mounts.find((m) => m.id === c.mount_id) : null
+                  const owner = charOwner ?? mountOwner
+                  const label = owner && !c.name.includes(owner.name) ? `${owner.name}'s ${c.name}` : c.name
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => handleBulkMove(c.id)}
+                      className="w-full text-left px-4 py-2 text-sm text-parchment-dim hover:bg-surface transition-colors"
+                    >
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+          <button onClick={handleBulkDelete} className="px-3 py-1.5 bg-wine/20 text-wine font-heading font-semibold rounded text-sm hover:bg-wine/30 transition-colors">
+            Delete
+          </button>
+          <button onClick={() => setSelectedIds(new Set())} className="ml-auto px-3 py-1.5 text-parchment-muted text-sm hover:text-parchment transition-colors">
+            Clear selection
+          </button>
+        </div>
+      )}
+
       {/* Items table */}
       <div className="bg-card border border-border rounded-xl overflow-x-auto">
         {loading ? (
@@ -586,6 +720,9 @@ export function InventoryPage() {
           <table className="tt-table">
             <thead>
               <tr>
+                <th className="w-8 !pl-2 !pr-0">
+                  <input type="checkbox" checked={selectedIds.size > 0 && selectedIds.size === sortedItems.length} onChange={toggleSelectAll} />
+                </th>
                 {sortMode === 'custom' && <th className="w-8"></th>}
                 <th>Name</th>
                 <th>Qty</th>
@@ -611,6 +748,9 @@ export function InventoryPage() {
                   onDrop={() => handleDrop(item.id)}
                   onDragEnd={() => { setDragId(null); setDragOverId(null) }}
                 >
+                  <td className="!pl-2 !pr-0">
+                    <input type="checkbox" checked={selectedIds.has(item.id)} onChange={() => toggleSelect(item.id)} />
+                  </td>
                   {sortMode === 'custom' && (
                     <td className="!pl-2 !pr-0 cursor-grab active:cursor-grabbing text-parchment-muted hover:text-gold transition-colors">
                       <GripVertical className="w-4 h-4" />
@@ -651,7 +791,9 @@ export function InventoryPage() {
                   <td className="text-xs text-parchment-dim">{(() => {
                     const container = containers.find((c) => c.id === item.container_id)
                     if (!container) return <span className="text-parchment-muted">--</span>
-                    const owner = container.character_id ? characters.find((ch) => ch.id === container.character_id) : null
+                    const charOwner = container.character_id ? characters.find((ch) => ch.id === container.character_id) : null
+                    const mountOwner = container.mount_id ? mounts.find((m) => m.id === container.mount_id) : null
+                    const owner = charOwner ?? mountOwner
                     return owner && !container.name.includes(owner.name) ? `${owner.name}'s ${container.name}` : container.name
                   })()}</td>
                   <td>
@@ -734,6 +876,7 @@ export function InventoryPage() {
         <ContainerManagerModal
           containers={containers}
           characters={characters}
+          mounts={mounts}
           onSave={async (data, id) => {
             try {
               if (id) {
@@ -755,6 +898,7 @@ export function InventoryPage() {
           onClose={() => setShowContainerManager(false)}
         />
       )}
+
     </div>
   )
 }

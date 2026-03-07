@@ -17,6 +17,7 @@ import { WatchPage } from './pages/WatchPage'
 import { CharactersPage } from './pages/CharactersPage'
 import { ConsumablesPage } from './pages/ConsumablesPage'
 import { ChangelogPage } from './pages/ChangelogPage'
+import { WealthPage } from './pages/WealthPage'
 
 export function App() {
   const { user, loading, checkAuth } = useAppStore()
@@ -50,6 +51,7 @@ export function App() {
           <Route path="/skills" element={<SkillsPage />} />
           <Route path="/xp" element={<XPPage />} />
           <Route path="/watch" element={<WatchPage />} />
+          <Route path="/wealth" element={<WealthPage />} />
           <Route path="/consumables" element={<ConsumablesPage />} />
           <Route path="/characters" element={<CharactersPage />} />
           <Route path="/changelog" element={<ChangelogPage />} />

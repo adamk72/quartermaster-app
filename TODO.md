@@ -3,6 +3,8 @@
 ## High Priority
 - [ ] Create `docs/prd.md` — product requirements document describing the app in full detail
 - [ ] Improve container pick list UX: allow adding a new container inline from the item form's container dropdown (rather than requiring the user to open the container manager first). Also improve the container manager for general list editing — reordering, better affordances for common operations.
+- [ ] Mount management UI: add the ability to create, edit, and delete mounts (pack animals) from the frontend. Currently mounts are API-only — the store has CRUD methods but no UI calls them. Open question: should this live in a Settings/Admin area, inline in the Container Manager modal (since mounts are container owners), or somewhere else?
+- [ ] Visual distinction for container owner types: currently nothing differentiates character-owned vs. mount-owned containers in the UI beyond the owner's name. Options: icon/badge (horse vs. person), a "(mount)"/"(pack animal)" label, or different color/styling for mount-owned container groups.
 
 ## Tech Debt
 - [ ] Replace hand-written SQL column lists with constants or a query builder. Item queries have 15-20 positional columns — one missed or misordered column silently corrupts data. Affects `items.go`, `containers.go`, and any future table with many columns.
@@ -28,21 +30,21 @@
   - [x] Optional location field (for caches, safe houses, etc.)
   - [x] Ability to add/remove containers dynamically as the campaign progresses
   - [x] Ownership: a container can be owned by a character, a pack animal, or no one (a stash at a location)
-  - [ ] This work likely subsumes parts of the character enhancements below (character-owned containers, pack animals)
+  - [x] This work likely subsumes parts of the character enhancements below (character-owned containers, pack animals)
 - [ ] Derive skill matrix from character sheet data: instead of manually entering skill values, compute them from character attributes (ability scores, proficiency bonus, proficiency/expertise flags per skill). As characters level up and stats change, the skill matrix updates automatically. Requires adding the necessary inputs to character sheets (ability scores, proficiency bonus, per-skill proficiency/expertise toggles).
 - [ ] Character backstory / lore fields: add a section on character sheets for freeform history/backstory (some are short, some are long). Also consider additional fields surfaced in Ruya's existing description, including long-term character goals — goals could be GM-visible to help drive the campaign narrative.
 - [ ] Character enhancements:
   - [x] Associate containers with characters: each character can own one or more containers (e.g. bags of holding). Owned containers should display with a character-scoped name in the inventory list (e.g. "Ayloc's Bag of Holding") so players know where items are stored.
   - [x] Add max carrying weight to containers.
-  - [ ] Pack animals: model pack animals (e.g. Bill the Mule) similarly to characters — they can own containers and carry items. Should support multiple animals if the party acquires more.
-- [ ] Inventory multi-select actions: make items selectable (checkboxes or similar) to enable bulk operations:
-  - [ ] Bulk sell / undo
-  - [ ] Bulk delete
-  - [ ] Bulk move: if all selected items share the same container, allow moving them to a different container
-- [ ] Wealth / fungibles section: separate view (or section) for coinage and near-fungible valuables:
-  - [ ] Coinage: show per-denomination totals (pp, gp, ep, sp, cp) with a running total converted to gp
-  - [ ] Coin conversion: allow converting between denominations (e.g. 10sp → 1gp)
-  - [ ] Gems & jewelry: non-magical, relatively fungible valuables need a home — either here or in inventory with a special category. TBD where they live, but they should contribute to net worth total.
+  - [x] Pack animals: model pack animals (e.g. Bill the Mule) similarly to characters — they can own containers and carry items. Should support multiple animals if the party acquires more.
+- [x] Inventory multi-select actions: make items selectable (checkboxes or similar) to enable bulk operations:
+  - [x] Bulk sell / undo
+  - [x] Bulk delete
+  - [x] Bulk move: if all selected items share the same container, allow moving them to a different container
+- [x] Wealth / fungibles section: separate view (or section) for coinage and near-fungible valuables:
+  - [x] Coinage: show per-denomination totals (pp, gp, ep, sp, cp) with a running total converted to gp
+  - [x] Coin conversion: allow converting between denominations (e.g. 10sp → 1gp)
+  - [x] Gems & jewelry: non-magical, relatively fungible valuables need a home — either here or in inventory with a special category. TBD where they live, but they should contribute to net worth total.
 - [ ] XP input bug: the XP field is an incrementer (+/-) which makes typing large values awkward (e.g. typing "2033" prepends a zero). Allow direct number input alongside or instead of the incrementer.
 - [ ] Replace all date text inputs with calendar/date pickers app-wide (the session journal game day picker is one instance of this).
 - [ ] Session Journal fixes and improvements:
@@ -54,7 +56,7 @@
 - [ ] Consumables UX review: the current consumables model is unclear and needs rethinking — how they're tracked, used, and distinguished from regular inventory. Revisit the design before implementing further.
 - [ ] Dashboard: align/fix layout of the consumables summary boxes.
 - [ ] Fix watch list model: a "slot" should represent a shared time period (e.g. a night has 3 watches, each watch has 2–3 characters on it together). Currently the data model may not reflect this correctly. Future enhancement: make the system race-aware for rest requirements (e.g. elves only need 4 hours so can cover two watch slots).
-- [ ] Loot splitting: auto-divide coins/treasure evenly among present characters after a haul. Happens nearly every session and is tedious to do manually. Could tie into the coin ledger and attendance tracking that already exist.
+- [x] Loot splitting: auto-divide coins/treasure evenly among present characters after a haul. Happens nearly every session and is tedious to do manually. Could tie into the coin ledger and attendance tracking that already exist.
 - [x] Attunement tracking: track which magic items are attuned per character (D&D 3-item limit). Magic items are already flagged with category; add an `attuned_to` character reference on items and surface attunement slots on character sheets.
 - [x] Inventory search: add text search across item names and notes. Currently only category filtering exists; pain grows every session as items accumulate.
 - [ ] Spell slot tracking: track remaining spell slots per character per day. At minimum, a per-level slot grid that can be ticked off during play. Needs new DB table(s) and a UI section on character sheets or a dedicated page.

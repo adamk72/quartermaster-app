@@ -21,6 +21,7 @@ type Container struct {
 	Name        string    `json:"name"`
 	Type        string    `json:"type"`
 	CharacterID *string   `json:"character_id"`
+	MountID     *string   `json:"mount_id"`
 	WeightLimit *float64  `json:"weight_limit"`
 	Location    string    `json:"location"`
 	Notes       string    `json:"notes"`
@@ -75,6 +76,16 @@ type CoinBalance struct {
 	GP      int     `json:"gp"`
 	PP      int     `json:"pp"`
 	TotalGP float64 `json:"total_gp"`
+}
+
+type Mount struct {
+	ID               string    `json:"id"`
+	Name             string    `json:"name"`
+	CarryingCapacity *float64  `json:"carrying_capacity"`
+	Notes            string    `json:"notes"`
+	Active           bool      `json:"active"`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
 }
 
 type Critter struct {

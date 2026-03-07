@@ -38,12 +38,17 @@ func RegisterRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /api/v1/items/{id}/unsell", auth(handleUnsellItem))
 	mux.Handle("POST /api/v1/items/{id}/identify", auth(handleIdentifyItem))
 	mux.Handle("POST /api/v1/items/reorder", auth(handleReorderItems))
+	mux.Handle("POST /api/v1/items/bulk-sell", auth(handleBulkSellItems))
+	mux.Handle("POST /api/v1/items/bulk-delete", auth(handleBulkDeleteItems))
+	mux.Handle("POST /api/v1/items/bulk-move", auth(handleBulkMoveItems))
 
 	// Coins
 	mux.Handle("GET /api/v1/coins", auth(handleListCoins))
 	mux.Handle("POST /api/v1/coins", auth(handleCreateCoin))
 	mux.Handle("DELETE /api/v1/coins/{id}", auth(handleDeleteCoin))
 	mux.Handle("GET /api/v1/coins/balance", auth(handleCoinBalance))
+	mux.Handle("POST /api/v1/coins/convert", auth(handleCoinConvert))
+	mux.Handle("POST /api/v1/coins/split", auth(handleLootSplit))
 
 	// Critters
 	mux.Handle("GET /api/v1/critters", auth(handleListCritters))
@@ -84,6 +89,13 @@ func RegisterRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /api/v1/watch/schedules", auth(handleCreateWatchSchedule))
 	mux.Handle("PUT /api/v1/watch/schedules/{id}", auth(handleUpdateWatchSchedule))
 	mux.Handle("DELETE /api/v1/watch/schedules/{id}", auth(handleDeleteWatchSchedule))
+
+	// Mounts
+	mux.Handle("GET /api/v1/mounts", auth(handleListMounts))
+	mux.Handle("GET /api/v1/mounts/{id}", auth(handleGetMount))
+	mux.Handle("POST /api/v1/mounts", auth(handleCreateMount))
+	mux.Handle("PUT /api/v1/mounts/{id}", auth(handleUpdateMount))
+	mux.Handle("DELETE /api/v1/mounts/{id}", auth(handleDeleteMount))
 
 	// Consumables
 	mux.Handle("GET /api/v1/consumables/types", auth(handleListConsumableTypes))

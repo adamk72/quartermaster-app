@@ -12,14 +12,14 @@
 ## Phase 3: Character + Container Enhancements
 - [x] Associate containers with characters — display as "Ayloc's Bag of Holding"
 - [x] Max carrying weight on containers — enforce/display weight limits
-- [ ] Pack animals as first-class entities — model mounts with their own containers
+- [x] Pack animals as first-class entities — model mounts with their own containers
 
 ## Phase 4: Bulk Operations + Loot Splitting
-- [ ] Inventory multi-select — checkboxes for bulk sell, delete, move
-- [ ] Loot splitting — auto-divide coins/treasure among present characters
+- [x] Inventory multi-select — checkboxes for bulk sell, delete, move
+- [x] Loot splitting — auto-divide coins/treasure among present characters
 
 ## Phase 5: Wealth & Fungibles View
-- [ ] Dedicated view with per-denomination totals, coin conversion, gems & jewelry
+- [x] Dedicated view with per-denomination totals, coin conversion, gems & jewelry
 
 ## Phase 6: Label System (replaces categories)
 - [ ] Flexible multi-label, user-defined, color-coded tags (replaces single `category` column)
