@@ -2,9 +2,14 @@
 
 ## High Priority
 - [ ] Create `docs/prd.md` — product requirements document describing the app in full detail
+- [ ] Inventory import system: CSV-based item import for two use cases:
+  1. **Initial migration** — import existing spreadsheet inventory when starting the system from scratch (characters, mounts, etc. will be entered manually).
+  2. **Post-session loot entry** — the GM provides a prose block of treasure found; the user pastes it into an AI (external) which parses it into CSV format, then imports via this system. Needs a guideline prompt/template documenting the expected CSV schema so the AI produces compatible output.
 - [ ] Improve container pick list UX: allow adding a new container inline from the item form's container dropdown (rather than requiring the user to open the container manager first). Also improve the container manager for general list editing — reordering, better affordances for common operations.
 - [ ] Mount management UI: add the ability to create, edit, and delete mounts (pack animals) from the frontend. Currently mounts are API-only — the store has CRUD methods but no UI calls them. Open question: should this live in a Settings/Admin area, inline in the Container Manager modal (since mounts are container owners), or somewhere else?
 - [ ] Visual distinction for container owner types: currently nothing differentiates character-owned vs. mount-owned containers in the UI beyond the owner's name. Options: icon/badge (horse vs. person), a "(mount)"/"(pack animal)" label, or different color/styling for mount-owned container groups.
+
+- [ ] Magic identification workflow: items may enter inventory with unknown magical status. Currently labels could mark something as magic after the fact, but there's no dedicated UX for tracking "suspected magic / unidentified" items separately from confirmed-magic and confirmed-mundane. Want a way to see at a glance what hasn't been identified yet, distinct from items known to be non-magical. Consider a tri-state (mundane / suspected / identified-magic) or a dedicated "unidentified" flag beyond just labels.
 
 ## Tech Debt
 - [ ] Replace hand-written SQL column lists with constants or a query builder. Item queries have 15-20 positional columns — one missed or misordered column silently corrupts data. Affects `items.go`, `containers.go`, and any future table with many columns.
