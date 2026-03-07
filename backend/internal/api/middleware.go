@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/adamghill/treasure-tracking/internal/db"
-	"github.com/adamghill/treasure-tracking/internal/types"
+	"github.com/adamk72/quartermaster-app/internal/db"
+	"github.com/adamk72/quartermaster-app/internal/types"
 )
 
 type contextKey string

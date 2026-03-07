@@ -11,6 +11,7 @@
 - [ ] Session Journal delete uses a native browser `alert()` instead of the app's toast system — replace with a toast confirmation or modal consistent with the rest of the app.
 
 ### General
+- [ ] Remove hardcoded character/item references to make the app generic: party member names are baked into seed files and `constants.ts`, and likely have hidden dependencies elsewhere. The app should work for any campaign with any characters — all campaign-specific data should come from the database, not code.
 - [ ] Replace inventory "category" with a flexible label system (multi-label, user-defined, color-coded) similar to GitLab/Linear. Likely requires a Settings or Admin area for managing labels and other future admin concerns.
 - [ ] Investigate concurrency issue: what happens when two users reorder inventory simultaneously (last-write-wins conflict on `sort_order`).
 - [ ] HP adjustment UX (shared for critters and characters): alongside +/- buttons, allow the user to type a number and apply it as heal or damage (e.g. "take 12 damage" / "heal 8"). Should be a consistent component reused across both.

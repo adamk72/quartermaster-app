@@ -1,4 +1,4 @@
-module github.com/adamghill/treasure-tracking
+module github.com/adamk72/quartermaster-app
 
 go 1.23.1
 

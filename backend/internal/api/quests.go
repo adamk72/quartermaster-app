@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/adamghill/treasure-tracking/internal/db"
-	"github.com/adamghill/treasure-tracking/internal/types"
+	"github.com/adamk72/quartermaster-app/internal/db"
+	"github.com/adamk72/quartermaster-app/internal/types"
 )
 
 func handleListQuests(w http.ResponseWriter, r *http.Request) {

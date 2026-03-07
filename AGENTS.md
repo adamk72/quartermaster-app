@@ -42,6 +42,12 @@ All endpoints under `/api/v1/`. Auth via `Authorization: Bearer <token>`.
 ## Git Conventions
 - Do NOT add `Co-Authored-By` trailers to commit messages. Keep commits clean and single-line where appropriate.
 
+## TODO Tracking
+- When asked to "add a todo" or "add to TODO.md", update the `TODO.md` file in the project root.
+
+## App Naming
+- If the user updates the app name, ask whether the Go module path (`github.com/adamk72/quartermaster-app` in `go.mod` and all import statements) should be updated to match.
+
 ## Conventions
 - Party members: Andurin, Ayloc, Ruya, Sachan, Ingvild, Hrothgar
 - Currency: 1pp = 10gp, 1ep = 0.5gp, 1sp = 0.1gp, 1cp = 0.01gp
