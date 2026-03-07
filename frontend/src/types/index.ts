@@ -23,6 +23,7 @@ export interface Container {
   notes: string
   created_at: string
   updated_at: string
+  version: number
   items?: Item[]
   total_weight?: number
 }
@@ -68,6 +69,7 @@ export interface Item {
   sort_order: number
   created_at: string
   updated_at: string
+  version: number
   labels: Label[]
   label_ids?: string[]
 }

@@ -27,6 +27,7 @@ type Container struct {
 	Notes       string    `json:"notes"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+	Version     int       `json:"version"`
 	Items       []Item    `json:"items,omitempty"`
 	TotalWeight float64   `json:"total_weight,omitempty"`
 }
@@ -61,6 +62,7 @@ type Item struct {
 	SortOrder        int       `json:"sort_order"`
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`
+	Version          int       `json:"version"`
 	Labels           []Label   `json:"labels"`
 	LabelIDs         []string  `json:"label_ids,omitempty"`
 }

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -90,15 +91,17 @@ func handleUpdateXP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := db.DB.Exec(
-		"UPDATE xp_entries SET session_id=?, game_date=?, xp_amount=?, description=? WHERE id=?",
-		e.SessionID, e.GameDate, e.XPAmount, e.Description, id,
-	)
+	diffJSON, n, err := diffUpdate("xp_entries", id, func(tx *sql.Tx) (sql.Result, error) {
+		return tx.Exec(
+			"UPDATE xp_entries SET session_id=?, game_date=?, xp_amount=?, description=? WHERE id=?",
+			e.SessionID, e.GameDate, e.XPAmount, e.Description, id,
+		)
+	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to update xp entry")
 		return
 	}
-	if n, _ := result.RowsAffected(); n == 0 {
+	if n == 0 {
 		writeError(w, http.StatusNotFound, "xp entry not found")
 		return
 	}
@@ -136,7 +139,7 @@ func handleUpdateXP(w http.ResponseWriter, r *http.Request) {
 
 	user := GetUser(r)
 	if user != nil {
-		LogChange(&user.ID, "xp_entries", id, "update", "{}")
+		LogChange(&user.ID, "xp_entries", id, "update", diffJSON)
 	}
 
 	e.ID = idInt

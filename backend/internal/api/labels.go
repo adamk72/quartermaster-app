@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -85,10 +86,12 @@ func handleUpdateLabel(w http.ResponseWriter, r *http.Request) {
 	}
 
 	label.UpdatedAt = time.Now()
-	result, err := db.DB.Exec(
-		"UPDATE labels SET name=?, color=?, sort_order=?, updated_at=? WHERE id=?",
-		label.Name, label.Color, label.SortOrder, label.UpdatedAt, id,
-	)
+	diffJSON, n, err := diffUpdate("labels", id, func(tx *sql.Tx) (sql.Result, error) {
+		return tx.Exec(
+			"UPDATE labels SET name=?, color=?, sort_order=?, updated_at=? WHERE id=?",
+			label.Name, label.Color, label.SortOrder, label.UpdatedAt, id,
+		)
+	})
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") {
 			writeError(w, http.StatusConflict, "a label with that name already exists")
@@ -97,7 +100,7 @@ func handleUpdateLabel(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to update label")
 		return
 	}
-	if n, _ := result.RowsAffected(); n == 0 {
+	if n == 0 {
 		writeError(w, http.StatusNotFound, "label not found")
 		return
 	}
@@ -110,7 +113,7 @@ func handleUpdateLabel(w http.ResponseWriter, r *http.Request) {
 
 	user := GetUser(r)
 	if user != nil {
-		LogChange(&user.ID, "labels", id, "update", "{}")
+		LogChange(&user.ID, "labels", id, "update", diffJSON)
 	}
 
 	label.ID = id

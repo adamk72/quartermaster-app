@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -73,22 +74,24 @@ func handleUpdateConsumableType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := db.DB.Exec(
-		"UPDATE consumable_types SET name=?, unit=?, per_person_per_day=?, sort_order=? WHERE id=?",
-		ct.Name, ct.Unit, ct.PerPersonPerDay, ct.SortOrder, id,
-	)
+	diffJSON, n, err := diffUpdate("consumable_types", id, func(tx *sql.Tx) (sql.Result, error) {
+		return tx.Exec(
+			"UPDATE consumable_types SET name=?, unit=?, per_person_per_day=?, sort_order=? WHERE id=?",
+			ct.Name, ct.Unit, ct.PerPersonPerDay, ct.SortOrder, id,
+		)
+	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to update consumable type")
 		return
 	}
-	if n, _ := result.RowsAffected(); n == 0 {
+	if n == 0 {
 		writeError(w, http.StatusNotFound, "consumable type not found")
 		return
 	}
 
 	user := GetUser(r)
 	if user != nil {
-		LogChange(&user.ID, "consumable_types", id, "update", "{}")
+		LogChange(&user.ID, "consumable_types", id, "update", diffJSON)
 	}
 
 	ct.ID = id

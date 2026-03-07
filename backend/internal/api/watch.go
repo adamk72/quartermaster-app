@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -91,12 +92,14 @@ func handleUpdateWatchSchedule(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := db.DB.Exec("UPDATE watch_schedules SET name=?, active=? WHERE id=?", s.Name, s.Active, id)
+	diffJSON, n, err := diffUpdate("watch_schedules", id, func(tx *sql.Tx) (sql.Result, error) {
+		return tx.Exec("UPDATE watch_schedules SET name=?, active=? WHERE id=?", s.Name, s.Active, id)
+	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to update schedule")
 		return
 	}
-	if n, _ := result.RowsAffected(); n == 0 {
+	if n == 0 {
 		writeError(w, http.StatusNotFound, "schedule not found")
 		return
 	}
@@ -134,7 +137,7 @@ func handleUpdateWatchSchedule(w http.ResponseWriter, r *http.Request) {
 
 	user := GetUser(r)
 	if user != nil {
-		LogChange(&user.ID, "watch_schedules", id, "update", "{}")
+		LogChange(&user.ID, "watch_schedules", id, "update", diffJSON)
 	}
 
 	s.ID = idInt

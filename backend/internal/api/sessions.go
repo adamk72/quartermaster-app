@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"fmt"
 	"io"
 	"net/http"
@@ -106,22 +107,24 @@ func handleUpdateSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.UpdatedAt = time.Now()
-	result, err := db.DB.Exec(
-		"UPDATE sessions SET game_date=?, title=?, body_json=?, body_html=?, xp_gained=?, updated_at=? WHERE id=?",
-		s.GameDate, s.Title, s.BodyJSON, s.BodyHTML, s.XPGained, s.UpdatedAt, id,
-	)
+	diffJSON, n, err := diffUpdate("sessions", id, func(tx *sql.Tx) (sql.Result, error) {
+		return tx.Exec(
+			"UPDATE sessions SET game_date=?, title=?, body_json=?, body_html=?, xp_gained=?, updated_at=? WHERE id=?",
+			s.GameDate, s.Title, s.BodyJSON, s.BodyHTML, s.XPGained, s.UpdatedAt, id,
+		)
+	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to update session")
 		return
 	}
-	if n, _ := result.RowsAffected(); n == 0 {
+	if n == 0 {
 		writeError(w, http.StatusNotFound, "session not found")
 		return
 	}
 
 	user := GetUser(r)
 	if user != nil {
-		LogChange(&user.ID, "sessions", id, "update", "{}")
+		LogChange(&user.ID, "sessions", id, "update", diffJSON)
 	}
 
 	idInt, _ := strconv.Atoi(id)

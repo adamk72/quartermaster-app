@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strings"
@@ -11,7 +12,7 @@ import (
 )
 
 func handleListContainers(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.DB.Query("SELECT id, name, type, character_id, mount_id, weight_limit, location, notes, created_at, updated_at FROM containers ORDER BY name")
+	rows, err := db.DB.Query("SELECT id, name, type, character_id, mount_id, weight_limit, location, notes, created_at, updated_at, version FROM containers ORDER BY name")
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to query containers")
 		return
@@ -21,7 +22,7 @@ func handleListContainers(w http.ResponseWriter, r *http.Request) {
 	containers := []types.Container{}
 	for rows.Next() {
 		var c types.Container
-		if err := rows.Scan(&c.ID, &c.Name, &c.Type, &c.CharacterID, &c.MountID, &c.WeightLimit, &c.Location, &c.Notes, &c.CreatedAt, &c.UpdatedAt); err != nil {
+		if err := rows.Scan(&c.ID, &c.Name, &c.Type, &c.CharacterID, &c.MountID, &c.WeightLimit, &c.Location, &c.Notes, &c.CreatedAt, &c.UpdatedAt, &c.Version); err != nil {
 			continue
 		}
 		containers = append(containers, c)
@@ -32,15 +33,15 @@ func handleListContainers(w http.ResponseWriter, r *http.Request) {
 func handleGetContainer(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	var c types.Container
-	err := db.DB.QueryRow("SELECT id, name, type, character_id, mount_id, weight_limit, location, notes, created_at, updated_at FROM containers WHERE id = ?", id).
-		Scan(&c.ID, &c.Name, &c.Type, &c.CharacterID, &c.MountID, &c.WeightLimit, &c.Location, &c.Notes, &c.CreatedAt, &c.UpdatedAt)
+	err := db.DB.QueryRow("SELECT id, name, type, character_id, mount_id, weight_limit, location, notes, created_at, updated_at, version FROM containers WHERE id = ?", id).
+		Scan(&c.ID, &c.Name, &c.Type, &c.CharacterID, &c.MountID, &c.WeightLimit, &c.Location, &c.Notes, &c.CreatedAt, &c.UpdatedAt, &c.Version)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "container not found")
 		return
 	}
 
 	// Load items for this container
-	rows, err := db.DB.Query("SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at FROM items WHERE container_id = ? ORDER BY sort_order, name", id)
+	rows, err := db.DB.Query("SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at, version FROM items WHERE container_id = ? ORDER BY sort_order, name", id)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to query container items")
 		return
@@ -48,7 +49,7 @@ func handleGetContainer(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 	for rows.Next() {
 		var item types.Item
-		if err := rows.Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt); err != nil {
+		if err := rows.Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt, &item.Version); err != nil {
 			continue
 		}
 		c.Items = append(c.Items, item)
@@ -107,22 +108,24 @@ func handleUpdateContainer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c.UpdatedAt = time.Now()
-	result, err := db.DB.Exec(
-		"UPDATE containers SET name=?, type=?, character_id=?, mount_id=?, weight_limit=?, location=?, notes=?, updated_at=? WHERE id=?",
-		c.Name, c.Type, c.CharacterID, c.MountID, c.WeightLimit, c.Location, c.Notes, c.UpdatedAt, id,
-	)
+	diffJSON, n, err := diffUpdate("containers", id, func(tx *sql.Tx) (sql.Result, error) {
+		return tx.Exec(
+			"UPDATE containers SET name=?, type=?, character_id=?, mount_id=?, weight_limit=?, location=?, notes=?, updated_at=?, version=version+1 WHERE id=? AND version=?",
+			c.Name, c.Type, c.CharacterID, c.MountID, c.WeightLimit, c.Location, c.Notes, c.UpdatedAt, id, c.Version,
+		)
+	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to update container")
 		return
 	}
-	if n, _ := result.RowsAffected(); n == 0 {
-		writeError(w, http.StatusNotFound, "container not found")
+	if checkVersionConflict(w, "containers", id, n, "container") {
 		return
 	}
+	c.Version++ // reflect the incremented version in the response
 
 	user := GetUser(r)
 	if user != nil {
-		LogChange(&user.ID, "containers", id, "update", "{}")
+		LogChange(&user.ID, "containers", id, "update", diffJSON)
 	}
 
 	c.ID = id

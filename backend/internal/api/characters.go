@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strings"
@@ -79,22 +80,24 @@ func handleUpdateCharacter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c.UpdatedAt = time.Now()
-	result, err := db.DB.Exec(
-		"UPDATE characters SET name=?, player_name=?, class=?, level=?, race=?, ac=?, hp_max=?, notes=?, updated_at=? WHERE id=?",
-		c.Name, c.PlayerName, c.Class, c.Level, c.Race, c.AC, c.HPMax, c.Notes, c.UpdatedAt, id,
-	)
+	diffJSON, n, err := diffUpdate("characters", id, func(tx *sql.Tx) (sql.Result, error) {
+		return tx.Exec(
+			"UPDATE characters SET name=?, player_name=?, class=?, level=?, race=?, ac=?, hp_max=?, notes=?, updated_at=? WHERE id=?",
+			c.Name, c.PlayerName, c.Class, c.Level, c.Race, c.AC, c.HPMax, c.Notes, c.UpdatedAt, id,
+		)
+	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to update character")
 		return
 	}
-	if n, _ := result.RowsAffected(); n == 0 {
+	if n == 0 {
 		writeError(w, http.StatusNotFound, "character not found")
 		return
 	}
 
 	user := GetUser(r)
 	if user != nil {
-		LogChange(&user.ID, "characters", id, "update", "{}")
+		LogChange(&user.ID, "characters", id, "update", diffJSON)
 	}
 
 	c.ID = id

@@ -1,7 +1,9 @@
 import { create } from 'zustand'
-import { api } from '../api/client'
+import { api, ApiError } from '../api/client'
 import { toast } from './useToastStore'
 import type { Item, ItemSummary, Container, Character, Mount } from '../types'
+
+const CONFLICT_MSG = 'This record was modified by another user. The page has been refreshed with the latest data — please re-apply your changes.'
 
 interface InventoryState {
   items: Item[]
@@ -94,11 +96,19 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   },
 
   updateItem: async (id, item) => {
-    const updated = await api.put<Item>(`/items/${id}`, item)
-    const { items } = get()
-    set({ items: items.map((i) => (i.id === id ? updated : i)) })
-    get().fetchSummary()
-    return updated
+    try {
+      const updated = await api.put<Item>(`/items/${id}`, item)
+      const { items } = get()
+      set({ items: items.map((i) => (i.id === id ? updated : i)) })
+      get().fetchSummary()
+      return updated
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 409) {
+        await get().fetchItems()
+        toast.info(CONFLICT_MSG)
+      }
+      throw e
+    }
   },
 
   deleteItem: async (id) => {
@@ -167,10 +177,18 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   },
 
   updateContainer: async (id, container) => {
-    const updated = await api.put<Container>(`/containers/${id}`, container)
-    const { containers } = get()
-    set({ containers: containers.map((c) => (c.id === id ? updated : c)) })
-    return updated
+    try {
+      const updated = await api.put<Container>(`/containers/${id}`, container)
+      const { containers } = get()
+      set({ containers: containers.map((c) => (c.id === id ? updated : c)) })
+      return updated
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 409) {
+        await get().fetchContainers()
+        toast.info(CONFLICT_MSG)
+      }
+      throw e
+    }
   },
 
   deleteContainer: async (id) => {

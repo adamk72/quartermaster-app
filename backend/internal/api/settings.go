@@ -1,7 +1,7 @@
 package api
 
 import (
-	"encoding/json"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -60,23 +60,24 @@ func handleUpdateSetting(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now()
-	result, err := db.DB.Exec(
-		"UPDATE settings SET value = ?, updated_at = ? WHERE key = ?",
-		body.Value, now, key,
-	)
+	diffJSON, n, err := diffUpdatePK("settings", "key", key, func(tx *sql.Tx) (sql.Result, error) {
+		return tx.Exec(
+			"UPDATE settings SET value = ?, updated_at = ? WHERE key = ?",
+			body.Value, now, key,
+		)
+	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to update setting")
 		return
 	}
-	if n, _ := result.RowsAffected(); n == 0 {
+	if n == 0 {
 		writeError(w, http.StatusNotFound, "setting not found")
 		return
 	}
 
 	user := GetUser(r)
 	if user != nil {
-		diff, _ := json.Marshal(map[string]string{"value": body.Value})
-		LogChange(&user.ID, "settings", key, "update", string(diff))
+		LogChange(&user.ID, "settings", key, "update", diffJSON)
 	}
 
 	writeJSON(w, http.StatusOK, types.Setting{Key: key, Value: body.Value, UpdatedAt: now})

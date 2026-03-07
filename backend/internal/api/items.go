@@ -12,6 +12,7 @@ import (
 	"github.com/adamk72/quartermaster-app/internal/types"
 )
 
+
 const maxAttunementSlots = 3
 
 // validateAttunement checks that the character exists, hasn't exceeded the attunement limit,
@@ -52,7 +53,7 @@ func validateAttunement(charID string, containerID *string, excludeItemID int) e
 }
 
 func handleListItems(w http.ResponseWriter, r *http.Request) {
-	query := "SELECT DISTINCT i.id, i.name, i.quantity, i.credit_gp, i.debit_gp, i.game_date, i.category, i.container_id, i.sold, i.unit_weight_lbs, i.unit_value_gp, i.weight_override, i.added_to_dndbeyond, i.identified, i.attuned_to, i.singular, i.notes, i.sort_order, i.created_at, i.updated_at FROM items i"
+	query := "SELECT DISTINCT i.id, i.name, i.quantity, i.credit_gp, i.debit_gp, i.game_date, i.category, i.container_id, i.sold, i.unit_weight_lbs, i.unit_value_gp, i.weight_override, i.added_to_dndbeyond, i.identified, i.attuned_to, i.singular, i.notes, i.sort_order, i.created_at, i.updated_at, i.version FROM items i"
 
 	var args []any
 	var conditions []string
@@ -97,7 +98,7 @@ func handleListItems(w http.ResponseWriter, r *http.Request) {
 	items := []types.Item{}
 	for rows.Next() {
 		var item types.Item
-		if err := rows.Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt); err != nil {
+		if err := rows.Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt, &item.Version); err != nil {
 			continue
 		}
 		items = append(items, item)
@@ -109,8 +110,8 @@ func handleListItems(w http.ResponseWriter, r *http.Request) {
 func handleGetItem(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	var item types.Item
-	err := db.DB.QueryRow("SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at FROM items WHERE id = ?", id).
-		Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt)
+	err := db.DB.QueryRow("SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at, version FROM items WHERE id = ?", id).
+		Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt, &item.Version)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "item not found")
 		return
@@ -190,10 +191,12 @@ func handleUpdateItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item.UpdatedAt = time.Now()
-	result, err := db.DB.Exec(
-		"UPDATE items SET name=?, quantity=?, credit_gp=?, debit_gp=?, game_date=?, category=?, container_id=?, sold=?, unit_weight_lbs=?, unit_value_gp=?, weight_override=?, added_to_dndbeyond=?, identified=?, attuned_to=?, singular=?, notes=?, sort_order=?, updated_at=? WHERE id=?",
-		item.Name, item.Quantity, item.CreditGP, item.DebitGP, item.GameDate, item.Category, item.ContainerID, item.Sold, item.UnitWeightLbs, item.UnitValueGP, item.WeightOverride, item.AddedToDnDBeyond, item.Identified, item.AttunedTo, item.Singular, item.Notes, item.SortOrder, item.UpdatedAt, id,
-	)
+	diffJSON, n, err := diffUpdate("items", id, func(tx *sql.Tx) (sql.Result, error) {
+		return tx.Exec(
+			"UPDATE items SET name=?, quantity=?, credit_gp=?, debit_gp=?, game_date=?, category=?, container_id=?, sold=?, unit_weight_lbs=?, unit_value_gp=?, weight_override=?, added_to_dndbeyond=?, identified=?, attuned_to=?, singular=?, notes=?, sort_order=?, updated_at=?, version=version+1 WHERE id=? AND version=?",
+			item.Name, item.Quantity, item.CreditGP, item.DebitGP, item.GameDate, item.Category, item.ContainerID, item.Sold, item.UnitWeightLbs, item.UnitValueGP, item.WeightOverride, item.AddedToDnDBeyond, item.Identified, item.AttunedTo, item.Singular, item.Notes, item.SortOrder, item.UpdatedAt, id, item.Version,
+		)
+	})
 	if err != nil {
 		if strings.Contains(err.Error(), "FOREIGN KEY constraint failed") {
 			writeError(w, http.StatusBadRequest, "invalid reference: check container_id and attuned_to values")
@@ -202,10 +205,10 @@ func handleUpdateItem(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to update item")
 		return
 	}
-	if n, _ := result.RowsAffected(); n == 0 {
-		writeError(w, http.StatusNotFound, "item not found")
+	if checkVersionConflict(w, "items", id, n, "item") {
 		return
 	}
+	item.Version++ // reflect the incremented version in the response
 
 	idInt, _ := strconv.Atoi(id)
 	item.ID = idInt
@@ -223,7 +226,7 @@ func handleUpdateItem(w http.ResponseWriter, r *http.Request) {
 
 	user := GetUser(r)
 	if user != nil {
-		LogChange(&user.ID, "items", id, "update", "{}")
+		LogChange(&user.ID, "items", id, "update", diffJSON)
 	}
 
 	writeJSON(w, http.StatusOK, item)
@@ -338,8 +341,8 @@ func handleIdentifyItem(w http.ResponseWriter, r *http.Request) {
 
 	// Return the updated item
 	var item types.Item
-	if err := db.DB.QueryRow("SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at FROM items WHERE id = ?", id).
-		Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt); err != nil {
+	if err := db.DB.QueryRow("SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at, version FROM items WHERE id = ?", id).
+		Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt, &item.Version); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to reload identified item")
 		return
 	}

@@ -30,8 +30,8 @@
 - [x] Dynamic invite code — changeable via admin setting (settings table + Settings page UI)
 
 ## Phase 8: Multi-User Robustness
-- [ ] Concurrency investigation — optimistic locking, conflict detection
-- [ ] Populate changelog diffs — actual before/after diffs in `diff_json`
+- [x] Concurrency investigation — optimistic locking, conflict detection
+- [x] Populate changelog diffs — actual before/after diffs in `diff_json`
 
 ## Deferred
 - Consumables UX review

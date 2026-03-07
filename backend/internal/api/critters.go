@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -74,22 +75,24 @@ func handleUpdateCritter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c.UpdatedAt = time.Now()
-	result, err := db.DB.Exec(
-		"UPDATE critters SET name=?, character_id=?, hp_current=?, hp_max=?, ac=?, notes=?, active=?, updated_at=? WHERE id=?",
-		c.Name, c.CharacterID, c.HPCurrent, c.HPMax, c.AC, c.Notes, c.Active, c.UpdatedAt, id,
-	)
+	diffJSON, n, err := diffUpdate("critters", id, func(tx *sql.Tx) (sql.Result, error) {
+		return tx.Exec(
+			"UPDATE critters SET name=?, character_id=?, hp_current=?, hp_max=?, ac=?, notes=?, active=?, updated_at=? WHERE id=?",
+			c.Name, c.CharacterID, c.HPCurrent, c.HPMax, c.AC, c.Notes, c.Active, c.UpdatedAt, id,
+		)
+	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to update critter")
 		return
 	}
-	if n, _ := result.RowsAffected(); n == 0 {
+	if n == 0 {
 		writeError(w, http.StatusNotFound, "critter not found")
 		return
 	}
 
 	user := GetUser(r)
 	if user != nil {
-		LogChange(&user.ID, "critters", id, "update", "{}")
+		LogChange(&user.ID, "critters", id, "update", diffJSON)
 	}
 
 	idInt, _ := strconv.Atoi(id)

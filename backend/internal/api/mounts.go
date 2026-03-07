@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strings"
@@ -86,22 +87,24 @@ func handleUpdateMount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	m.UpdatedAt = time.Now()
-	result, err := db.DB.Exec(
-		"UPDATE mounts SET name=?, carrying_capacity=?, notes=?, active=?, updated_at=? WHERE id=?",
-		m.Name, m.CarryingCapacity, m.Notes, m.Active, m.UpdatedAt, id,
-	)
+	diffJSON, n, err := diffUpdate("mounts", id, func(tx *sql.Tx) (sql.Result, error) {
+		return tx.Exec(
+			"UPDATE mounts SET name=?, carrying_capacity=?, notes=?, active=?, updated_at=? WHERE id=?",
+			m.Name, m.CarryingCapacity, m.Notes, m.Active, m.UpdatedAt, id,
+		)
+	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to update mount")
 		return
 	}
-	if n, _ := result.RowsAffected(); n == 0 {
+	if n == 0 {
 		writeError(w, http.StatusNotFound, "mount not found")
 		return
 	}
 
 	user := GetUser(r)
 	if user != nil {
-		LogChange(&user.ID, "mounts", id, "update", "{}")
+		LogChange(&user.ID, "mounts", id, "update", diffJSON)
 	}
 
 	m.ID = id

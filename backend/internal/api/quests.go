@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -98,22 +99,24 @@ func handleUpdateQuest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	q.UpdatedAt = time.Now()
-	result, err := db.DB.Exec(
-		"UPDATE quests SET title=?, description=?, status=?, game_date_added=?, game_date_completed=?, notes=?, sort_order=?, updated_at=? WHERE id=?",
-		q.Title, q.Description, q.Status, q.GameDateAdded, q.GameDateCompleted, q.Notes, q.SortOrder, q.UpdatedAt, id,
-	)
+	diffJSON, n, err := diffUpdate("quests", id, func(tx *sql.Tx) (sql.Result, error) {
+		return tx.Exec(
+			"UPDATE quests SET title=?, description=?, status=?, game_date_added=?, game_date_completed=?, notes=?, sort_order=?, updated_at=? WHERE id=?",
+			q.Title, q.Description, q.Status, q.GameDateAdded, q.GameDateCompleted, q.Notes, q.SortOrder, q.UpdatedAt, id,
+		)
+	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to update quest")
 		return
 	}
-	if n, _ := result.RowsAffected(); n == 0 {
+	if n == 0 {
 		writeError(w, http.StatusNotFound, "quest not found")
 		return
 	}
 
 	user := GetUser(r)
 	if user != nil {
-		LogChange(&user.ID, "quests", id, "update", "{}")
+		LogChange(&user.ID, "quests", id, "update", diffJSON)
 	}
 
 	idInt, _ := strconv.Atoi(id)
