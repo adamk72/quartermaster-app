@@ -1,6 +1,7 @@
 # TODO
 
 ## High Priority
+- [ ] Plan dev → staging → prod deployment for multi-player usage. Need a cheap/free hosting solution — willing to self-host on local network if possible. Consider: single-binary Go + embedded SQLite makes self-hosting straightforward (Raspberry Pi, NAS, old laptop, etc.). Evaluate options like Tailscale for secure remote access without port forwarding, Fly.io/Railway free tiers for cloud, or plain Docker on a home server.
 - [ ] Create `docs/prd.md` — product requirements document describing the app in full detail
 - [ ] Inventory import system: CSV-based item import for two use cases:
   1. **Initial migration** — import existing spreadsheet inventory when starting the system from scratch (characters, mounts, etc. will be entered manually).
