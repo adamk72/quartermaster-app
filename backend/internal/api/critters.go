@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -29,6 +30,7 @@ func handleListCritters(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var c types.Critter
 		if err := rows.Scan(&c.ID, &c.Name, &c.CharacterID, &c.HPCurrent, &c.HPMax, &c.AC, &c.Notes, &c.Active, &c.CreatedAt, &c.UpdatedAt); err != nil {
+			log.Printf("critter scan error: %v", err)
 			continue
 		}
 		critters = append(critters, c)

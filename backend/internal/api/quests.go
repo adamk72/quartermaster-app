@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -43,6 +44,7 @@ func writeQuestRows(w http.ResponseWriter, rows interface {
 	for rows.Next() {
 		var q types.Quest
 		if err := rows.Scan(&q.ID, &q.Title, &q.Description, &q.Status, &q.GameDateAdded, &q.GameDateCompleted, &q.Notes, &q.SortOrder, &q.CreatedAt, &q.UpdatedAt); err != nil {
+			log.Printf("quest scan error: %v", err)
 			continue
 		}
 		quests = append(quests, q)

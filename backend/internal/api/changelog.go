@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -43,7 +44,10 @@ func handleListChangelog(w http.ResponseWriter, r *http.Request) {
 	entries := []types.ChangelogEntry{}
 	for rows.Next() {
 		var e types.ChangelogEntry
-		rows.Scan(&e.ID, &e.UserID, &e.TableName, &e.RecordID, &e.Action, &e.DiffJSON, &e.CreatedAt)
+		if err := rows.Scan(&e.ID, &e.UserID, &e.TableName, &e.RecordID, &e.Action, &e.DiffJSON, &e.CreatedAt); err != nil {
+			log.Printf("changelog entry scan error: %v", err)
+			continue
+		}
 		entries = append(entries, e)
 	}
 	writeJSON(w, http.StatusOK, entries)

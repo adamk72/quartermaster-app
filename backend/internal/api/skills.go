@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/adamk72/quartermaster-app/internal/db"
@@ -19,6 +20,7 @@ func handleListSkills(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var s types.Skill
 		if err := rows.Scan(&s.ID, &s.CharacterID, &s.SkillName, &s.Bonus, &s.Proficient, &s.Expertise); err != nil {
+			log.Printf("skill scan error: %v", err)
 			continue
 		}
 		skills = append(skills, s)
@@ -38,6 +40,7 @@ func handleListSkillReferences(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var sr types.SkillReference
 		if err := rows.Scan(&sr.SkillName, &sr.NumProficient, &sr.Modifier, &sr.BestCombo); err != nil {
+			log.Printf("skill reference scan error: %v", err)
 			continue
 		}
 		refs = append(refs, sr)

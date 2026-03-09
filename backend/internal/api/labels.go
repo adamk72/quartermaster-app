@@ -24,6 +24,7 @@ func handleListLabels(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var l types.Label
 		if err := rows.Scan(&l.ID, &l.Name, &l.Color, &l.SortOrder, &l.CreatedAt, &l.UpdatedAt); err != nil {
+			log.Printf("label scan error: %v", err)
 			continue
 		}
 		labels = append(labels, l)
@@ -170,6 +171,7 @@ func loadItemLabels(items []types.Item) {
 		var itemID int
 		var l types.Label
 		if err := rows.Scan(&itemID, &l.ID, &l.Name, &l.Color, &l.SortOrder); err != nil {
+			log.Printf("item-label scan error: %v", err)
 			continue
 		}
 		if idx, ok := idxMap[itemID]; ok {

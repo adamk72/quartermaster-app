@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -22,6 +23,7 @@ func handleListCoins(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var e types.CoinLedgerEntry
 		if err := rows.Scan(&e.ID, &e.GameDate, &e.Description, &e.CP, &e.SP, &e.EP, &e.GP, &e.PP, &e.Direction, &e.ItemID, &e.Notes, &e.CreatedAt); err != nil {
+			log.Printf("coin ledger scan error: %v", err)
 			continue
 		}
 		entries = append(entries, e)

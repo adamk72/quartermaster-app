@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -23,6 +24,7 @@ func handleListXP(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var e types.XPEntry
 		if err := rows.Scan(&e.ID, &e.SessionID, &e.GameDate, &e.XPAmount, &e.Description, &e.CreatedAt); err != nil {
+			log.Printf("xp entry scan error: %v", err)
 			continue
 		}
 
@@ -32,6 +34,7 @@ func handleListXP(w http.ResponseWriter, r *http.Request) {
 			for aRows.Next() {
 				var a types.XPAttendance
 				if err := aRows.Scan(&a.ID, &a.XPEntryID, &a.CharacterID, &a.Present); err != nil {
+					log.Printf("xp attendance scan error: %v", err)
 					continue
 				}
 				e.Attendance = append(e.Attendance, a)
@@ -210,6 +213,7 @@ func handleXPTotals(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var t XPTotal
 		if err := rows.Scan(&t.CharacterID, &t.CharacterName, &t.TotalXP); err != nil {
+			log.Printf("xp total scan error: %v", err)
 			continue
 		}
 		t.Level = xpToLevel(t.TotalXP)

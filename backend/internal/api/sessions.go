@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -31,6 +32,7 @@ func handleListSessions(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var s types.Session
 		if err := rows.Scan(&s.ID, &s.GameDate, &s.Title, &s.BodyJSON, &s.BodyHTML, &s.XPGained, &s.CreatedBy, &s.CreatedAt, &s.UpdatedAt); err != nil {
+			log.Printf("session scan error: %v", err)
 			continue
 		}
 		sessions = append(sessions, s)
@@ -55,6 +57,7 @@ func handleGetSession(w http.ResponseWriter, r *http.Request) {
 		for imgRows.Next() {
 			var img types.SessionImage
 			if err := imgRows.Scan(&img.ID, &img.SessionID, &img.Filename, &img.Caption, &img.SortOrder); err != nil {
+				log.Printf("session image scan error: %v", err)
 				continue
 			}
 			s.Images = append(s.Images, img)

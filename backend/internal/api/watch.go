@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -23,6 +24,7 @@ func handleListWatchSchedules(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var s types.WatchSchedule
 		if err := rows.Scan(&s.ID, &s.Name, &s.Active, &s.CreatedAt); err != nil {
+			log.Printf("watch schedule scan error: %v", err)
 			continue
 		}
 
@@ -32,6 +34,7 @@ func handleListWatchSchedules(w http.ResponseWriter, r *http.Request) {
 			for slotRows.Next() {
 				var slot types.WatchSlot
 				if err := slotRows.Scan(&slot.ID, &slot.ScheduleID, &slot.WatchNumber, &slot.CharacterID, &slot.SortOrder); err != nil {
+					log.Printf("watch slot scan error: %v", err)
 					continue
 				}
 				s.Slots = append(s.Slots, slot)

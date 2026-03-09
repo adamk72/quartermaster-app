@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -23,6 +24,7 @@ func handleListContainers(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var c types.Container
 		if err := rows.Scan(&c.ID, &c.Name, &c.Type, &c.CharacterID, &c.MountID, &c.WeightLimit, &c.Location, &c.Notes, &c.CreatedAt, &c.UpdatedAt, &c.Version); err != nil {
+			log.Printf("container scan error: %v", err)
 			continue
 		}
 		containers = append(containers, c)

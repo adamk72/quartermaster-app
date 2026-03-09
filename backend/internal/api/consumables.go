@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -25,6 +26,7 @@ func handleListConsumableTypes(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var ct types.ConsumableType
 		if err := rows.Scan(&ct.ID, &ct.Name, &ct.Unit, &ct.PerPersonPerDay, &ct.SortOrder); err != nil {
+			log.Printf("consumable type scan error: %v", err)
 			continue
 		}
 		ctypes = append(ctypes, ct)
@@ -139,6 +141,7 @@ func handleListConsumableLedger(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var e types.ConsumableLedgerEntry
 		if err := rows.Scan(&e.ID, &e.ConsumableTypeID, &e.Quantity, &e.Direction, &e.GameDate, &e.Description, &e.HeadCount, &e.Notes, &e.CreatedAt); err != nil {
+			log.Printf("consumable ledger scan error: %v", err)
 			continue
 		}
 		entries = append(entries, e)
@@ -223,6 +226,7 @@ func handleConsumableBalances(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var b types.ConsumableBalance
 		if err := rows.Scan(&b.ConsumableTypeID, &b.Name, &b.Unit, &b.PerPersonPerDay, &b.Balance); err != nil {
+			log.Printf("consumable balance scan error: %v", err)
 			continue
 		}
 		if b.PerPersonPerDay > 0 && activeCount > 0 {
@@ -268,6 +272,7 @@ func handleConsumeDay(w http.ResponseWriter, r *http.Request) {
 		var id, name string
 		var perPerson float64
 		if err := typeRows.Scan(&id, &name, &perPerson); err != nil {
+			log.Printf("consumable type scan error: %v", err)
 			continue
 		}
 

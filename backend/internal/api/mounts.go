@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -23,6 +24,7 @@ func handleListMounts(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var m types.Mount
 		if err := rows.Scan(&m.ID, &m.Name, &m.CarryingCapacity, &m.Notes, &m.Active, &m.CreatedAt, &m.UpdatedAt); err != nil {
+			log.Printf("mount scan error: %v", err)
 			continue
 		}
 		mounts = append(mounts, m)
