@@ -59,20 +59,33 @@ Caddy handles HTTPS certificates automatically via Let's Encrypt.
 
 ```
 quartermasterapp.duckdns.org {
-    reverse_proxy localhost:8080
+    reverse_proxy localhost:9090
 }
 ```
 
-**Start Caddy:**
+**Start Caddy with tmux (recommended):**
+
+The brew service (`brew services start caddy`) can conflict with itself due to `KeepAlive` restart loops. Running Caddy directly with `sudo` in tmux is more reliable:
 
 ```bash
-brew services start caddy
+# Disable the brew service if previously enabled
+brew services stop caddy
+
+# Kill any lingering caddy processes
+sudo pkill -9 -f caddy
+
+# Run in tmux
+tmux new -s caddy
+sudo caddy run --config /etc/caddy/Caddyfile
+# Detach: Ctrl+B, then D
+# Reattach later: tmux attach -t caddy
 ```
 
-If brew services fails, run directly:
+**If Caddy fails with "address already in use" on port 2019:**
 
 ```bash
-caddy run --config /etc/caddy/Caddyfile
+sudo kill -9 $(sudo lsof -i :2019 -t)
+# Then retry the caddy run command
 ```
 
 ## 4. Build & Run the App
@@ -105,10 +118,10 @@ STATIC_DIR=cmd/server/static ../quartermaster-app
 | From where     | URL                                          |
 |----------------|----------------------------------------------|
 | Remote browser | `https://quartermasterapp.duckdns.org`       |
-| Local browser  | `http://localhost:8080`                       |
+| Local browser  | `http://localhost:9090`                       |
 | Local dev mode | `http://localhost:5173` (via `make dev`)      |
 
-**Note:** You cannot access the DuckDNS URL from the same network (most routers don't support NAT hairpinning). Use `localhost:8080` locally.
+**Note:** You cannot access the DuckDNS URL from the same network (most routers don't support NAT hairpinning). Use `localhost:9090` locally.
 
 ## Troubleshooting
 
