@@ -13,3 +13,6 @@ uploads/*
 *.log
 .DS_Store
 frontend/node_modules/
+backend/cmd/server/static/
+backend/server
+quartermaster-app

@@ -7,6 +7,7 @@ import (
 
 	"github.com/adamk72/quartermaster-app/internal/api"
 	"github.com/adamk72/quartermaster-app/internal/db"
+	"github.com/adamk72/quartermaster-app/internal/spa"
 )
 
 func main() {
@@ -51,6 +52,16 @@ func main() {
 
 	mux := http.NewServeMux()
 	api.RegisterRoutes(mux)
+
+	// Serve frontend static files (from make build) or fall back to SPA routing
+	staticDir := os.Getenv("STATIC_DIR")
+	if staticDir == "" {
+		staticDir = "static"
+	}
+	if info, err := os.Stat(staticDir); err == nil && info.IsDir() {
+		spaHandler := spa.NewHandler(os.DirFS(staticDir))
+		mux.Handle("/", spaHandler)
+	}
 
 	handler := api.Chain(mux, api.Logger, api.CORS)
 
