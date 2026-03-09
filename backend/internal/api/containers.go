@@ -41,18 +41,14 @@ func handleGetContainer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Load items for this container
-	rows, err := db.DB.Query("SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at, version FROM items WHERE container_id = ? ORDER BY sort_order, name", id)
+	rows, err := db.DB.Query("SELECT "+itemColumns+" FROM items WHERE container_id = ? ORDER BY sort_order, name", id)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to query container items")
 		return
 	}
 	defer rows.Close()
-	for rows.Next() {
-		var item types.Item
-		if err := rows.Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt, &item.Version); err != nil {
-			continue
-		}
-		c.Items = append(c.Items, item)
+	c.Items = scanItems(rows)
+	for _, item := range c.Items {
 		if item.WeightOverride != nil {
 			c.TotalWeight += *item.WeightOverride
 		} else if item.UnitWeightLbs != nil {

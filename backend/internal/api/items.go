@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -12,6 +13,45 @@ import (
 	"github.com/adamk72/quartermaster-app/internal/types"
 )
 
+// itemColumns is the canonical column list for item queries.
+// Keep in sync with scanItem.
+const itemColumns = "id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at, version"
+
+// itemColumnsAliased is the same list prefixed with "i." for joins.
+const itemColumnsAliased = "i.id, i.name, i.quantity, i.credit_gp, i.debit_gp, i.game_date, i.category, i.container_id, i.sold, i.unit_weight_lbs, i.unit_value_gp, i.weight_override, i.added_to_dndbeyond, i.identified, i.attuned_to, i.singular, i.notes, i.sort_order, i.created_at, i.updated_at, i.version"
+
+// scanner is satisfied by both *sql.Row and *sql.Rows.
+type scanner interface {
+	Scan(dest ...any) error
+}
+
+// scanItem scans a single item row into a types.Item.
+func scanItem(s scanner) (types.Item, error) {
+	var item types.Item
+	err := s.Scan(
+		&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP,
+		&item.GameDate, &item.Category, &item.ContainerID, &item.Sold,
+		&item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride,
+		&item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo,
+		&item.Singular, &item.Notes, &item.SortOrder,
+		&item.CreatedAt, &item.UpdatedAt, &item.Version,
+	)
+	return item, err
+}
+
+// scanItems scans all rows into a slice, logging (not swallowing) scan errors.
+func scanItems(rows *sql.Rows) []types.Item {
+	items := []types.Item{}
+	for rows.Next() {
+		item, err := scanItem(rows)
+		if err != nil {
+			log.Printf("item scan error: %v", err)
+			continue
+		}
+		items = append(items, item)
+	}
+	return items
+}
 
 const maxAttunementSlots = 3
 
@@ -53,7 +93,7 @@ func validateAttunement(charID string, containerID *string, excludeItemID int) e
 }
 
 func handleListItems(w http.ResponseWriter, r *http.Request) {
-	query := "SELECT DISTINCT i.id, i.name, i.quantity, i.credit_gp, i.debit_gp, i.game_date, i.category, i.container_id, i.sold, i.unit_weight_lbs, i.unit_value_gp, i.weight_override, i.added_to_dndbeyond, i.identified, i.attuned_to, i.singular, i.notes, i.sort_order, i.created_at, i.updated_at, i.version FROM items i"
+	query := "SELECT DISTINCT " + itemColumnsAliased + " FROM items i"
 
 	var args []any
 	var conditions []string
@@ -95,23 +135,14 @@ func handleListItems(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	items := []types.Item{}
-	for rows.Next() {
-		var item types.Item
-		if err := rows.Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt, &item.Version); err != nil {
-			continue
-		}
-		items = append(items, item)
-	}
+	items := scanItems(rows)
 	loadItemLabels(items)
 	writeJSON(w, http.StatusOK, items)
 }
 
 func handleGetItem(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	var item types.Item
-	err := db.DB.QueryRow("SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at, version FROM items WHERE id = ?", id).
-		Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt, &item.Version)
+	item, err := scanItem(db.DB.QueryRow("SELECT "+itemColumns+" FROM items WHERE id = ?", id))
 	if err != nil {
 		writeError(w, http.StatusNotFound, "item not found")
 		return
@@ -340,9 +371,8 @@ func handleIdentifyItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Return the updated item
-	var item types.Item
-	if err := db.DB.QueryRow("SELECT id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at, version FROM items WHERE id = ?", id).
-		Scan(&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP, &item.GameDate, &item.Category, &item.ContainerID, &item.Sold, &item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride, &item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo, &item.Singular, &item.Notes, &item.SortOrder, &item.CreatedAt, &item.UpdatedAt, &item.Version); err != nil {
+	item, err := scanItem(db.DB.QueryRow("SELECT "+itemColumns+" FROM items WHERE id = ?", id))
+	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to reload identified item")
 		return
 	}
