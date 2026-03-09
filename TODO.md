@@ -22,6 +22,10 @@
   XP field incrementer (+/-) makes typing large values awkward (typing "2033" prepends a zero). Allow direct number input.
 - [ ] Investigate reorder concurrency issue #tech-debt
   Two users reordering inventory simultaneously causes last-write-wins on `sort_order`. Optimistic locking covers item/container updates but not reorder specifically.
+- [ ] Base item catalog with costs, weights, and sell factors
+  Create a reference table of standard item costs (gp) and weights (lbs) that serves as the baseline. Editable per-item. Include a "sell factor" per category — e.g. mundane items sell at 50% of base value, gems at 100%. Use this to auto-populate new items and calculate party net worth more accurately.
+- [ ] Exclude personally-held items from net worth and sale
+  If an item is directly assigned to a character or is in a container owned by a single character, exclude it from party net worth totals and disallow selling it. The player will have already recorded the item on their own sheet — the app is a convenience for visibility so the party can see what everyone has for discussion. Only shared/party loot should count toward net worth and be sellable.
 
 ## 🍊 P3 — Low Priority
 - [ ] Replace hand-written SQL column lists #tech-debt
