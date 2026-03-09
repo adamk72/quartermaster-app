@@ -14,7 +14,7 @@ build:
 	cd frontend && pnpm build
 	mkdir -p backend/cmd/server/static
 	cp -r frontend/dist/* backend/cmd/server/static/
-	cd backend && go build -o ../treasure-tracker ./cmd/server
+	cd backend && go build -o ../quartermaster-app ./cmd/server
 
 seed:
 	cd backend && go run ./cmd/seed

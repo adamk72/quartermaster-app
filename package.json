@@ -1,5 +1,5 @@
 {
-  "name": "treasure-tracking",
+  "name": "quartermaster-app",
   "private": true,
   "scripts": {
     "prepare": "husky"

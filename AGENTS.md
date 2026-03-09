@@ -1,4 +1,4 @@
-# Treasure Tracker - D&D Campaign Management Webapp
+# Quartermaster App - D&D Campaign Management Webapp
 
 ## Overview
 Multi-user webapp replacing Google Sheets + Docs for tracking a weekly D&D campaign. Any player can edit anything, with a changelog for accountability.

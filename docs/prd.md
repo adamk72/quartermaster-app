@@ -1,4 +1,4 @@
-# Treasure Tracker — Product Requirements Document
+# Quartermaster App — Product Requirements Document
 
 ## What This Is
 
