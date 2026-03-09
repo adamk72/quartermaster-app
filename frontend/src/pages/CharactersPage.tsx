@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { Plus, Trash2, Pencil, Sparkles } from 'lucide-react'
+import { getCharacterIcon } from '../constants/characterIcons'
 import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
 import { MAX_ATTUNEMENT_SLOTS } from '../constants'
@@ -136,7 +137,10 @@ export function CharactersPage() {
           {characters.map((c) => (
             <div key={c.id} className="tt-card hover:border-border-light transition-colors">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-heading text-lg font-bold text-parchment">{c.name}</h3>
+                <div className="flex items-center gap-2">
+                  {(() => { const Icon = getCharacterIcon(c.icon); return <Icon className="w-5 h-5 text-gold" /> })()}
+                  <h3 className="font-heading text-lg font-bold text-parchment">{c.name}</h3>
+                </div>
                 <div className="flex gap-1">
                   <button
                     onClick={() => { setEditChar(c); setForm(c); setShowForm(true) }}

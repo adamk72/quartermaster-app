@@ -7,9 +7,18 @@ export interface Character {
   race: string
   ac: number
   hp_max: number
+  icon: string
   notes: string
   created_at: string
   updated_at: string
+}
+
+export interface ActiveUser {
+  id: string
+  username: string
+  character_id: string | null
+  character_name: string
+  icon: string
 }
 
 export interface Container {

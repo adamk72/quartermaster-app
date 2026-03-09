@@ -1,0 +1,1 @@
+ALTER TABLE characters ADD COLUMN icon TEXT NOT NULL DEFAULT '';

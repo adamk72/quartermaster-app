@@ -9,7 +9,7 @@ interface AppState {
   loading: boolean
   error: string | null
 
-  login: (username: string, inviteCode: string) => Promise<void>
+  login: (username: string, inviteCode: string, characterId?: string) => Promise<void>
   logout: () => void
   checkAuth: () => Promise<void>
   clearError: () => void
@@ -20,13 +20,17 @@ export const useAppStore = create<AppState>((set) => ({
   loading: true,
   error: null,
 
-  login: async (username, inviteCode) => {
+  login: async (username, inviteCode, characterId) => {
     try {
       set({ error: null })
-      const res = await api.post<LoginResponse>('/auth/login', {
+      const body: Record<string, string> = {
         username,
         invite_code: inviteCode,
-      })
+      }
+      if (characterId) {
+        body.character_id = characterId
+      }
+      const res = await api.post<LoginResponse>('/auth/login', body)
       localStorage.setItem(AUTH_TOKEN_KEY, res.token)
       set({ user: res.user })
     } catch (e) {
@@ -35,7 +39,12 @@ export const useAppStore = create<AppState>((set) => ({
     }
   },
 
-  logout: () => {
+  logout: async () => {
+    try {
+      await api.post('/auth/logout')
+    } catch {
+      // ignore — clear local state regardless
+    }
     localStorage.removeItem(AUTH_TOKEN_KEY)
     set({ user: null })
   },

@@ -5,6 +5,7 @@ import "net/http"
 func RegisterRoutes(mux *http.ServeMux) {
 	// Public routes
 	mux.HandleFunc("POST /api/v1/auth/login", handleLogin)
+	mux.HandleFunc("GET /api/v1/auth/characters", handlePublicCharacters)
 
 	// Protected routes - wrap with auth middleware
 	auth := func(h http.HandlerFunc) http.Handler {
@@ -12,6 +13,8 @@ func RegisterRoutes(mux *http.ServeMux) {
 	}
 
 	mux.Handle("GET /api/v1/auth/me", auth(handleMe))
+	mux.Handle("POST /api/v1/auth/logout", auth(handleLogout))
+	mux.Handle("GET /api/v1/users/active", auth(handleActiveUsers))
 
 	// Characters
 	mux.Handle("GET /api/v1/characters", auth(handleListCharacters))

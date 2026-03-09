@@ -11,6 +11,7 @@ type Character struct {
 	Race       string    `json:"race"`
 	AC         int       `json:"ac"`
 	HPMax      int       `json:"hp_max"`
+	Icon       string    `json:"icon"`
 	Notes      string    `json:"notes"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
@@ -263,9 +264,18 @@ type ItemSummary struct {
 	ItemCount   int     `json:"item_count"`
 }
 
+type ActiveUser struct {
+	ID            string  `json:"id"`
+	Username      string  `json:"username"`
+	CharacterID   *string `json:"character_id"`
+	CharacterName string  `json:"character_name"`
+	Icon          string  `json:"icon"`
+}
+
 type LoginRequest struct {
-	Username   string `json:"username"`
-	InviteCode string `json:"invite_code"`
+	Username    string  `json:"username"`
+	InviteCode  string  `json:"invite_code"`
+	CharacterID *string `json:"character_id"`
 }
 
 type LoginResponse struct {

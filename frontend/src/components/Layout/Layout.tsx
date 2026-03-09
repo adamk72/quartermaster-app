@@ -1,11 +1,15 @@
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAppStore } from '../../stores/useAppStore'
+import { usePresenceStore } from '../../stores/usePresenceStore'
+import { ActiveUsers } from '../ActiveUsers'
 import {
   Sword, BookOpen, Bug, ScrollText, Brain, Star,
   Shield, Users, History, LayoutDashboard, Menu, X, LogOut, Apple, Coins, Settings,
 } from 'lucide-react'
 import clsx from 'clsx'
+
+const PRESENCE_POLL_MS = 60_000
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -27,6 +31,13 @@ export function Layout({ children }: { children: ReactNode }) {
   const { user, logout } = useAppStore()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const fetchActiveUsers = usePresenceStore((s) => s.fetchActiveUsers)
+
+  useEffect(() => {
+    fetchActiveUsers()
+    const id = setInterval(fetchActiveUsers, PRESENCE_POLL_MS)
+    return () => clearInterval(id)
+  }, [fetchActiveUsers])
 
   return (
     <div className="min-h-screen">
@@ -50,20 +61,23 @@ export function Layout({ children }: { children: ReactNode }) {
       {/* Sidebar */}
       <aside
         className={clsx(
-          'fixed top-0 left-0 h-full w-64 bg-surface z-50 transition-transform lg:translate-x-0 border-r border-border',
+          'fixed top-0 left-0 h-full w-64 bg-surface z-50 transition-transform lg:translate-x-0 border-r border-border flex flex-col',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         {/* Brand */}
-        <div className="flex items-center justify-between p-5 border-b border-border">
+        <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
           <h1 className="font-display text-lg font-bold text-gold tracking-wide">Quartermaster</h1>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-1 text-parchment-muted hover:text-parchment transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
+        {/* Active users */}
+        <ActiveUsers />
+
         {/* Navigation */}
-        <nav className="p-3 space-y-0.5">
+        <nav className="p-3 space-y-0.5 flex-1 overflow-y-auto">
           {navItems.map(({ path, label, icon: Icon }) => {
             const active = location.pathname === path || (path !== '/' && location.pathname.startsWith(path))
             return (
@@ -86,7 +100,7 @@ export function Layout({ children }: { children: ReactNode }) {
         </nav>
 
         {/* User footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
+        <div className="shrink-0 p-4 border-t border-border">
           <div className="flex items-center justify-between text-sm">
             <span className="text-parchment-muted font-medium">{user?.username}</span>
             <button

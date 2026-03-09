@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -11,8 +12,35 @@ import (
 	"github.com/adamk72/quartermaster-app/internal/types"
 )
 
+var iconPool = []string{
+	"Sword", "Shield", "Crown", "Flame", "Snowflake", "Zap",
+	"Axe", "Moon", "Eye", "Gem", "Mountain", "Compass", "Feather", "Star",
+}
+
+// pickUnusedIcon selects the first icon from the pool not already used by other characters.
+func pickUnusedIcon() string {
+	rows, err := db.DB.Query("SELECT icon FROM characters WHERE icon != ''")
+	if err != nil {
+		return iconPool[0]
+	}
+	defer rows.Close()
+
+	used := map[string]bool{}
+	for rows.Next() {
+		var icon string
+		rows.Scan(&icon)
+		used[icon] = true
+	}
+	for _, icon := range iconPool {
+		if !used[icon] {
+			return icon
+		}
+	}
+	return iconPool[0]
+}
+
 func handleListCharacters(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.DB.Query("SELECT id, name, player_name, class, level, race, ac, hp_max, notes, created_at, updated_at FROM characters ORDER BY name")
+	rows, err := db.DB.Query("SELECT id, name, player_name, class, level, race, ac, hp_max, icon, notes, created_at, updated_at FROM characters ORDER BY name")
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to query characters")
 		return
@@ -22,7 +50,10 @@ func handleListCharacters(w http.ResponseWriter, r *http.Request) {
 	chars := []types.Character{}
 	for rows.Next() {
 		var c types.Character
-		rows.Scan(&c.ID, &c.Name, &c.PlayerName, &c.Class, &c.Level, &c.Race, &c.AC, &c.HPMax, &c.Notes, &c.CreatedAt, &c.UpdatedAt)
+		if err := rows.Scan(&c.ID, &c.Name, &c.PlayerName, &c.Class, &c.Level, &c.Race, &c.AC, &c.HPMax, &c.Icon, &c.Notes, &c.CreatedAt, &c.UpdatedAt); err != nil {
+			log.Printf("Error scanning character row: %v", err)
+			continue
+		}
 		chars = append(chars, c)
 	}
 	writeJSON(w, http.StatusOK, chars)
@@ -31,8 +62,8 @@ func handleListCharacters(w http.ResponseWriter, r *http.Request) {
 func handleGetCharacter(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	var c types.Character
-	err := db.DB.QueryRow("SELECT id, name, player_name, class, level, race, ac, hp_max, notes, created_at, updated_at FROM characters WHERE id = ?", id).
-		Scan(&c.ID, &c.Name, &c.PlayerName, &c.Class, &c.Level, &c.Race, &c.AC, &c.HPMax, &c.Notes, &c.CreatedAt, &c.UpdatedAt)
+	err := db.DB.QueryRow("SELECT id, name, player_name, class, level, race, ac, hp_max, icon, notes, created_at, updated_at FROM characters WHERE id = ?", id).
+		Scan(&c.ID, &c.Name, &c.PlayerName, &c.Class, &c.Level, &c.Race, &c.AC, &c.HPMax, &c.Icon, &c.Notes, &c.CreatedAt, &c.UpdatedAt)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "character not found")
 		return
@@ -50,13 +81,16 @@ func handleCreateCharacter(w http.ResponseWriter, r *http.Request) {
 	if c.ID == "" {
 		c.ID = strings.ToLower(strings.ReplaceAll(c.Name, " ", "-"))
 	}
+	if c.Icon == "" {
+		c.Icon = pickUnusedIcon()
+	}
 	now := time.Now()
 	c.CreatedAt = now
 	c.UpdatedAt = now
 
 	_, err := db.DB.Exec(
-		"INSERT INTO characters (id, name, player_name, class, level, race, ac, hp_max, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-		c.ID, c.Name, c.PlayerName, c.Class, c.Level, c.Race, c.AC, c.HPMax, c.Notes, c.CreatedAt, c.UpdatedAt,
+		"INSERT INTO characters (id, name, player_name, class, level, race, ac, hp_max, icon, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		c.ID, c.Name, c.PlayerName, c.Class, c.Level, c.Race, c.AC, c.HPMax, c.Icon, c.Notes, c.CreatedAt, c.UpdatedAt,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, fmt.Sprintf("failed to create character: %v", err))
@@ -82,8 +116,8 @@ func handleUpdateCharacter(w http.ResponseWriter, r *http.Request) {
 	c.UpdatedAt = time.Now()
 	diffJSON, n, err := diffUpdate("characters", id, func(tx *sql.Tx) (sql.Result, error) {
 		return tx.Exec(
-			"UPDATE characters SET name=?, player_name=?, class=?, level=?, race=?, ac=?, hp_max=?, notes=?, updated_at=? WHERE id=?",
-			c.Name, c.PlayerName, c.Class, c.Level, c.Race, c.AC, c.HPMax, c.Notes, c.UpdatedAt, id,
+			"UPDATE characters SET name=?, player_name=?, class=?, level=?, race=?, ac=?, hp_max=?, icon=?, notes=?, updated_at=? WHERE id=?",
+			c.Name, c.PlayerName, c.Class, c.Level, c.Race, c.AC, c.HPMax, c.Icon, c.Notes, c.UpdatedAt, id,
 		)
 	})
 	if err != nil {
