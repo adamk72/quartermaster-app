@@ -320,12 +320,13 @@ func handleImportItems(w http.ResponseWriter, r *http.Request) {
 			item.Category = "Item"
 		}
 		sortOrder := maxSort + i + 1
+		identified := !strings.Contains(strings.ToLower(item.Notes), "tbi")
 
 		result, err := tx.Exec(
-			"INSERT INTO items (name, quantity, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?, NULL, 0, 1, NULL, ?, ?, ?, ?, ?)",
+			"INSERT INTO items (name, quantity, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?, NULL, 0, ?, NULL, ?, ?, ?, ?, ?)",
 			item.Name, item.Quantity, item.GameDate, item.Category, item.ContainerID,
 			item.UnitWeightLbs, item.UnitValueGP,
-			item.Name, item.Notes, sortOrder, item.CreatedAt, item.UpdatedAt,
+			identified, item.Name, item.Notes, sortOrder, item.CreatedAt, item.UpdatedAt,
 		)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, fmt.Sprintf("failed to insert item %d (%s): %v", i+1, item.Name, err))
@@ -335,8 +336,17 @@ func handleImportItems(w http.ResponseWriter, r *http.Request) {
 		id, _ := result.LastInsertId()
 		item.ID = int(id)
 		item.SortOrder = sortOrder
-		item.Identified = true
+		item.Identified = identified
 		item.Singular = item.Name
+
+		// Assign labels if provided
+		for _, lid := range item.LabelIDs {
+			if _, err := tx.Exec("INSERT OR IGNORE INTO item_labels (item_id, label_id) VALUES (?, ?)", item.ID, lid); err != nil {
+				writeError(w, http.StatusInternalServerError, fmt.Sprintf("failed to assign label %q to item %d: %v", lid, i+1, err))
+				return
+			}
+		}
+
 		created = append(created, item)
 	}
 
