@@ -17,39 +17,67 @@ function LabelForm({
   onCancel: () => void
 }) {
   const [form, setForm] = useState<Partial<Label>>(
-    label ?? { name: '', color: DEFAULT_LABEL_COLOR }
+    label ?? { name: '', color: DEFAULT_LABEL_COLOR, text_color: '#ffffff' }
   )
 
   return (
     <form
       onSubmit={(e) => { e.preventDefault(); onSave(form) }}
-      className="flex items-end gap-3"
+      className="space-y-3"
     >
-      <div>
-        <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Name</label>
-        <input
-          className="input-themed"
-          value={form.name ?? ''}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          required
-          autoFocus
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Color</label>
-        <div className="flex items-center gap-2">
+      <div className="flex items-end gap-3 flex-wrap">
+        <div>
+          <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Name</label>
           <input
-            type="color"
-            value={form.color ?? DEFAULT_LABEL_COLOR}
-            onChange={(e) => setForm({ ...form, color: e.target.value })}
-            className="w-10 h-10 rounded border border-border cursor-pointer bg-transparent"
+            className="input-themed"
+            value={form.name ?? ''}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            required
+            autoFocus
           />
-          <input
-            className="input-themed !w-24"
-            value={form.color ?? ''}
-            onChange={(e) => setForm({ ...form, color: e.target.value })}
-            placeholder="#hex"
-          />
+        </div>
+        <div>
+          <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Background</label>
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={form.color ?? DEFAULT_LABEL_COLOR}
+              onChange={(e) => setForm({ ...form, color: e.target.value })}
+              className="w-10 h-10 rounded border border-border cursor-pointer bg-transparent"
+            />
+            <input
+              className="input-themed !w-24"
+              value={form.color ?? ''}
+              onChange={(e) => setForm({ ...form, color: e.target.value })}
+              placeholder="#hex"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Text</label>
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={form.text_color ?? '#ffffff'}
+              onChange={(e) => setForm({ ...form, text_color: e.target.value })}
+              className="w-10 h-10 rounded border border-border cursor-pointer bg-transparent"
+            />
+            <input
+              className="input-themed !w-24"
+              value={form.text_color ?? ''}
+              onChange={(e) => setForm({ ...form, text_color: e.target.value })}
+              placeholder="#hex"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Preview</label>
+          <span
+            className="inline-block px-2.5 py-1 rounded text-xs font-medium"
+            style={{ backgroundColor: hexWithAlpha(form.color ?? DEFAULT_LABEL_COLOR, '40'), color: form.text_color ?? '#ffffff' }}
+          >
+            {form.name || 'Label'}
+          </span>
         </div>
       </div>
       <div className="flex gap-2">
@@ -177,11 +205,10 @@ export function SettingsPage() {
                   />
                   <span
                     className="px-2.5 py-0.5 rounded text-xs font-medium"
-                    style={{ backgroundColor: hexWithAlpha(label.color, '25'), color: label.color }}
+                    style={{ backgroundColor: hexWithAlpha(label.color, '40'), color: label.text_color || '#ffffff' }}
                   >
                     {label.name}
                   </span>
-                  <span className="text-xs text-parchment-muted ml-1">{label.id}</span>
                   <div className="ml-auto flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => setEditLabel(label)}

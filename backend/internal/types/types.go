@@ -37,6 +37,7 @@ type Label struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
 	Color     string    `json:"color"`
+	TextColor string    `json:"text_color"`
 	SortOrder int       `json:"sort_order"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

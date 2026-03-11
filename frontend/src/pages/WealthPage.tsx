@@ -3,7 +3,7 @@ import { api } from '../api/client'
 import { toast } from '../stores/useToastStore'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { confirm } from '../stores/useConfirmStore'
-import { Trash2, Split } from 'lucide-react'
+import { Trash2, Split, ChevronDown } from 'lucide-react'
 import clsx from 'clsx'
 import { DENOM_TO_CP, GEMS_JEWELRY_LABEL_IDS } from '../constants'
 import type { CoinBalance, CoinLedgerEntry, ItemSummary, Character } from '../types'
@@ -20,6 +20,8 @@ export function WealthPage() {
   const [showConvert, setShowConvert] = useState(false)
   const [showSplit, setShowSplit] = useState(false)
   const { items, fetchItems, characters, fetchCharacters } = useInventoryStore()
+  const [gemsCollapsed, setGemsCollapsed] = useState(false)
+  const [ledgerCollapsed, setLedgerCollapsed] = useState(false)
 
   const fetchAll = useCallback(async () => {
     try {
@@ -106,82 +108,94 @@ export function WealthPage() {
       {/* Gems & Jewelry section */}
       {gemsAndJewelry.length > 0 && (
         <div className="mb-6">
-          <h3 className="font-heading text-lg font-semibold text-parchment mb-3">Gems & Jewelry</h3>
-          <div className="bg-card border border-border rounded-xl overflow-x-auto">
-            <table className="tt-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Qty</th>
-                  <th>Unit Value</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {gemsAndJewelry.map((item) => (
-                  <tr key={item.id}>
-                    <td className="font-medium">{item.name}</td>
-                    <td>{item.quantity}</td>
-                    <td className="text-gold">{item.unit_value_gp != null ? `${item.unit_value_gp} GP` : '--'}</td>
-                    <td className="text-gold font-medium">{((item.unit_value_gp ?? 0) * item.quantity).toFixed(2)} GP</td>
+          <button onClick={() => setGemsCollapsed(!gemsCollapsed)} className="flex items-center gap-2 mb-3 group">
+            <ChevronDown className={clsx('w-4 h-4 text-parchment-muted transition-transform', gemsCollapsed && '-rotate-90')} />
+            <h3 className="font-heading text-lg font-semibold text-parchment group-hover:text-gold transition-colors">Gems & Jewelry</h3>
+            <span className="text-sm text-parchment-muted">({gemsAndJewelry.length})</span>
+          </button>
+          {!gemsCollapsed && (
+            <div className="bg-card border border-border rounded-xl overflow-x-auto">
+              <table className="tt-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Qty</th>
+                    <th>Unit Value</th>
+                    <th>Total</th>
                   </tr>
-                ))}
-                <tr className="border-t-2 border-border">
-                  <td className="font-heading font-semibold" colSpan={3}>Total</td>
-                  <td className="text-gold font-bold">{gemsTotal.toFixed(2)} GP</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {gemsAndJewelry.map((item) => (
+                    <tr key={item.id}>
+                      <td className="font-medium">{item.name}</td>
+                      <td>{item.quantity}</td>
+                      <td className="text-gold">{item.unit_value_gp != null ? `${item.unit_value_gp} GP` : '--'}</td>
+                      <td className="text-gold font-medium">{((item.unit_value_gp ?? 0) * item.quantity).toFixed(2)} GP</td>
+                    </tr>
+                  ))}
+                  <tr className="border-t-2 border-border">
+                    <td className="font-heading font-semibold" colSpan={3}>Total</td>
+                    <td className="text-gold font-bold">{gemsTotal.toFixed(2)} GP</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
       {/* Coin ledger */}
-      <h3 className="font-heading text-lg font-semibold text-parchment mb-3">Coin Ledger</h3>
-      <div className="bg-card border border-border rounded-xl overflow-x-auto">
-        {ledger.length === 0 ? (
-          <div className="p-8 text-center text-parchment-muted">No coin entries yet</div>
-        ) : (
-          <table className="tt-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Direction</th>
-                <th>PP</th>
-                <th>GP</th>
-                <th>EP</th>
-                <th>SP</th>
-                <th>CP</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {ledger.map((e) => (
-                <tr key={e.id}>
-                  <td className="text-parchment-dim">{e.game_date || '--'}</td>
-                  <td className="font-medium">{e.description || '--'}</td>
-                  <td>
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${e.direction === 'in' ? 'bg-emerald/15 text-emerald' : 'bg-wine/15 text-wine'}`}>
-                      {e.direction}
-                    </span>
-                  </td>
-                  <td className={e.pp ? DENOM_COLORS.pp : 'text-parchment-muted'}>{e.pp || '--'}</td>
-                  <td className={e.gp ? DENOM_COLORS.gp : 'text-parchment-muted'}>{e.gp || '--'}</td>
-                  <td className={e.ep ? DENOM_COLORS.ep : 'text-parchment-muted'}>{e.ep || '--'}</td>
-                  <td className={e.sp ? DENOM_COLORS.sp : 'text-parchment-muted'}>{e.sp || '--'}</td>
-                  <td className={e.cp ? DENOM_COLORS.cp : 'text-parchment-muted'}>{e.cp || '--'}</td>
-                  <td>
-                    <button onClick={() => handleDeleteEntry(e.id)} className="p-1 text-parchment-muted hover:text-wine transition-colors" title="Delete">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </td>
+      <button onClick={() => setLedgerCollapsed(!ledgerCollapsed)} className="flex items-center gap-2 mb-3 group">
+        <ChevronDown className={clsx('w-4 h-4 text-parchment-muted transition-transform', ledgerCollapsed && '-rotate-90')} />
+        <h3 className="font-heading text-lg font-semibold text-parchment group-hover:text-gold transition-colors">Coin Ledger</h3>
+        <span className="text-sm text-parchment-muted">({ledger.length})</span>
+      </button>
+      {!ledgerCollapsed && (
+        <div className="bg-card border border-border rounded-xl overflow-x-auto">
+          {ledger.length === 0 ? (
+            <div className="p-8 text-center text-parchment-muted">No coin entries yet</div>
+          ) : (
+            <table className="tt-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Direction</th>
+                  <th>PP</th>
+                  <th>GP</th>
+                  <th>EP</th>
+                  <th>SP</th>
+                  <th>CP</th>
+                  <th></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+              </thead>
+              <tbody>
+                {ledger.map((e) => (
+                  <tr key={e.id}>
+                    <td className="text-parchment-dim">{e.game_date || '--'}</td>
+                    <td className="font-medium">{e.description || '--'}</td>
+                    <td>
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${e.direction === 'in' ? 'bg-emerald/15 text-emerald' : 'bg-wine/15 text-wine'}`}>
+                        {e.direction}
+                      </span>
+                    </td>
+                    <td className={e.pp ? DENOM_COLORS.pp : 'text-parchment-muted'}>{e.pp || '--'}</td>
+                    <td className={e.gp ? DENOM_COLORS.gp : 'text-parchment-muted'}>{e.gp || '--'}</td>
+                    <td className={e.ep ? DENOM_COLORS.ep : 'text-parchment-muted'}>{e.ep || '--'}</td>
+                    <td className={e.sp ? DENOM_COLORS.sp : 'text-parchment-muted'}>{e.sp || '--'}</td>
+                    <td className={e.cp ? DENOM_COLORS.cp : 'text-parchment-muted'}>{e.cp || '--'}</td>
+                    <td>
+                      <button onClick={() => handleDeleteEntry(e.id)} className="p-1 text-parchment-muted hover:text-wine transition-colors" title="Delete">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
     </div>
   )
 }

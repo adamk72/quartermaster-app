@@ -127,7 +127,7 @@ export function ItemFormModal({
                       ? 'border-transparent text-base'
                       : 'border-border text-parchment-muted hover:text-parchment hover:border-border-light bg-transparent'
                   )}
-                  style={selectedLabelIds.has(l.id) ? { backgroundColor: hexWithAlpha(l.color, '30'), color: l.color, borderColor: hexWithAlpha(l.color, '50') } : undefined}
+                  style={selectedLabelIds.has(l.id) ? { backgroundColor: hexWithAlpha(l.color, '40'), color: l.text_color || '#ffffff', borderColor: hexWithAlpha(l.color, '50') } : undefined}
                 >
                   {l.name}
                 </button>

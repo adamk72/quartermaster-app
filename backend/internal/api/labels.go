@@ -13,7 +13,7 @@ import (
 )
 
 func handleListLabels(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.DB.Query("SELECT id, name, color, sort_order, created_at, updated_at FROM labels ORDER BY sort_order, name")
+	rows, err := db.DB.Query("SELECT id, name, color, COALESCE(text_color, '#ffffff'), sort_order, created_at, updated_at FROM labels ORDER BY sort_order, name")
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to query labels")
 		return
@@ -23,7 +23,7 @@ func handleListLabels(w http.ResponseWriter, r *http.Request) {
 	labels := []types.Label{}
 	for rows.Next() {
 		var l types.Label
-		if err := rows.Scan(&l.ID, &l.Name, &l.Color, &l.SortOrder, &l.CreatedAt, &l.UpdatedAt); err != nil {
+		if err := rows.Scan(&l.ID, &l.Name, &l.Color, &l.TextColor, &l.SortOrder, &l.CreatedAt, &l.UpdatedAt); err != nil {
 			log.Printf("label scan error: %v", err)
 			continue
 		}
@@ -48,14 +48,17 @@ func handleCreateLabel(w http.ResponseWriter, r *http.Request) {
 	if label.Color == "" {
 		label.Color = "#7d7568"
 	}
+	if label.TextColor == "" {
+		label.TextColor = "#ffffff"
+	}
 
 	now := time.Now()
 	label.CreatedAt = now
 	label.UpdatedAt = now
 
 	_, err := db.DB.Exec(
-		"INSERT INTO labels (id, name, color, sort_order, created_at, updated_at) VALUES (?, ?, ?, (SELECT COALESCE(MAX(sort_order),0)+1 FROM labels), ?, ?)",
-		label.ID, label.Name, label.Color, label.CreatedAt, label.UpdatedAt,
+		"INSERT INTO labels (id, name, color, text_color, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, (SELECT COALESCE(MAX(sort_order),0)+1 FROM labels), ?, ?)",
+		label.ID, label.Name, label.Color, label.TextColor, label.CreatedAt, label.UpdatedAt,
 	)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") {
@@ -89,8 +92,8 @@ func handleUpdateLabel(w http.ResponseWriter, r *http.Request) {
 	label.UpdatedAt = time.Now()
 	diffJSON, n, err := diffUpdate("labels", id, func(tx *sql.Tx) (sql.Result, error) {
 		return tx.Exec(
-			"UPDATE labels SET name=?, color=?, sort_order=?, updated_at=? WHERE id=?",
-			label.Name, label.Color, label.SortOrder, label.UpdatedAt, id,
+			"UPDATE labels SET name=?, color=?, text_color=?, sort_order=?, updated_at=? WHERE id=?",
+			label.Name, label.Color, label.TextColor, label.SortOrder, label.UpdatedAt, id,
 		)
 	})
 	if err != nil {
@@ -157,7 +160,7 @@ func loadItemLabels(items []types.Item) {
 	}
 
 	query := fmt.Sprintf(
-		"SELECT il.item_id, l.id, l.name, l.color, l.sort_order FROM item_labels il JOIN labels l ON l.id = il.label_id WHERE il.item_id IN (%s) ORDER BY l.sort_order, l.name",
+		"SELECT il.item_id, l.id, l.name, l.color, COALESCE(l.text_color, '#ffffff'), l.sort_order FROM item_labels il JOIN labels l ON l.id = il.label_id WHERE il.item_id IN (%s) ORDER BY l.sort_order, l.name",
 		strings.Join(placeholders, ","),
 	)
 	rows, err := db.DB.Query(query, ids...)
@@ -170,7 +173,7 @@ func loadItemLabels(items []types.Item) {
 	for rows.Next() {
 		var itemID int
 		var l types.Label
-		if err := rows.Scan(&itemID, &l.ID, &l.Name, &l.Color, &l.SortOrder); err != nil {
+		if err := rows.Scan(&itemID, &l.ID, &l.Name, &l.Color, &l.TextColor, &l.SortOrder); err != nil {
 			log.Printf("item-label scan error: %v", err)
 			continue
 		}

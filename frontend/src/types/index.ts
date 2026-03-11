@@ -51,6 +51,7 @@ export interface Label {
   id: string
   name: string
   color: string
+  text_color: string
   sort_order: number
   created_at: string
   updated_at: string

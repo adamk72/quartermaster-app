@@ -464,7 +464,7 @@ export function InventoryPage() {
                         <span
                           key={l.id}
                           className="px-2 py-0.5 rounded text-xs font-medium"
-                          style={{ backgroundColor: hexWithAlpha(l.color, '25'), color: l.color }}
+                          style={{ backgroundColor: hexWithAlpha(l.color, '40'), color: l.text_color || '#ffffff' }}
                         >
                           {l.name}
                         </span>
