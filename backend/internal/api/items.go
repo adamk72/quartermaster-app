@@ -921,13 +921,24 @@ func handleItemSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Net worth = party coin + value of unsold items
-	var itemValueGP float64
-	if err := db.DB.QueryRow("SELECT COALESCE(SUM(COALESCE(unit_value_gp,0) * quantity), 0) FROM items WHERE sold = 0").Scan(&itemValueGP); err != nil {
+	// Item value excluding gems & jewelry (those are shown separately on the wealth page)
+	if err := db.DB.QueryRow(`
+		SELECT COALESCE(SUM(COALESCE(i.unit_value_gp,0) * i.quantity), 0)
+		FROM items i
+		WHERE i.sold = 0
+		  AND i.id NOT IN (SELECT il.item_id FROM item_labels il WHERE il.label_id IN ('gems','jewelry'))
+	`).Scan(&summary.ItemValueGP); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to query item value")
 		return
 	}
-	summary.NetWorthGP = summary.PartyCoinGP + itemValueGP
+
+	// Net worth = party coin + ALL unsold item value (including gems)
+	var totalItemValueGP float64
+	if err := db.DB.QueryRow("SELECT COALESCE(SUM(COALESCE(unit_value_gp,0) * quantity), 0) FROM items WHERE sold = 0").Scan(&totalItemValueGP); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to query total item value")
+		return
+	}
+	summary.NetWorthGP = summary.PartyCoinGP + totalItemValueGP
 
 	if err := db.DB.QueryRow("SELECT COALESCE(SUM(COALESCE(weight_override, COALESCE(unit_weight_lbs,0) * quantity)), 0) FROM items WHERE sold = 0").Scan(&summary.TotalWeight); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to query total weight")

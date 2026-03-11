@@ -260,6 +260,7 @@ type ChangelogEntry struct {
 
 type ItemSummary struct {
 	PartyCoinGP float64 `json:"party_coin_gp"`
+	ItemValueGP float64 `json:"item_value_gp"`
 	NetWorthGP  float64 `json:"net_worth_gp"`
 	TotalWeight float64 `json:"total_weight"`
 	ItemCount   int     `json:"item_count"`

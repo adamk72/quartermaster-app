@@ -148,6 +148,7 @@ export function WealthPage() {
         <div className="flex flex-wrap gap-3 mb-6 text-sm">
           <span className="px-3 py-1.5 bg-gold/10 text-gold rounded-full font-medium">Coin Purse: {balance?.total_gp.toFixed(2) ?? '...'} GP</span>
           <span className="px-3 py-1.5 bg-amber/10 text-amber rounded-full font-medium">Gems & Jewelry: {gemsTotal.toFixed(2)} GP</span>
+          <span className="px-3 py-1.5 bg-sky/10 text-sky rounded-full font-medium">Item Value: {summary.item_value_gp.toFixed(2)} GP</span>
           <span className="px-3 py-1.5 bg-emerald/10 text-emerald rounded-full font-medium">Net Worth: {summary.net_worth_gp.toFixed(2)} GP</span>
         </div>
       )}

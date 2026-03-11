@@ -472,7 +472,7 @@ export function InventoryPage() {
                     {item.notes && <p className="text-xs text-parchment-muted mt-0.5">{item.notes}</p>}
                   </td>
                   <td>{item.quantity}</td>
-                  <td className="text-gold text-sm">{item.unit_value_gp != null ? `${item.unit_value_gp} gp` : <span className="text-parchment-muted">--</span>}</td>
+                  <td className="text-gold text-sm">{item.unit_value_gp != null ? `${(item.unit_value_gp * item.quantity).toFixed(2).replace(/\.00$/, '')} gp` : <span className="text-parchment-muted">--</span>}</td>
                   <td className="relative">
                     <button
                       onClick={() => {

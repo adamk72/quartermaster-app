@@ -259,6 +259,7 @@ export interface XPTotal {
 
 export interface ItemSummary {
   party_coin_gp: number
+  item_value_gp: number
   net_worth_gp: number
   total_weight: number
   item_count: number
