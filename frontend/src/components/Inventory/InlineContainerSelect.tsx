@@ -1,15 +1,13 @@
 import { useCallback } from 'react'
 import { useClickOutside } from '../../hooks/useClickOutside'
 import { Check } from 'lucide-react'
-import type { Container, Character, Mount } from '../../types'
+import type { Container } from '../../types'
 
 interface Props {
   itemId: number
   itemVersion: number
   currentContainerId: string | null
   containers: Container[]
-  characters: Character[]
-  mounts: Mount[]
   getContainerDisplayName: (container: Container) => string
   onSave: (itemId: number, data: { container_id: string | null; version: number }) => Promise<unknown>
   onClose: () => void

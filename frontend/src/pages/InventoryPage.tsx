@@ -504,8 +504,6 @@ export function InventoryPage() {
                         itemVersion={item.version}
                         currentContainerId={item.container_id}
                         containers={containers}
-                        characters={characters}
-                        mounts={mounts}
                         getContainerDisplayName={(c) => getContainerDisplayName(c, characters, mounts)}
                         onSave={updateItem}
                         onClose={() => setEditingContainerId(null)}
