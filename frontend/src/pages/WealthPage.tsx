@@ -22,17 +22,27 @@ export function WealthPage() {
   const { items, fetchItems, characters, fetchCharacters } = useInventoryStore()
   const [gemsCollapsed, setGemsCollapsed] = useState(false)
   const [ledgerCollapsed, setLedgerCollapsed] = useState(false)
+  const [showAll, setShowAll] = useState(false)
+  const [showArchived, setShowArchived] = useState(false)
+  const [archivedEntries, setArchivedEntries] = useState<CoinLedgerEntry[]>([])
+  const [archivedCount, setArchivedCount] = useState(0)
+  const [showArchiveForm, setShowArchiveForm] = useState(false)
+  const [archiveBefore, setArchiveBefore] = useState('')
+  const [archivePreviewCount, setArchivePreviewCount] = useState<number | null>(null)
+  const [archiving, setArchiving] = useState(false)
 
   const fetchAll = useCallback(async () => {
     try {
-      const [bal, entries, sum] = await Promise.all([
+      const [bal, entries, sum, allEntries] = await Promise.all([
         api.get<CoinBalance>('/coins/balance'),
         api.get<CoinLedgerEntry[]>('/coins'),
         api.get<ItemSummary>('/items/summary'),
+        api.get<CoinLedgerEntry[]>('/coins?archived=true'),
       ])
       setBalance(bal)
       setLedger(entries)
       setSummary(sum)
+      setArchivedCount(allEntries.length - entries.length)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed to fetch wealth data')
     }
@@ -53,6 +63,52 @@ export function WealthPage() {
       toast.error(e instanceof Error ? e.message : 'Failed to delete')
     }
   }
+
+  const fetchArchivePreview = async (dateStr: string) => {
+    if (!dateStr) { setArchivePreviewCount(null); return }
+    try {
+      const result = await api.get<{ count: number }>(`/coins/archive/preview?before_date=${encodeURIComponent(dateStr)}`)
+      setArchivePreviewCount(result.count)
+    } catch {
+      setArchivePreviewCount(null)
+    }
+  }
+
+  const handleArchive = async () => {
+    if (!archiveBefore) return
+    setArchiving(true)
+    try {
+      const result = await api.post<{ archived_count: number }>('/coins/archive', { before_date: archiveBefore })
+      toast.success(`Archived ${result.archived_count} entries`)
+      setShowArchiveForm(false)
+      setArchiveBefore('')
+      setArchivePreviewCount(null)
+      setShowArchived(false)
+      setArchivedEntries([])
+      await fetchAll()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to archive')
+    } finally {
+      setArchiving(false)
+    }
+  }
+
+  const handleToggleArchived = async () => {
+    if (!showArchived && archivedEntries.length === 0) {
+      try {
+        const allEntries = await api.get<CoinLedgerEntry[]>('/coins?archived=true')
+        setArchivedEntries(allEntries.filter(e => e.archived))
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : 'Failed to fetch archived entries')
+        return
+      }
+    }
+    setShowArchived(!showArchived)
+  }
+
+  const RECENT_COUNT = 20
+  const displayedEntries = showAll ? ledger : ledger.slice(0, RECENT_COUNT)
+  const hasMore = ledger.length > RECENT_COUNT
 
   return (
     <div>
@@ -145,54 +201,147 @@ export function WealthPage() {
       )}
 
       {/* Coin ledger */}
-      <button onClick={() => setLedgerCollapsed(!ledgerCollapsed)} className="flex items-center gap-2 mb-3 group">
-        <ChevronDown className={clsx('w-4 h-4 text-parchment-muted transition-transform', ledgerCollapsed && '-rotate-90')} />
-        <h3 className="font-heading text-lg font-semibold text-parchment group-hover:text-gold transition-colors">Coin Ledger</h3>
-        <span className="text-sm text-parchment-muted">({ledger.length})</span>
-      </button>
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <button onClick={() => setLedgerCollapsed(!ledgerCollapsed)} className="flex items-center gap-2 group">
+          <ChevronDown className={clsx('w-4 h-4 text-parchment-muted transition-transform', ledgerCollapsed && '-rotate-90')} />
+          <h3 className="font-heading text-lg font-semibold text-parchment group-hover:text-gold transition-colors">Coin Ledger</h3>
+          <span className="text-sm text-parchment-muted">
+            ({hasMore && !showAll ? `${RECENT_COUNT} of ${ledger.length}` : ledger.length})
+          </span>
+        </button>
+        <div className="ml-auto flex items-center gap-3 text-sm">
+          {!ledgerCollapsed && (
+            <>
+              <button
+                onClick={() => setShowArchiveForm(!showArchiveForm)}
+                className="text-parchment-muted hover:text-parchment transition-colors"
+              >
+                Archive old entries
+              </button>
+              {archivedCount > 0 && (
+                <button
+                  onClick={handleToggleArchived}
+                  className={clsx('transition-colors', showArchived ? 'text-gold' : 'text-parchment-muted hover:text-parchment')}
+                >
+                  {showArchived ? 'Hide' : 'Show'} archived ({archivedCount})
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Archive form */}
+      {showArchiveForm && !ledgerCollapsed && (
+        <div className="bg-card border border-border rounded-xl p-4 mb-4 flex items-end gap-3 flex-wrap">
+          <div>
+            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Archive entries before</label>
+            <input
+              className="input-themed w-32"
+              value={archiveBefore}
+              onChange={(e) => { setArchiveBefore(e.target.value); fetchArchivePreview(e.target.value) }}
+              placeholder="M/D or M/D/YY"
+            />
+          </div>
+          {archivePreviewCount !== null && archiveBefore && (
+            <span className="pb-2 text-sm text-parchment-dim">
+              {archivePreviewCount === 0 ? 'No entries to archive' : `${archivePreviewCount} entries will be archived`}
+            </span>
+          )}
+          <button
+            onClick={handleArchive}
+            disabled={archiving || !archiveBefore || archivePreviewCount === 0}
+            className="px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright transition-colors text-sm disabled:opacity-50"
+          >
+            {archiving ? 'Archiving...' : 'Archive'}
+          </button>
+          <button
+            onClick={() => { setShowArchiveForm(false); setArchiveBefore(''); setArchivePreviewCount(null) }}
+            className="px-4 py-2 text-parchment-dim bg-surface border border-border rounded-lg hover:bg-card-hover transition-colors text-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
       {!ledgerCollapsed && (
         <div className="bg-card border border-border rounded-xl overflow-x-auto">
           {ledger.length === 0 ? (
             <div className="p-8 text-center text-parchment-muted">No coin entries yet</div>
           ) : (
-            <table className="tt-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Description</th>
-                  <th>Direction</th>
-                  <th>PP</th>
-                  <th>GP</th>
-                  <th>EP</th>
-                  <th>SP</th>
-                  <th>CP</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {ledger.map((e) => (
-                  <tr key={e.id}>
-                    <td className="text-parchment-dim">{e.game_date || '--'}</td>
-                    <td className="font-medium">{e.description || '--'}</td>
-                    <td>
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${e.direction === 'in' ? 'bg-emerald/15 text-emerald' : 'bg-wine/15 text-wine'}`}>
-                        {e.direction}
-                      </span>
-                    </td>
-                    <td className={e.pp ? DENOM_COLORS.pp : 'text-parchment-muted'}>{e.pp || '--'}</td>
-                    <td className={e.gp ? DENOM_COLORS.gp : 'text-parchment-muted'}>{e.gp || '--'}</td>
-                    <td className={e.ep ? DENOM_COLORS.ep : 'text-parchment-muted'}>{e.ep || '--'}</td>
-                    <td className={e.sp ? DENOM_COLORS.sp : 'text-parchment-muted'}>{e.sp || '--'}</td>
-                    <td className={e.cp ? DENOM_COLORS.cp : 'text-parchment-muted'}>{e.cp || '--'}</td>
-                    <td>
-                      <button onClick={() => handleDeleteEntry(e.id)} className="p-1 text-parchment-muted hover:text-wine transition-colors" title="Delete">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
+            <>
+              <table className="tt-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Direction</th>
+                    <th>PP</th>
+                    <th>GP</th>
+                    <th>EP</th>
+                    <th>SP</th>
+                    <th>CP</th>
+                    <th></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {displayedEntries.map((e) => (
+                    <tr key={e.id}>
+                      <td className="text-parchment-dim">{e.game_date || '--'}</td>
+                      <td className="font-medium">{e.description || '--'}</td>
+                      <td>
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${e.direction === 'in' ? 'bg-emerald/15 text-emerald' : 'bg-wine/15 text-wine'}`}>
+                          {e.direction}
+                        </span>
+                      </td>
+                      <td className={e.pp ? DENOM_COLORS.pp : 'text-parchment-muted'}>{e.pp || '--'}</td>
+                      <td className={e.gp ? DENOM_COLORS.gp : 'text-parchment-muted'}>{e.gp || '--'}</td>
+                      <td className={e.ep ? DENOM_COLORS.ep : 'text-parchment-muted'}>{e.ep || '--'}</td>
+                      <td className={e.sp ? DENOM_COLORS.sp : 'text-parchment-muted'}>{e.sp || '--'}</td>
+                      <td className={e.cp ? DENOM_COLORS.cp : 'text-parchment-muted'}>{e.cp || '--'}</td>
+                      <td>
+                        <button onClick={() => handleDeleteEntry(e.id)} className="p-1 text-parchment-muted hover:text-wine transition-colors" title="Delete">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {/* Show archived entries dimmed at bottom */}
+                  {showArchived && archivedEntries.map((e) => (
+                    <tr key={`archived-${e.id}`} className="opacity-50">
+                      <td className="text-parchment-dim">{e.game_date || '--'}</td>
+                      <td className="font-medium">{e.description || '--'}</td>
+                      <td>
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${e.direction === 'in' ? 'bg-emerald/15 text-emerald' : 'bg-wine/15 text-wine'}`}>
+                          {e.direction}
+                        </span>
+                      </td>
+                      <td className={e.pp ? DENOM_COLORS.pp : 'text-parchment-muted'}>{e.pp || '--'}</td>
+                      <td className={e.gp ? DENOM_COLORS.gp : 'text-parchment-muted'}>{e.gp || '--'}</td>
+                      <td className={e.ep ? DENOM_COLORS.ep : 'text-parchment-muted'}>{e.ep || '--'}</td>
+                      <td className={e.sp ? DENOM_COLORS.sp : 'text-parchment-muted'}>{e.sp || '--'}</td>
+                      <td className={e.cp ? DENOM_COLORS.cp : 'text-parchment-muted'}>{e.cp || '--'}</td>
+                      <td>
+                        <button onClick={() => handleDeleteEntry(e.id)} className="p-1 text-parchment-muted hover:text-wine transition-colors" title="Delete">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {/* Show all / Show recent toggle */}
+              {hasMore && (
+                <div className="p-3 text-center border-t border-border">
+                  <button
+                    onClick={() => setShowAll(!showAll)}
+                    className="text-sm text-parchment-muted hover:text-gold transition-colors"
+                  >
+                    {showAll ? 'Show recent' : `Show all ${ledger.length} entries`}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

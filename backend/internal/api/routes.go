@@ -60,6 +60,8 @@ func RegisterRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /api/v1/coins/balance", auth(handleCoinBalance))
 	mux.Handle("POST /api/v1/coins/convert", auth(handleCoinConvert))
 	mux.Handle("POST /api/v1/coins/split", auth(handleLootSplit))
+	mux.Handle("POST /api/v1/coins/archive", auth(handleArchiveCoins))
+	mux.Handle("GET /api/v1/coins/archive/preview", auth(handleArchivePreview))
 
 	// Critters
 	mux.Handle("GET /api/v1/critters", auth(handleListCritters))

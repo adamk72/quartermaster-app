@@ -80,6 +80,7 @@ type CoinLedgerEntry struct {
 	Direction   string    `json:"direction"`
 	ItemID      *int      `json:"item_id"`
 	Notes       string    `json:"notes"`
+	Archived    bool      `json:"archived"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 

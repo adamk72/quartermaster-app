@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/adamk72/quartermaster-app/internal/db"
@@ -12,7 +13,15 @@ import (
 )
 
 func handleListCoins(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.DB.Query("SELECT id, game_date, description, cp, sp, ep, gp, pp, direction, item_id, notes, created_at FROM coin_ledger ORDER BY created_at DESC")
+	includeArchived := r.URL.Query().Get("archived") == "true"
+
+	query := "SELECT id, game_date, description, cp, sp, ep, gp, pp, direction, item_id, notes, archived, created_at FROM coin_ledger"
+	if !includeArchived {
+		query += " WHERE archived = 0"
+	}
+	query += " ORDER BY created_at DESC"
+
+	rows, err := db.DB.Query(query)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to query coins")
 		return
@@ -22,7 +31,7 @@ func handleListCoins(w http.ResponseWriter, r *http.Request) {
 	entries := []types.CoinLedgerEntry{}
 	for rows.Next() {
 		var e types.CoinLedgerEntry
-		if err := rows.Scan(&e.ID, &e.GameDate, &e.Description, &e.CP, &e.SP, &e.EP, &e.GP, &e.PP, &e.Direction, &e.ItemID, &e.Notes, &e.CreatedAt); err != nil {
+		if err := rows.Scan(&e.ID, &e.GameDate, &e.Description, &e.CP, &e.SP, &e.EP, &e.GP, &e.PP, &e.Direction, &e.ItemID, &e.Notes, &e.Archived, &e.CreatedAt); err != nil {
 			log.Printf("coin ledger scan error: %v", err)
 			continue
 		}
@@ -74,6 +83,136 @@ func handleDeleteCoin(w http.ResponseWriter, r *http.Request) {
 		LogChange(&user.ID, "coin_ledger", id, "delete", "{}")
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// parseGameDate parses "M/D" or "M/D/YY" into (month, day, year).
+// Returns (0,0,0) if unparseable. Year defaults to current year if omitted.
+func parseGameDate(s string) (int, int, int) {
+	parts := strings.Split(s, "/")
+	if len(parts) < 2 {
+		return 0, 0, 0
+	}
+	m, err1 := strconv.Atoi(parts[0])
+	d, err2 := strconv.Atoi(parts[1])
+	if err1 != nil || err2 != nil {
+		return 0, 0, 0
+	}
+	y := time.Now().Year()
+	if len(parts) == 3 {
+		yy, err := strconv.Atoi(parts[2])
+		if err != nil {
+			return 0, 0, 0
+		}
+		if yy < 100 {
+			yy += 2000
+		}
+		y = yy
+	}
+	return m, d, y
+}
+
+func gameDateOnOrBefore(dateStr, cutoffStr string) bool {
+	m1, d1, y1 := parseGameDate(dateStr)
+	m2, d2, y2 := parseGameDate(cutoffStr)
+	if m1 == 0 || m2 == 0 {
+		return false
+	}
+	if y1 != y2 {
+		return y1 < y2
+	}
+	if m1 != m2 {
+		return m1 < m2
+	}
+	return d1 <= d2
+}
+
+func collectArchivableIDs(beforeDate string) ([]int, error) {
+	rows, err := db.DB.Query("SELECT id, game_date, created_at FROM coin_ledger WHERE archived = 0")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	cutoffM, cutoffD, cutoffY := parseGameDate(beforeDate)
+	var cutoffTime time.Time
+	if cutoffM > 0 {
+		cutoffTime = time.Date(cutoffY, time.Month(cutoffM), cutoffD, 23, 59, 59, 0, time.Local)
+	}
+
+	var ids []int
+	for rows.Next() {
+		var id int
+		var gameDate string
+		var createdAt time.Time
+		if err := rows.Scan(&id, &gameDate, &createdAt); err != nil {
+			continue
+		}
+		if gameDate != "" {
+			if gameDateOnOrBefore(gameDate, beforeDate) {
+				ids = append(ids, id)
+			}
+		} else if !cutoffTime.IsZero() && createdAt.Before(cutoffTime) {
+			ids = append(ids, id)
+		}
+	}
+	return ids, nil
+}
+
+func handleArchivePreview(w http.ResponseWriter, r *http.Request) {
+	beforeDate := r.URL.Query().Get("before_date")
+	if beforeDate == "" {
+		writeJSON(w, http.StatusOK, map[string]any{"count": 0})
+		return
+	}
+	ids, err := collectArchivableIDs(beforeDate)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to query entries")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"count": len(ids)})
+}
+
+func handleArchiveCoins(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		BeforeDate string `json:"before_date"`
+	}
+	if err := readJSON(r, &req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if req.BeforeDate == "" {
+		writeError(w, http.StatusBadRequest, "before_date required")
+		return
+	}
+
+	ids, err := collectArchivableIDs(req.BeforeDate)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to query entries")
+		return
+	}
+	if len(ids) == 0 {
+		writeJSON(w, http.StatusOK, map[string]any{"archived_count": 0})
+		return
+	}
+
+	placeholders := make([]string, len(ids))
+	args := make([]any, len(ids))
+	for i, id := range ids {
+		placeholders[i] = "?"
+		args[i] = id
+	}
+	query := "UPDATE coin_ledger SET archived = 1 WHERE id IN (" + strings.Join(placeholders, ",") + ")"
+	if _, err := db.DB.Exec(query, args...); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to archive entries")
+		return
+	}
+
+	user := GetUser(r)
+	if user != nil {
+		LogChange(&user.ID, "coin_ledger", "bulk", "update", fmt.Sprintf(`{"archived_count":%d}`, len(ids)))
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{"archived_count": len(ids)})
 }
 
 func handleLootSplit(w http.ResponseWriter, r *http.Request) {

@@ -95,6 +95,7 @@ export interface CoinLedgerEntry {
   direction: 'in' | 'out'
   item_id: number | null
   notes: string
+  archived: boolean
   created_at: string
 }
 
