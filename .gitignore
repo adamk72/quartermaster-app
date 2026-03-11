@@ -16,3 +16,4 @@ frontend/node_modules/
 backend/cmd/server/static/
 backend/server
 quartermaster-app
+.superpowers/
