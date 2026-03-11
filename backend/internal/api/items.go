@@ -246,6 +246,116 @@ func handleCreateItem(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusCreated, item)
 }
 
+func handleImportItems(w http.ResponseWriter, r *http.Request) {
+	var items []types.Item
+	if err := readJSON(r, &items); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body: expected JSON array of items")
+		return
+	}
+
+	if len(items) == 0 {
+		writeError(w, http.StatusBadRequest, "no items to import")
+		return
+	}
+
+	// Validate all items have names and collect container IDs to check
+	containerIDs := map[string]bool{}
+	for i, item := range items {
+		if item.Name == "" {
+			writeError(w, http.StatusBadRequest, fmt.Sprintf("item %d: name is required", i+1))
+			return
+		}
+		if item.ContainerID != nil && *item.ContainerID != "" {
+			containerIDs[*item.ContainerID] = false
+		}
+	}
+
+	// Batch validate container IDs
+	if len(containerIDs) > 0 {
+		rows, err := db.DB.Query("SELECT id FROM containers")
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to validate containers")
+			return
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var id string
+			rows.Scan(&id)
+			if _, ok := containerIDs[id]; ok {
+				containerIDs[id] = true
+			}
+		}
+		for id, found := range containerIDs {
+			if !found {
+				writeError(w, http.StatusBadRequest, fmt.Sprintf("container_id %q not found", id))
+				return
+			}
+		}
+	}
+
+	now := time.Now()
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to begin transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	// Get current max sort_order
+	var maxSort int
+	tx.QueryRow("SELECT COALESCE(MAX(sort_order), 0) FROM items").Scan(&maxSort)
+
+	created := make([]types.Item, 0, len(items))
+	for i, item := range items {
+		item.CreatedAt = now
+		item.UpdatedAt = now
+		if item.Quantity == 0 {
+			item.Quantity = 1
+		}
+		if item.Category == "" {
+			item.Category = "Item"
+		}
+		sortOrder := maxSort + i + 1
+
+		result, err := tx.Exec(
+			"INSERT INTO items (name, quantity, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?, NULL, 0, 1, NULL, ?, ?, ?, ?, ?)",
+			item.Name, item.Quantity, item.GameDate, item.Category, item.ContainerID,
+			item.UnitWeightLbs, item.UnitValueGP,
+			item.Name, item.Notes, sortOrder, item.CreatedAt, item.UpdatedAt,
+		)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, fmt.Sprintf("failed to insert item %d (%s): %v", i+1, item.Name, err))
+			return
+		}
+
+		id, _ := result.LastInsertId()
+		item.ID = int(id)
+		item.SortOrder = sortOrder
+		item.Identified = true
+		item.Singular = item.Name
+		created = append(created, item)
+	}
+
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to commit import")
+		return
+	}
+
+	// Log changelog
+	user := GetUser(r)
+	if user != nil {
+		for _, item := range created {
+			LogChange(&user.ID, "items", strconv.Itoa(item.ID), "create", "{}")
+		}
+	}
+
+	writeJSON(w, http.StatusCreated, map[string]any{
+		"count": len(created),
+		"items": created,
+	})
+}
+
 func handleUpdateItem(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	var item types.Item
