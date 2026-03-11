@@ -39,6 +39,7 @@
       "Bash(find **)",
       "Bash(cd ** && **)",
       "Bash(sqlite3 **)",
+      "Bash(git commit **)",
       "WebFetch(domain:linear.app)",
       "WebFetch(domain:github.com)",
       "mcp__claude_ai_Linear__*",
@@ -54,8 +55,7 @@
     "ask": [
       "Bash(git push **)",
       "Bash(docker **)",
-      "Bash(gcloud **)",
-      "Bash(git commit **)"
+      "Bash(gcloud **)"
     ],
     "additionalDirectives": [
       "Command contains quoted characters in flag names"
