@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,10 +16,10 @@ import (
 
 // itemColumns is the canonical column list for item queries.
 // Keep in sync with scanItem.
-const itemColumns = "id, name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at, version"
+const itemColumns = "id, name, quantity, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at, version"
 
 // itemColumnsAliased is the same list prefixed with "i." for joins.
-const itemColumnsAliased = "i.id, i.name, i.quantity, i.credit_gp, i.debit_gp, i.game_date, i.category, i.container_id, i.sold, i.unit_weight_lbs, i.unit_value_gp, i.weight_override, i.added_to_dndbeyond, i.identified, i.attuned_to, i.singular, i.notes, i.sort_order, i.created_at, i.updated_at, i.version"
+const itemColumnsAliased = "i.id, i.name, i.quantity, i.game_date, i.category, i.container_id, i.sold, i.unit_weight_lbs, i.unit_value_gp, i.weight_override, i.added_to_dndbeyond, i.identified, i.attuned_to, i.singular, i.notes, i.sort_order, i.created_at, i.updated_at, i.version"
 
 // scanner is satisfied by both *sql.Row and *sql.Rows.
 type scanner interface {
@@ -29,7 +30,7 @@ type scanner interface {
 func scanItem(s scanner) (types.Item, error) {
 	var item types.Item
 	err := s.Scan(
-		&item.ID, &item.Name, &item.Quantity, &item.CreditGP, &item.DebitGP,
+		&item.ID, &item.Name, &item.Quantity,
 		&item.GameDate, &item.Category, &item.ContainerID, &item.Sold,
 		&item.UnitWeightLbs, &item.UnitValueGP, &item.WeightOverride,
 		&item.AddedToDnDBeyond, &item.Identified, &item.AttunedTo,
@@ -170,9 +171,16 @@ func handleCreateItem(w http.ResponseWriter, r *http.Request) {
 	item.CreatedAt = now
 	item.UpdatedAt = now
 
-	result, err := db.DB.Exec(
-		"INSERT INTO items (name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(sort_order),0)+1 FROM items), ?, ?)",
-		item.Name, item.Quantity, item.CreditGP, item.DebitGP, item.GameDate, item.Category, item.ContainerID, item.Sold, item.UnitWeightLbs, item.UnitValueGP, item.WeightOverride, item.AddedToDnDBeyond, item.Identified, item.AttunedTo, item.Singular, item.Notes, item.CreatedAt, item.UpdatedAt,
+	tx, err := db.DB.Begin()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to begin transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	result, err := tx.Exec(
+		"INSERT INTO items (name, quantity, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(sort_order),0)+1 FROM items), ?, ?)",
+		item.Name, item.Quantity, item.GameDate, item.Category, item.ContainerID, item.Sold, item.UnitWeightLbs, item.UnitValueGP, item.WeightOverride, item.AddedToDnDBeyond, item.Identified, item.AttunedTo, item.Singular, item.Notes, item.CreatedAt, item.UpdatedAt,
 	)
 	if err != nil {
 		if strings.Contains(err.Error(), "FOREIGN KEY constraint failed") {
@@ -185,6 +193,27 @@ func handleCreateItem(w http.ResponseWriter, r *http.Request) {
 
 	id, _ := result.LastInsertId()
 	item.ID = int(id)
+
+	if item.BuyPriceGP != nil && *item.BuyPriceGP > 0 {
+		totalCP := int(math.Round(*item.BuyPriceGP * 100))
+		gp := totalCP / 100
+		totalCP %= 100
+		sp := totalCP / 10
+		cp := totalCP % 10
+		_, err := tx.Exec(
+			"INSERT INTO coin_ledger (game_date, description, cp, sp, gp, direction, item_id, created_at) VALUES (?, ?, ?, ?, ?, 'out', ?, ?)",
+			item.GameDate, fmt.Sprintf("Purchase: %s", item.Name), cp, sp, gp, item.ID, item.CreatedAt,
+		)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to create coin ledger entry")
+			return
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to commit item creation")
+		return
+	}
 
 	if len(item.LabelIDs) > 0 {
 		if err := saveItemLabels(item.ID, item.LabelIDs); err != nil {
@@ -224,8 +253,8 @@ func handleUpdateItem(w http.ResponseWriter, r *http.Request) {
 	item.UpdatedAt = time.Now()
 	diffJSON, n, err := diffUpdate("items", id, func(tx *sql.Tx) (sql.Result, error) {
 		return tx.Exec(
-			"UPDATE items SET name=?, quantity=?, credit_gp=?, debit_gp=?, game_date=?, category=?, container_id=?, sold=?, unit_weight_lbs=?, unit_value_gp=?, weight_override=?, added_to_dndbeyond=?, identified=?, attuned_to=?, singular=?, notes=?, sort_order=?, updated_at=?, version=version+1 WHERE id=? AND version=?",
-			item.Name, item.Quantity, item.CreditGP, item.DebitGP, item.GameDate, item.Category, item.ContainerID, item.Sold, item.UnitWeightLbs, item.UnitValueGP, item.WeightOverride, item.AddedToDnDBeyond, item.Identified, item.AttunedTo, item.Singular, item.Notes, item.SortOrder, item.UpdatedAt, id, item.Version,
+			"UPDATE items SET name=?, quantity=?, game_date=?, category=?, container_id=?, sold=?, unit_weight_lbs=?, unit_value_gp=?, weight_override=?, added_to_dndbeyond=?, identified=?, attuned_to=?, singular=?, notes=?, sort_order=?, updated_at=?, version=version+1 WHERE id=? AND version=?",
+			item.Name, item.Quantity, item.GameDate, item.Category, item.ContainerID, item.Sold, item.UnitWeightLbs, item.UnitValueGP, item.WeightOverride, item.AddedToDnDBeyond, item.Identified, item.AttunedTo, item.Singular, item.Notes, item.SortOrder, item.UpdatedAt, id, item.Version,
 		)
 	})
 	if err != nil {
@@ -285,13 +314,72 @@ func handleDeleteItem(w http.ResponseWriter, r *http.Request) {
 
 func handleSellItem(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	result, err := db.DB.Exec("UPDATE items SET sold = 1, updated_at = ? WHERE id = ?", time.Now(), id)
+
+	var req struct {
+		SellPriceGP *float64 `json:"sell_price_gp"`
+		Quantity    *int     `json:"quantity"`
+	}
+	// Body is optional — ignore parse errors (empty body is fine)
+	readJSON(r, &req)
+
+	now := time.Now()
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to begin transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	// Look up the current item
+	var itemName, gameDate string
+	var currentQty int
+	if err := tx.QueryRow("SELECT name, game_date, quantity FROM items WHERE id = ?", id).Scan(&itemName, &gameDate, &currentQty); err != nil {
+		writeError(w, http.StatusNotFound, "item not found")
+		return
+	}
+
+	sellQty := currentQty
+	if req.Quantity != nil && *req.Quantity > 0 && *req.Quantity < currentQty {
+		sellQty = *req.Quantity
+	}
+
+	if sellQty >= currentQty {
+		// Sell all — mark as sold
+		_, err = tx.Exec("UPDATE items SET sold = 1, updated_at = ? WHERE id = ?", now, id)
+	} else {
+		// Partial sell — reduce quantity on original item
+		_, err = tx.Exec("UPDATE items SET quantity = quantity - ?, updated_at = ? WHERE id = ?", sellQty, now, id)
+	}
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to sell item")
 		return
 	}
-	if n, _ := result.RowsAffected(); n == 0 {
-		writeError(w, http.StatusNotFound, "item not found")
+
+	if req.SellPriceGP != nil && *req.SellPriceGP > 0 {
+		totalCP := int(math.Round(*req.SellPriceGP * 100))
+		gp := totalCP / 100
+		totalCP %= 100
+		sp := totalCP / 10
+		cp := totalCP % 10
+
+		idInt, _ := strconv.Atoi(id)
+		desc := fmt.Sprintf("Sale: %s", itemName)
+		if sellQty < currentQty {
+			desc = fmt.Sprintf("Sale: %s (x%d)", itemName, sellQty)
+		}
+		_, err := tx.Exec(
+			"INSERT INTO coin_ledger (game_date, description, cp, sp, gp, direction, item_id, created_at) VALUES (?, ?, ?, ?, ?, 'in', ?, ?)",
+			gameDate, desc, cp, sp, gp, idInt, now,
+		)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to create coin ledger entry")
+			return
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to commit sell")
 		return
 	}
 
@@ -305,13 +393,30 @@ func handleSellItem(w http.ResponseWriter, r *http.Request) {
 
 func handleUnsellItem(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	result, err := db.DB.Exec("UPDATE items SET sold = 0, updated_at = ? WHERE id = ?", time.Now(), id)
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to begin transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	result, err := tx.Exec("UPDATE items SET sold = 0, updated_at = ? WHERE id = ?", time.Now(), id)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to unsell item")
 		return
 	}
 	if n, _ := result.RowsAffected(); n == 0 {
 		writeError(w, http.StatusNotFound, "item not found")
+		return
+	}
+
+	// Remove any coin_ledger 'in' entries linked to this item's sale
+	idInt, _ := strconv.Atoi(id)
+	tx.Exec("DELETE FROM coin_ledger WHERE item_id = ? AND direction = 'in' AND description LIKE 'Sale:%'", idInt)
+
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to commit unsell")
 		return
 	}
 
@@ -572,15 +677,28 @@ func handleBulkMoveItems(w http.ResponseWriter, r *http.Request) {
 func handleItemSummary(w http.ResponseWriter, r *http.Request) {
 	var summary types.ItemSummary
 
-	if err := db.DB.QueryRow("SELECT COALESCE(SUM(COALESCE(credit_gp,0)) - SUM(COALESCE(debit_gp,0)), 0) FROM items WHERE sold = 0").Scan(&summary.PartyCoinGP); err != nil {
+	// Party coin from coin_ledger balance
+	row := db.DB.QueryRow(`
+		SELECT
+			COALESCE(SUM(CASE WHEN direction='in' THEN cp ELSE -cp END), 0) * 0.01 +
+			COALESCE(SUM(CASE WHEN direction='in' THEN sp ELSE -sp END), 0) * 0.1 +
+			COALESCE(SUM(CASE WHEN direction='in' THEN ep ELSE -ep END), 0) * 0.5 +
+			COALESCE(SUM(CASE WHEN direction='in' THEN gp ELSE -gp END), 0) +
+			COALESCE(SUM(CASE WHEN direction='in' THEN pp ELSE -pp END), 0) * 10
+		FROM coin_ledger
+	`)
+	if err := row.Scan(&summary.PartyCoinGP); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to query party coin total")
 		return
 	}
 
-	if err := db.DB.QueryRow("SELECT COALESCE(SUM(COALESCE(credit_gp,0)) - SUM(COALESCE(debit_gp,0)), 0) + COALESCE(SUM(COALESCE(unit_value_gp,0) * quantity), 0) FROM items WHERE sold = 0").Scan(&summary.NetWorthGP); err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to query net worth")
+	// Net worth = party coin + value of unsold items
+	var itemValueGP float64
+	if err := db.DB.QueryRow("SELECT COALESCE(SUM(COALESCE(unit_value_gp,0) * quantity), 0) FROM items WHERE sold = 0").Scan(&itemValueGP); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to query item value")
 		return
 	}
+	summary.NetWorthGP = summary.PartyCoinGP + itemValueGP
 
 	if err := db.DB.QueryRow("SELECT COALESCE(SUM(COALESCE(weight_override, COALESCE(unit_weight_lbs,0) * quantity)), 0) FROM items WHERE sold = 0").Scan(&summary.TotalWeight); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to query total weight")

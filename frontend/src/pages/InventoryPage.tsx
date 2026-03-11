@@ -10,8 +10,9 @@ import type { Item, Container, Mount } from '../types'
 import { ItemFormModal } from '../components/Inventory/ItemFormModal'
 import { IdentifyModal } from '../components/Inventory/IdentifyModal'
 import { ContainerManagerModal } from '../components/Inventory/ContainerManagerModal'
+import { SellModal } from '../components/Inventory/SellModal'
 
-type SortMode = 'custom' | 'name' | 'labels' | 'date' | 'credit' | 'debit'
+type SortMode = 'custom' | 'name' | 'labels' | 'date'
 
 function getContainerDisplayName(container: Container, characters: { id: string; name: string }[], mounts: Mount[]): string {
   const charOwner = container.character_id ? characters.find((ch) => ch.id === container.character_id) : null
@@ -25,8 +26,6 @@ const SORT_LABELS: Record<SortMode, string> = {
   name: 'Name',
   labels: 'Labels',
   date: 'Date',
-  credit: 'Credit',
-  debit: 'Debit',
 }
 
 export function InventoryPage() {
@@ -35,6 +34,7 @@ export function InventoryPage() {
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState<Item | null>(null)
   const [identifyTarget, setIdentifyTarget] = useState<Item | null>(null)
+  const [sellTarget, setSellTarget] = useState<Item | null>(null)
   const [showContainerManager, setShowContainerManager] = useState(false)
 
   // Multi-select
@@ -100,12 +100,6 @@ export function InventoryPage() {
         break
       case 'date':
         sorted.sort((a, b) => (b.game_date || '').localeCompare(a.game_date || '') || a.name.localeCompare(b.name))
-        break
-      case 'credit':
-        sorted.sort((a, b) => (b.credit_gp ?? 0) - (a.credit_gp ?? 0))
-        break
-      case 'debit':
-        sorted.sort((a, b) => (b.debit_gp ?? 0) - (a.debit_gp ?? 0))
         break
     }
     return sorted
@@ -359,10 +353,8 @@ export function InventoryPage() {
                 <th>Name</th>
                 <th>Qty</th>
                 <th>Labels</th>
-                <th>Credit</th>
-                <th>Debit</th>
-                <th>Date</th>
                 <th>Container</th>
+                <th>Date</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -420,14 +412,12 @@ export function InventoryPage() {
                       )}
                     </div>
                   </td>
-                  <td className="text-emerald">{item.credit_gp != null ? `${item.credit_gp} gp` : <span className="text-parchment-muted">--</span>}</td>
-                  <td className="text-wine">{item.debit_gp != null ? `${item.debit_gp} gp` : <span className="text-parchment-muted">--</span>}</td>
-                  <td className="text-parchment-dim">{item.game_date || <span className="text-parchment-muted">--</span>}</td>
                   <td className="text-xs text-parchment-dim">{(() => {
                     const container = containers.find((c) => c.id === item.container_id)
                     if (!container) return <span className="text-parchment-muted">--</span>
                     return getContainerDisplayName(container, characters, mounts)
                   })()}</td>
+                  <td className="text-parchment-dim">{item.game_date || <span className="text-parchment-muted">--</span>}</td>
                   <td>
                     <div className="flex gap-1">
                       <button
@@ -454,15 +444,20 @@ export function InventoryPage() {
                         >
                           <Undo2 className="w-4 h-4" />
                         </button>
-                      ) : (
-                        <button
-                          onClick={async () => { try { await sellItem(item.id) } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to sell') } }}
-                          className="p-1 text-parchment-muted hover:text-gold transition-colors"
-                          title="Mark as sold"
-                        >
-                          <DollarSign className="w-4 h-4" />
-                        </button>
-                      )}
+                      ) : (() => {
+                        const container = containers.find((c) => c.id === item.container_id)
+                        const isPersonal = container && (container.type === 'character' || (container.character_id != null))
+                        return (
+                          <button
+                            onClick={() => setSellTarget(item)}
+                            className={clsx('p-1 transition-colors', isPersonal ? 'text-parchment-muted/30 cursor-not-allowed' : 'text-parchment-muted hover:text-gold')}
+                            title={isPersonal ? 'Move to party storage before selling' : 'Sell'}
+                            disabled={!!isPersonal}
+                          >
+                            <DollarSign className="w-4 h-4" />
+                          </button>
+                        )
+                      })()}
                       <button
                         onClick={async () => { if (await confirm('Delete this item?')) { try { await deleteItem(item.id) } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to delete') } } }}
                         className="p-1 text-parchment-muted hover:text-wine transition-colors"
@@ -502,6 +497,22 @@ export function InventoryPage() {
             }
           }}
           onClose={() => setIdentifyTarget(null)}
+        />
+      )}
+
+      {sellTarget && (
+        <SellModal
+          item={sellTarget}
+          onConfirm={async (sellPriceGP, quantity) => {
+            try {
+              await sellItem(sellTarget.id, sellPriceGP, quantity)
+              setSellTarget(null)
+              toast.success(`Sold ${quantity < sellTarget.quantity ? `${quantity}x ` : ''}${sellTarget.name}`)
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : 'Failed to sell item')
+            }
+          }}
+          onClose={() => setSellTarget(null)}
         />
       )}
 

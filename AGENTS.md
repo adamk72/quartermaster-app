@@ -50,6 +50,7 @@ All endpoints under `/api/v1/`. Auth via `Authorization: Bearer <token>`.
 
 ## Coding Principles
 - **Avoid hardcoding values.** Hardcoded strings, IDs, or magic values usually indicate that not enough context has been gathered about the broader system. Before hardcoding, ask the user how the value should be sourced (database, config, user input, etc.). Hardcoding is a signal to pause and ask questions.
+- **Number input fields must use string state.** Never use `useState<number>` for HTML number inputs. Using `Number(e.target.value)` converts empty string to `0` or `NaN`, which prevents the user from clearing the field to type a new value. Always use `useState<string>('')` and parse to number only on submit.
 
 ## Conventions
 - Party members: Andurin, Ayloc, Rüya, Sachan, Ingvild, Hrothgar

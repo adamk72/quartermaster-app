@@ -46,8 +46,6 @@ type Item struct {
 	ID               int       `json:"id"`
 	Name             string    `json:"name"`
 	Quantity         int       `json:"quantity"`
-	CreditGP         *float64  `json:"credit_gp"`
-	DebitGP          *float64  `json:"debit_gp"`
 	GameDate         string    `json:"game_date"`
 	Category         string    `json:"category"`
 	ContainerID      *string   `json:"container_id"`
@@ -66,6 +64,7 @@ type Item struct {
 	Version          int       `json:"version"`
 	Labels           []Label   `json:"labels"`
 	LabelIDs         []string  `json:"label_ids,omitempty"`
+	BuyPriceGP       *float64  `json:"buy_price_gp,omitempty"`
 }
 
 type CoinLedgerEntry struct {

@@ -18,12 +18,15 @@ export function ItemFormModal({
   onSave: (data: Partial<Item>) => void
   onClose: () => void
 }) {
+  const isNew = !item?.id
   const [form, setForm] = useState<Partial<Item>>(
-    item ?? { name: '', quantity: 1, game_date: '', sold: false, label_ids: [] }
+    item ?? { name: '', quantity: 1, game_date: '', category: 'Item', sold: false, label_ids: [] }
   )
   const [selectedLabelIds, setSelectedLabelIds] = useState<Set<string>>(
     new Set(item?.labels?.map((l) => l.id) ?? item?.label_ids ?? [])
   )
+  const [buying, setBuying] = useState(false)
+  const [buyPriceStr, setBuyPriceStr] = useState('')
 
   const selectedContainer = containers.find((c) => c.id === form.container_id)
   const canAttune = selectedContainer?.type === 'character' && !!selectedContainer.character_id
@@ -53,9 +56,13 @@ export function ItemFormModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const data = { ...form, label_ids: [...selectedLabelIds] }
+    const data: Partial<Item> = { ...form, label_ids: [...selectedLabelIds] }
     if (data.attuned_to && canAttune) {
       data.attuned_to = selectedContainer.character_id
+    }
+    const buyPrice = parseFloat(buyPriceStr)
+    if (isNew && buying && buyPrice > 0) {
+      data.buy_price_gp = buyPrice
     }
     onSave(data)
   }
@@ -128,26 +135,6 @@ export function ItemFormModal({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Credit (gp)</label>
-            <input
-              type="number"
-              step="0.01"
-              className="input-themed"
-              value={form.credit_gp ?? ''}
-              onChange={(e) => setForm({ ...form, credit_gp: e.target.value ? Number(e.target.value) : null })}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Debit (gp)</label>
-            <input
-              type="number"
-              step="0.01"
-              className="input-themed"
-              value={form.debit_gp ?? ''}
-              onChange={(e) => setForm({ ...form, debit_gp: e.target.value ? Number(e.target.value) : null })}
-            />
-          </div>
-          <div>
             <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Game Date</label>
             <input
               className="input-themed"
@@ -195,6 +182,36 @@ export function ItemFormModal({
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
             />
           </div>
+          {isNew && (
+            <div className="col-span-2 border border-border rounded-lg p-3 space-y-2">
+              <label className="flex items-center gap-2 text-sm font-heading font-semibold text-parchment-dim cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={buying}
+                  onChange={(e) => {
+                    setBuying(e.target.checked)
+                    if (e.target.checked) {
+                      setBuyPriceStr(String((form.unit_value_gp ?? 0) * (form.quantity ?? 1)))
+                    }
+                  }}
+                />
+                Buying this
+              </label>
+              {buying && (
+                <div>
+                  <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Buy Price (gp)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className="input-themed"
+                    value={buyPriceStr}
+                    onChange={(e) => setBuyPriceStr(e.target.value)}
+                    min={0}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end gap-2 pt-2">

@@ -22,7 +22,7 @@ interface InventoryState {
   createItem: (item: Partial<Item>) => Promise<Item>
   updateItem: (id: number, item: Partial<Item>) => Promise<Item>
   deleteItem: (id: number) => Promise<void>
-  sellItem: (id: number) => Promise<void>
+  sellItem: (id: number, sellPriceGP?: number | null, quantity?: number) => Promise<void>
   unsellItem: (id: number) => Promise<void>
   reorderItems: (itemIds: number[]) => Promise<void>
   identifyItem: (id: number, name?: string) => Promise<Item>
@@ -118,10 +118,13 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     get().fetchSummary()
   },
 
-  sellItem: async (id) => {
-    await api.post(`/items/${id}/sell`)
-    const { items } = get()
-    set({ items: items.map((i) => (i.id === id ? { ...i, sold: true } : i)) })
+  sellItem: async (id, sellPriceGP, quantity) => {
+    const body: Record<string, unknown> = {}
+    if (sellPriceGP != null) body.sell_price_gp = sellPriceGP
+    if (quantity != null) body.quantity = quantity
+    await api.post(`/items/${id}/sell`, Object.keys(body).length > 0 ? body : undefined)
+    // Refetch items to get accurate state (partial sells change quantity)
+    get().fetchItems()
     get().fetchSummary()
   },
 

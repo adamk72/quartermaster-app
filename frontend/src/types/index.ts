@@ -60,8 +60,6 @@ export interface Item {
   id: number
   name: string
   quantity: number
-  credit_gp: number | null
-  debit_gp: number | null
   game_date: string
   /** @deprecated Use labels instead. Kept for backward compat with DB. */
   category: string
@@ -81,6 +79,7 @@ export interface Item {
   version: number
   labels: Label[]
   label_ids?: string[]
+  buy_price_gp?: number
 }
 
 export interface CoinLedgerEntry {

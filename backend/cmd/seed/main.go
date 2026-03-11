@@ -134,8 +134,6 @@ func seedItemsFromCSV(path string) {
 		sold := strings.EqualFold(strings.TrimSpace(row[0]), "TRUE")
 		qty := parseIntOr(strings.TrimSpace(row[1]), 1)
 		name := strings.TrimSpace(row[2])
-		credit := parseFloatOrNil(cleanGP(row[3]))
-		debit := parseFloatOrNil(cleanGP(row[4]))
 		gameDate := strings.TrimSpace(row[5])
 		category := strings.TrimSpace(row[6])
 		who := strings.TrimSpace(row[7])
@@ -164,9 +162,9 @@ func seedItemsFromCSV(path string) {
 		}
 
 		_, err := db.DB.Exec(
-			`INSERT INTO items (name, quantity, credit_gp, debit_gp, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, added_to_dndbeyond, singular, notes)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			name, qty, credit, debit, gameDate, category, containerID, sold, unitWeight, unitValue, addedToDnDB, singular, notes,
+			`INSERT INTO items (name, quantity, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, added_to_dndbeyond, singular, notes)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			name, qty, gameDate, category, containerID, sold, unitWeight, unitValue, addedToDnDB, singular, notes,
 		)
 		if err != nil {
 			log.Printf("Error inserting item %q: %v", name, err)

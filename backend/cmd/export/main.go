@@ -111,10 +111,28 @@ func doRestore(dir string) {
 			continue
 		}
 
-		// Get column names from first record
+		// Get valid column names from the actual table schema
+		validCols := map[string]bool{}
+		colRows, err := db.DB.Query("PRAGMA table_info(" + table + ")")
+		if err == nil {
+			for colRows.Next() {
+				var cid int
+				var name, typ string
+				var notnull int
+				var dflt any
+				var pk int
+				colRows.Scan(&cid, &name, &typ, &notnull, &dflt, &pk)
+				validCols[name] = true
+			}
+			colRows.Close()
+		}
+
+		// Get column names from first record, filtering out columns not in the table
 		cols := make([]string, 0, len(records[0]))
 		for k := range records[0] {
-			cols = append(cols, k)
+			if len(validCols) == 0 || validCols[k] {
+				cols = append(cols, k)
+			}
 		}
 
 		placeholders := make([]string, len(cols))
