@@ -62,6 +62,7 @@
   A "slot" should be a shared time period (3 watches per night, 2-3 characters each). Current data model may be wrong. Future: race-aware rest requirements.
 - [ ] Spell slot tracking
   Per-character per-day slot grid. Needs new DB table(s) and UI on character sheets or dedicated page.
+- [ ] Left-align container name text when it wraps to two lines #ux
 - [ ] Monster condition tracking
   Track status conditions (blinded, charmed, poisoned, etc.) on critters during combat. Extend critter model with conditions list — players add/remove, DM gets at-a-glance view.
 
