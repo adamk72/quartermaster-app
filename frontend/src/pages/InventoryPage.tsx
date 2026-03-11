@@ -12,6 +12,7 @@ import { IdentifyModal } from '../components/Inventory/IdentifyModal'
 import { ContainerManagerModal } from '../components/Inventory/ContainerManagerModal'
 import { SellModal } from '../components/Inventory/SellModal'
 import { BulkSellModal } from '../components/Inventory/BulkSellModal'
+import { BulkLabelsModal } from '../components/Inventory/BulkLabelsModal'
 
 type SortMode = 'custom' | 'name' | 'labels' | 'date'
 
@@ -55,7 +56,7 @@ const SORT_LABELS: Record<SortMode, string> = {
 }
 
 export function InventoryPage() {
-  const { items, summary, containers, characters, mounts, loading, fetchItems, fetchSummary, fetchContainers, fetchCharacters, fetchMounts, createItem, updateItem, deleteItem, sellItem, unsellItem, identifyItem, reorderItems, bulkSellItems, bulkDeleteItems, bulkMoveItems, createContainer, updateContainer, deleteContainer } = useInventoryStore()
+  const { items, summary, containers, characters, mounts, loading, fetchItems, fetchSummary, fetchContainers, fetchCharacters, fetchMounts, createItem, updateItem, deleteItem, sellItem, unsellItem, identifyItem, reorderItems, bulkSellItems, bulkDeleteItems, bulkMoveItems, bulkLabelItems, createContainer, updateContainer, deleteContainer } = useInventoryStore()
   const { labels, fetchLabels } = useLabelStore()
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState<Item | null>(null)
@@ -182,6 +183,7 @@ export function InventoryPage() {
   }, [sortedItems])
 
   const [showBulkSell, setShowBulkSell] = useState(false)
+  const [showBulkLabels, setShowBulkLabels] = useState(false)
 
   const handleBulkSell = async (sellPriceGP: number | null) => {
     const ids = [...selectedIds]
@@ -192,6 +194,18 @@ export function InventoryPage() {
       toast.success(`Sold ${ids.length} items`)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed to sell items')
+    }
+  }
+
+  const handleBulkLabels = async (addLabelIds: string[], removeLabelIds: string[]) => {
+    const ids = [...selectedIds]
+    try {
+      await bulkLabelItems(ids, addLabelIds, removeLabelIds)
+      setSelectedIds(new Set())
+      setShowBulkLabels(false)
+      toast.success(`Updated labels on ${ids.length} items`)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to update labels')
     }
   }
 
@@ -353,6 +367,9 @@ export function InventoryPage() {
           <span className="text-sm font-heading font-semibold text-gold">{selectedIds.size} selected</span>
           <button onClick={() => setShowBulkSell(true)} className="px-3 py-1.5 bg-gold text-base font-heading font-semibold rounded text-sm hover:bg-gold-bright transition-colors">
             Sell
+          </button>
+          <button onClick={() => setShowBulkLabels(true)} className="px-3 py-1.5 bg-purple-500/20 text-purple-300 font-heading font-semibold rounded text-sm hover:bg-purple-500/30 transition-colors">
+            Labels
           </button>
           <div className="relative" ref={moveMenuRef}>
             <button onClick={() => setShowMoveMenu(!showMoveMenu)} className="px-3 py-1.5 bg-sky/20 text-sky font-heading font-semibold rounded text-sm hover:bg-sky/30 transition-colors">
@@ -566,6 +583,15 @@ export function InventoryPage() {
           items={sortedItems.filter((i) => selectedIds.has(i.id))}
           onConfirm={handleBulkSell}
           onClose={() => setShowBulkSell(false)}
+        />
+      )}
+
+      {showBulkLabels && (
+        <BulkLabelsModal
+          items={sortedItems.filter((i) => selectedIds.has(i.id))}
+          labels={labels}
+          onConfirm={handleBulkLabels}
+          onClose={() => setShowBulkLabels(false)}
         />
       )}
 

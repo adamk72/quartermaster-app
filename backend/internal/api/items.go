@@ -723,6 +723,68 @@ func handleBulkMoveItems(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "moved"})
 }
 
+func handleBulkLabelItems(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		ItemIDs        []int    `json:"item_ids"`
+		AddLabelIDs    []string `json:"add_label_ids"`
+		RemoveLabelIDs []string `json:"remove_label_ids"`
+	}
+	if err := readJSON(r, &req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if len(req.ItemIDs) == 0 {
+		writeError(w, http.StatusBadRequest, "item_ids required")
+		return
+	}
+	if len(req.AddLabelIDs) == 0 && len(req.RemoveLabelIDs) == 0 {
+		writeError(w, http.StatusBadRequest, "add_label_ids or remove_label_ids required")
+		return
+	}
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to begin transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	for _, itemID := range req.ItemIDs {
+		for _, lid := range req.RemoveLabelIDs {
+			if _, err := tx.Exec("DELETE FROM item_labels WHERE item_id = ? AND label_id = ?", itemID, lid); err != nil {
+				writeError(w, http.StatusInternalServerError, "failed to remove labels")
+				return
+			}
+		}
+		for _, lid := range req.AddLabelIDs {
+			if _, err := tx.Exec("INSERT OR IGNORE INTO item_labels (item_id, label_id) VALUES (?, ?)", itemID, lid); err != nil {
+				writeError(w, http.StatusInternalServerError, "failed to add labels")
+				return
+			}
+		}
+	}
+
+	now := time.Now()
+	for _, itemID := range req.ItemIDs {
+		if _, err := tx.Exec("UPDATE items SET updated_at = ? WHERE id = ?", now, itemID); err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to update items")
+			return
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to commit bulk label update")
+		return
+	}
+
+	user := GetUser(r)
+	if user != nil {
+		LogChange(&user.ID, "items", "bulk", "update", fmt.Sprintf(`{"add_labels":%q,"remove_labels":%q}`, req.AddLabelIDs, req.RemoveLabelIDs))
+	}
+
+	writeJSON(w, http.StatusOK, map[string]string{"status": "updated"})
+}
+
 func handleItemSummary(w http.ResponseWriter, r *http.Request) {
 	var summary types.ItemSummary
 

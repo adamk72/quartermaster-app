@@ -29,6 +29,7 @@ interface InventoryState {
   bulkSellItems: (itemIds: number[], sellPriceGP?: number | null) => Promise<void>
   bulkDeleteItems: (itemIds: number[]) => Promise<void>
   bulkMoveItems: (itemIds: number[], containerId: string) => Promise<void>
+  bulkLabelItems: (itemIds: number[], addLabelIds: string[], removeLabelIds: string[]) => Promise<void>
   createContainer: (container: Partial<Container>) => Promise<Container>
   updateContainer: (id: string, container: Partial<Container>) => Promise<Container>
   deleteContainer: (id: string) => Promise<void>
@@ -170,6 +171,30 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     const { items } = get()
     const idSet = new Set(itemIds)
     set({ items: items.map((i) => idSet.has(i.id) ? { ...i, container_id: containerId || null, attuned_to: null } : i) })
+  },
+
+  bulkLabelItems: async (itemIds, addLabelIds, removeLabelIds) => {
+    await api.post('/items/bulk-labels', { item_ids: itemIds, add_label_ids: addLabelIds, remove_label_ids: removeLabelIds })
+    const { items } = get()
+    const idSet = new Set(itemIds)
+    const addSet = new Set(addLabelIds)
+    const removeSet = new Set(removeLabelIds)
+    // Get full label objects from the label store for newly added labels
+    const { useLabelStore } = await import('./useLabelStore')
+    const allLabels = useLabelStore.getState().labels
+    const labelsToAdd = allLabels.filter((l) => addSet.has(l.id))
+    set({
+      items: items.map((i) => {
+        if (!idSet.has(i.id)) return i
+        let updated = (i.labels ?? []).filter((l) => !removeSet.has(l.id))
+        for (const label of labelsToAdd) {
+          if (!updated.some((l) => l.id === label.id)) {
+            updated.push(label)
+          }
+        }
+        return { ...i, labels: updated }
+      }),
+    })
   },
 
   createContainer: async (container) => {
