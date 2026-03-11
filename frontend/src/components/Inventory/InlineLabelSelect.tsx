@@ -62,7 +62,7 @@ export function InlineLabelSelect({
   const dropdown = (
     <div
       ref={ref}
-      className="bg-card border border-border rounded-lg shadow-lg py-1 min-w-[180px] max-h-[240px] overflow-y-auto"
+      className="bg-card border border-border rounded-lg shadow-lg py-1 min-w-[180px] max-h-[360px] overflow-y-auto"
       style={{ position: 'fixed', top: pos?.top ?? 0, left: pos?.left ?? 0, zIndex: 9999 }}
     >
       {sorted.map((label) => (

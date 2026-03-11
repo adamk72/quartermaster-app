@@ -71,13 +71,15 @@ export function InventoryPage() {
 
   // Multi-select
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
-  const [labelFilter, setLabelFilter] = useState('')
+  const [labelFilter, setLabelFilter] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState('')
   const [showSold, setShowSold] = useState(false)
   const [sortMode, setSortMode] = useState<SortMode>('custom')
   const [sortReversed, setSortReversed] = useState(false)
   const [showSortMenu, setShowSortMenu] = useState(false)
   const sortMenuRef = useRef<HTMLDivElement>(null)
+  const [showLabelMenu, setShowLabelMenu] = useState(false)
+  const labelMenuRef = useRef<HTMLDivElement>(null)
   const [editingContainerId, setEditingContainerId] = useState<number | null>(null)
   const [editingLabelsId, setEditingLabelsId] = useState<number | null>(null)
 
@@ -87,14 +89,13 @@ export function InventoryPage() {
 
   useEffect(() => {
     const params: Record<string, string> = {}
-    if (labelFilter) params['label'] = labelFilter
     if (!showSold) params['sold'] = 'false'
     fetchItems(params)
     fetchSummary()
     fetchContainers()
     fetchCharacters()
     fetchMounts()
-  }, [fetchItems, fetchSummary, fetchContainers, fetchCharacters, fetchMounts, labelFilter, showSold])
+  }, [fetchItems, fetchSummary, fetchContainers, fetchCharacters, fetchMounts, showSold])
 
   useEffect(() => { fetchLabels() }, [fetchLabels])
 
@@ -109,11 +110,31 @@ export function InventoryPage() {
     return () => document.removeEventListener('mousedown', handler)
   }, [showSortMenu])
 
+  // Close label menu on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (labelMenuRef.current && !labelMenuRef.current.contains(e.target as Node)) {
+        setShowLabelMenu(false)
+      }
+    }
+    if (showLabelMenu) document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showLabelMenu])
+
   const sortedItems = useMemo(() => {
     let filtered = items
+    if (labelFilter.size > 0) {
+      if (labelFilter.has('__none__')) {
+        filtered = filtered.filter((i) => !i.labels || i.labels.length === 0)
+      } else {
+        filtered = filtered.filter((i) =>
+          i.labels && [...labelFilter].every((lid) => i.labels.some((l) => l.id === lid))
+        )
+      }
+    }
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
-      filtered = items.filter((i) =>
+      filtered = filtered.filter((i) =>
         i.name.toLowerCase().includes(q) ||
         (i.notes && i.notes.toLowerCase().includes(q)) ||
         (i.labels && i.labels.some((l) => l.name.toLowerCase().includes(q))) ||
@@ -146,7 +167,7 @@ export function InventoryPage() {
     }
     if (sortReversed) sorted.reverse()
     return sorted
-  }, [items, containers, sortMode, sortReversed, searchQuery])
+  }, [items, containers, labelFilter, sortMode, sortReversed, searchQuery])
 
   const handleDragStart = useCallback((id: number) => {
     setDragId(id)
@@ -329,15 +350,64 @@ export function InventoryPage() {
             </button>
           )}
         </div>
-        <select
-          className="input-themed !w-auto"
-          value={labelFilter}
-          onChange={(e) => setLabelFilter(e.target.value)}
-        >
-          <option value="">All Labels</option>
-          <option value="__none__">No Label</option>
-          {labels.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-        </select>
+        <div className="relative" ref={labelMenuRef}>
+          <button
+            onClick={() => setShowLabelMenu(!showLabelMenu)}
+            className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg text-sm text-parchment-dim hover:bg-surface hover:text-parchment transition-colors"
+          >
+            {labelFilter.size === 0 ? 'All Labels' : labelFilter.has('__none__') ? 'No Label' : `${labelFilter.size} Label${labelFilter.size > 1 ? 's' : ''}`}
+            <ChevronDown className="w-3 h-3" />
+          </button>
+          {showLabelMenu && (
+            <div className="absolute left-0 top-full mt-1 bg-card border border-border rounded-lg shadow-xl shadow-black/30 py-1 z-20 min-w-[200px] max-h-[360px] overflow-y-auto">
+              <button
+                onClick={() => { setLabelFilter(new Set()); setShowLabelMenu(false) }}
+                className="w-full px-3 py-1.5 text-left text-sm hover:bg-gold/10 flex items-center gap-2 transition-colors text-parchment-dim"
+              >
+                All Labels
+                {labelFilter.size === 0 && <span className="ml-auto text-gold">&#10003;</span>}
+              </button>
+              <button
+                onClick={() => { setLabelFilter(new Set(['__none__'])); setShowLabelMenu(false) }}
+                className="w-full px-3 py-1.5 text-left text-sm hover:bg-gold/10 flex items-center gap-2 transition-colors text-parchment-dim"
+              >
+                No Label
+                {labelFilter.has('__none__') && <span className="ml-auto text-gold">&#10003;</span>}
+              </button>
+              <div className="border-t border-border my-1" />
+              {labels.map((l) => (
+                <button
+                  key={l.id}
+                  onClick={() => setLabelFilter((prev) => {
+                    const next = new Set(prev)
+                    next.delete('__none__')
+                    if (next.has(l.id)) next.delete(l.id)
+                    else next.add(l.id)
+                    return next
+                  })}
+                  className="w-full px-3 py-1.5 text-left text-sm hover:bg-gold/10 flex items-center gap-2 transition-colors"
+                >
+                  <span
+                    className="w-4 h-4 rounded border-2 flex items-center justify-center text-[10px] shrink-0"
+                    style={{
+                      borderColor: labelFilter.has(l.id) ? '#c9a959' : 'rgba(160,160,184,0.3)',
+                      backgroundColor: labelFilter.has(l.id) ? 'rgba(201,169,89,0.2)' : 'transparent',
+                      color: '#c9a959',
+                    }}
+                  >
+                    {labelFilter.has(l.id) && '✓'}
+                  </span>
+                  <span
+                    className="px-2 py-0.5 rounded text-xs font-medium"
+                    style={{ backgroundColor: hexWithAlpha(l.color, '40'), color: l.text_color || '#ffffff' }}
+                  >
+                    {l.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <label className="flex items-center gap-2 text-sm text-parchment-dim">
           <input
             type="checkbox"
