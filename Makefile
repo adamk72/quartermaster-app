@@ -1,4 +1,4 @@
-.PHONY: dev dev-backend dev-frontend build seed export restore lint
+.PHONY: dev dev-backend dev-frontend build seed export restore archive lint
 
 dev:
 	@echo "Starting backend and frontend..."
@@ -24,6 +24,9 @@ export:
 
 restore:
 	cd backend && go run ./cmd/export --restore
+
+archive:
+	./scripts/archive-export.sh
 
 lint:
 	cd frontend && pnpm lint
