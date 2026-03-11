@@ -17,7 +17,7 @@ import { ImportModal } from '../components/Inventory/ImportModal'
 import { InlineContainerSelect } from '../components/Inventory/InlineContainerSelect'
 import { InlineLabelSelect } from '../components/Inventory/InlineLabelSelect'
 
-type SortMode = 'custom' | 'name' | 'labels' | 'date'
+type SortMode = 'custom' | 'name' | 'labels' | 'container' | 'date'
 
 /** Parse "M/D" (assumes current year) or "M/D/YY" into components. Returns null for unparseable. */
 function parseGameDate(d: string): { month: number; day: number; year: number } | null {
@@ -55,6 +55,7 @@ const SORT_LABELS: Record<SortMode, string> = {
   custom: 'Custom Order',
   name: 'Name',
   labels: 'Labels',
+  container: 'Container',
   date: 'Date',
 }
 
@@ -130,6 +131,13 @@ export function InventoryPage() {
           const aLabel = a.labels?.[0]?.name ?? ''
           const bLabel = b.labels?.[0]?.name ?? ''
           return aLabel.localeCompare(bLabel) || a.name.localeCompare(b.name)
+        })
+        break
+      case 'container':
+        sorted.sort((a, b) => {
+          const aName = (a.container_id && containers.find((c) => c.id === a.container_id)?.name) ?? ''
+          const bName = (b.container_id && containers.find((c) => c.id === b.container_id)?.name) ?? ''
+          return aName.localeCompare(bName) || a.name.localeCompare(b.name)
         })
         break
       case 'date':

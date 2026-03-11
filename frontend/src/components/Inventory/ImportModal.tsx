@@ -21,8 +21,7 @@ interface ImportItem {
   notes: string
 }
 
-function buildPrompt(containers: Container[], labelList: { id: string; name: string }[]): string {
-  const containerLines = containers.map((c) => `  - "${c.id}" → ${c.name} (${c.type})`).join('\n')
+function buildPrompt(labelList: { id: string; name: string }[]): string {
   const labelLines = labelList.length > 0
     ? labelList.map((l) => `  - "${l.id}" → ${l.name}`).join('\n')
     : '  (none defined yet)'
@@ -38,16 +37,8 @@ Return ONLY a JSON array (no markdown, no explanation). Each item is an object w
 | name | string | yes | Item name, title case |
 | quantity | number | yes | Default 1 if not specified |
 | unit_value_gp | number | no | Per-unit value in gold pieces. Convert: 1pp=10gp, 1ep=0.5gp, 1sp=0.1gp, 1cp=0.01gp |
-| container_id | string | no | Must be one of the valid IDs below, or omit |
 | label_ids | string[] | no | Array of label IDs from the list below. Assign any that seem to fit the item. |
-| game_date | string | no | Format "M/D" (e.g. "3/11") if a date is mentioned |
 | notes | string | no | Anything that doesn't fit the other fields (description, magic properties, etc.) |
-
-## Valid Containers
-
-${containerLines}
-
-If the text mentions who is carrying something, match to the appropriate container. If unclear, omit container_id.
 
 ## Available Labels
 
@@ -173,12 +164,12 @@ export function ImportModal({ onClose, containers }: ImportModalProps) {
                     </p>
                     <div className="relative">
                       <pre className="bg-card border border-border rounded-lg p-3 text-xs text-parchment-dim font-mono whitespace-pre-wrap max-h-48 overflow-y-auto">
-                        {buildPrompt(containers, labels.map((l) => ({ id: l.id, name: l.name })))}
+                        {buildPrompt(labels.map((l) => ({ id: l.id, name: l.name })))}
                       </pre>
                       <button
                         type="button"
                         onClick={() => {
-                          navigator.clipboard.writeText(buildPrompt(containers, labels.map((l) => ({ id: l.id, name: l.name }))))
+                          navigator.clipboard.writeText(buildPrompt(labels.map((l) => ({ id: l.id, name: l.name }))))
                           toast.success('Prompt copied to clipboard')
                         }}
                         className="absolute top-2 right-2 p-1.5 bg-surface border border-border rounded hover:bg-card-hover transition-colors"
