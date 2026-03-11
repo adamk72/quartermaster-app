@@ -422,6 +422,7 @@ export function InventoryPage() {
                 {sortMode === 'custom' && <th className="w-8"></th>}
                 <th>Name</th>
                 <th>Qty</th>
+                <th>Value</th>
                 <th>Labels</th>
                 <th>Container</th>
                 <th>Date</th>
@@ -466,6 +467,7 @@ export function InventoryPage() {
                     {item.notes && <p className="text-xs text-parchment-muted mt-0.5">{item.notes}</p>}
                   </td>
                   <td>{item.quantity}</td>
+                  <td className="text-gold text-sm">{item.unit_value_gp != null ? `${item.unit_value_gp} gp` : <span className="text-parchment-muted">--</span>}</td>
                   <td>
                     <div className="flex flex-wrap gap-1">
                       {item.labels?.map((l) => (
