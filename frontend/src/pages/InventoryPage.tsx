@@ -11,6 +11,7 @@ import { ItemFormModal } from '../components/Inventory/ItemFormModal'
 import { IdentifyModal } from '../components/Inventory/IdentifyModal'
 import { ContainerManagerModal } from '../components/Inventory/ContainerManagerModal'
 import { SellModal } from '../components/Inventory/SellModal'
+import { BulkSellModal } from '../components/Inventory/BulkSellModal'
 
 type SortMode = 'custom' | 'name' | 'labels' | 'date'
 
@@ -180,11 +181,14 @@ export function InventoryPage() {
     )
   }, [sortedItems])
 
-  const handleBulkSell = async () => {
+  const [showBulkSell, setShowBulkSell] = useState(false)
+
+  const handleBulkSell = async (sellPriceGP: number | null) => {
     const ids = [...selectedIds]
     try {
-      await bulkSellItems(ids)
+      await bulkSellItems(ids, sellPriceGP)
       setSelectedIds(new Set())
+      setShowBulkSell(false)
       toast.success(`Sold ${ids.length} items`)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed to sell items')
@@ -347,7 +351,7 @@ export function InventoryPage() {
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-3 mb-4 px-4 py-3 bg-gold/10 border border-gold/30 rounded-lg animate-[fadeIn_0.15s_ease-out]">
           <span className="text-sm font-heading font-semibold text-gold">{selectedIds.size} selected</span>
-          <button onClick={handleBulkSell} className="px-3 py-1.5 bg-gold text-base font-heading font-semibold rounded text-sm hover:bg-gold-bright transition-colors">
+          <button onClick={() => setShowBulkSell(true)} className="px-3 py-1.5 bg-gold text-base font-heading font-semibold rounded text-sm hover:bg-gold-bright transition-colors">
             Sell
           </button>
           <div className="relative" ref={moveMenuRef}>
@@ -554,6 +558,14 @@ export function InventoryPage() {
             }
           }}
           onClose={() => setSellTarget(null)}
+        />
+      )}
+
+      {showBulkSell && (
+        <BulkSellModal
+          items={sortedItems.filter((i) => selectedIds.has(i.id))}
+          onConfirm={handleBulkSell}
+          onClose={() => setShowBulkSell(false)}
         />
       )}
 

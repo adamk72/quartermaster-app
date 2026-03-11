@@ -26,7 +26,7 @@ interface InventoryState {
   unsellItem: (id: number) => Promise<void>
   reorderItems: (itemIds: number[]) => Promise<void>
   identifyItem: (id: number, name?: string, magic?: boolean) => Promise<Item>
-  bulkSellItems: (itemIds: number[]) => Promise<void>
+  bulkSellItems: (itemIds: number[], sellPriceGP?: number | null) => Promise<void>
   bulkDeleteItems: (itemIds: number[]) => Promise<void>
   bulkMoveItems: (itemIds: number[], containerId: string) => Promise<void>
   createContainer: (container: Partial<Container>) => Promise<Container>
@@ -149,8 +149,8 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     return updated
   },
 
-  bulkSellItems: async (itemIds) => {
-    await api.post('/items/bulk-sell', { item_ids: itemIds })
+  bulkSellItems: async (itemIds, sellPriceGP) => {
+    await api.post('/items/bulk-sell', { item_ids: itemIds, sell_price_gp: sellPriceGP ?? null })
     const { items } = get()
     const idSet = new Set(itemIds)
     set({ items: items.map((i) => idSet.has(i.id) ? { ...i, sold: true } : i) })

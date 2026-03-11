@@ -557,7 +557,8 @@ func handleReorderItems(w http.ResponseWriter, r *http.Request) {
 
 func handleBulkSellItems(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		ItemIDs []int `json:"item_ids"`
+		ItemIDs    []int    `json:"item_ids"`
+		SellPriceGP *float64 `json:"sell_price_gp"`
 	}
 	if err := readJSON(r, &req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
@@ -576,25 +577,30 @@ func handleBulkSellItems(w http.ResponseWriter, r *http.Request) {
 	defer tx.Rollback()
 
 	now := time.Now()
+	var itemNames []string
 	for _, id := range req.ItemIDs {
-		var itemName, gameDate string
-		var unitValueGP *float64
-		var qty int
-		if err := tx.QueryRow("SELECT name, game_date, COALESCE(unit_value_gp, 0), quantity FROM items WHERE id = ?", id).Scan(&itemName, &gameDate, &unitValueGP, &qty); err != nil {
+		var itemName string
+		if err := tx.QueryRow("SELECT name FROM items WHERE id = ?", id).Scan(&itemName); err != nil {
 			writeError(w, http.StatusInternalServerError, "failed to look up item")
 			return
 		}
+		itemNames = append(itemNames, itemName)
 		if _, err := tx.Exec("UPDATE items SET sold = 1, updated_at = ? WHERE id = ?", now, id); err != nil {
 			writeError(w, http.StatusInternalServerError, "failed to sell items")
 			return
 		}
-		if unitValueGP != nil && *unitValueGP > 0 {
-			totalGP := *unitValueGP * float64(qty)
-			gp, sp, cp := gpToDenominations(totalGP)
-			tx.Exec(
-				"INSERT INTO coin_ledger (game_date, description, cp, sp, gp, direction, item_id, created_at) VALUES (?, ?, ?, ?, ?, 'in', ?, ?)",
-				gameDate, fmt.Sprintf("Sale: %s", itemName), cp, sp, gp, id, now,
-			)
+	}
+
+	if req.SellPriceGP != nil && *req.SellPriceGP > 0 {
+		gp, sp, cp := gpToDenominations(*req.SellPriceGP)
+		desc := fmt.Sprintf("Bulk sale: %d items", len(req.ItemIDs))
+		_, err := tx.Exec(
+			"INSERT INTO coin_ledger (game_date, description, cp, sp, gp, direction, created_at) VALUES (?, ?, ?, ?, ?, 'in', ?)",
+			"", desc, cp, sp, gp, now,
+		)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to create coin ledger entry")
+			return
 		}
 	}
 
