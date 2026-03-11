@@ -30,6 +30,7 @@ interface InventoryState {
   bulkDeleteItems: (itemIds: number[]) => Promise<void>
   bulkMoveItems: (itemIds: number[], containerId: string) => Promise<void>
   bulkLabelItems: (itemIds: number[], addLabelIds: string[], removeLabelIds: string[]) => Promise<void>
+  importItems: (items: Partial<Item>[]) => Promise<{ count: number; items: Item[] }>
   createContainer: (container: Partial<Container>) => Promise<Container>
   updateContainer: (id: string, container: Partial<Container>) => Promise<Container>
   deleteContainer: (id: string) => Promise<void>
@@ -94,6 +95,13 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     set({ items: [created, ...items] })
     get().fetchSummary()
     return created
+  },
+
+  importItems: async (items) => {
+    const result = await api.post<{ count: number; items: Item[] }>('/items/import', items)
+    get().fetchItems()
+    get().fetchSummary()
+    return result
   },
 
   updateItem: async (id, item) => {

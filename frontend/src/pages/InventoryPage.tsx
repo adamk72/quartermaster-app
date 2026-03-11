@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { useLabelStore } from '../stores/useLabelStore'
 import { hexWithAlpha } from '../constants'
-import { Plus, Trash2, DollarSign, Pencil, Sparkles, Undo2, GripVertical, ArrowUpDown, ArrowDownUp, ChevronDown, Search, Package } from 'lucide-react'
+import { Plus, Trash2, DollarSign, Pencil, Sparkles, Undo2, GripVertical, ArrowUpDown, ArrowDownUp, ChevronDown, Search, Package, Upload } from 'lucide-react'
 import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
 import clsx from 'clsx'
@@ -13,6 +13,7 @@ import { ContainerManagerModal } from '../components/Inventory/ContainerManagerM
 import { SellModal } from '../components/Inventory/SellModal'
 import { BulkSellModal } from '../components/Inventory/BulkSellModal'
 import { BulkLabelsModal } from '../components/Inventory/BulkLabelsModal'
+import { ImportModal } from '../components/Inventory/ImportModal'
 
 type SortMode = 'custom' | 'name' | 'labels' | 'date'
 
@@ -63,6 +64,7 @@ export function InventoryPage() {
   const [identifyTarget, setIdentifyTarget] = useState<Item | null>(null)
   const [sellTarget, setSellTarget] = useState<Item | null>(null)
   const [showContainerManager, setShowContainerManager] = useState(false)
+  const [showImport, setShowImport] = useState(false)
 
   // Multi-select
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
@@ -270,6 +272,12 @@ export function InventoryPage() {
             className="flex items-center gap-2 px-4 py-2 bg-surface text-parchment-dim border border-border font-heading font-semibold rounded-lg hover:bg-card-hover text-sm transition-colors"
           >
             <Package className="w-4 h-4" /> Containers
+          </button>
+          <button
+            onClick={() => setShowImport(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-surface text-parchment-dim border border-border font-heading font-semibold rounded-lg hover:bg-card-hover text-sm transition-colors"
+          >
+            <Upload className="w-4 h-4" /> Import
           </button>
           <button
             onClick={() => { setEditItem(null); setShowForm(true) }}
@@ -620,6 +628,10 @@ export function InventoryPage() {
           }}
           onClose={() => setShowContainerManager(false)}
         />
+      )}
+
+      {showImport && (
+        <ImportModal onClose={() => setShowImport(false)} containers={containers} />
       )}
 
     </div>
