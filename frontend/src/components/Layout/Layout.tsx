@@ -5,24 +5,23 @@ import { usePresenceStore } from '../../stores/usePresenceStore'
 import { ActiveUsers } from '../ActiveUsers'
 import {
   Sword, BookOpen, Bug, ScrollText, Brain, Star,
-  Shield, Users, History, LayoutDashboard, Menu, X, LogOut, Apple, Coins, Settings,
+  Shield, Users, History, Menu, X, LogOut, Apple, Coins, Settings,
 } from 'lucide-react'
 import clsx from 'clsx'
 
 const PRESENCE_POLL_MS = 60_000
 
 const navItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/inventory', label: 'Inventory', icon: Sword },
   { path: '/wealth', label: 'Wealth', icon: Coins },
-  { path: '/journal', label: 'Journal', icon: BookOpen },
   { path: '/critters', label: 'Critters', icon: Bug },
-  { path: '/quests', label: 'Quests', icon: ScrollText },
   { path: '/skills', label: 'Skills', icon: Brain },
   { path: '/xp', label: 'XP', icon: Star },
-  { path: '/watch', label: 'Watch', icon: Shield },
-  { path: '/consumables', label: 'Consumables', icon: Apple },
   { path: '/characters', label: 'Characters', icon: Users },
+  { path: '/consumables', label: 'Consumables', icon: Apple },
+  { path: '/journal', label: 'Journal', icon: BookOpen },
+  { path: '/quests', label: 'Quests', icon: ScrollText },
+  { path: '/watch', label: 'Watch', icon: Shield },
   { path: '/changelog', label: 'Changelog', icon: History },
   { path: '/settings', label: 'Settings', icon: Settings },
 ]

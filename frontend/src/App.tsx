@@ -5,7 +5,6 @@ import { Layout } from './components/Layout/Layout'
 import { ToastContainer } from './components/Toast'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { LoginPage } from './pages/LoginPage'
-import { DashboardPage } from './pages/DashboardPage'
 import { InventoryPage } from './pages/InventoryPage'
 import { JournalPage } from './pages/JournalPage'
 import { JournalEntryPage } from './pages/JournalEntryPage'
@@ -43,7 +42,7 @@ export function App() {
     <>
       <Layout>
         <Routes>
-          <Route path="/" element={<DashboardPage />} />
+          <Route path="/" element={<Navigate to="/inventory" replace />} />
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/journal" element={<JournalPage />} />
           <Route path="/journal/:id" element={<JournalEntryPage />} />
