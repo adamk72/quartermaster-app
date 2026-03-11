@@ -110,7 +110,10 @@ func handleListItems(w http.ResponseWriter, r *http.Request) {
 	var conditions []string
 	var joins []string
 
-	if label := r.URL.Query().Get("label"); label != "" {
+	if label := r.URL.Query().Get("label"); label == "__none__" {
+		joins = append(joins, "LEFT JOIN item_labels il ON il.item_id = i.id")
+		conditions = append(conditions, "il.item_id IS NULL")
+	} else if label != "" {
 		joins = append(joins, "JOIN item_labels il ON il.item_id = i.id")
 		conditions = append(conditions, "il.label_id = ?")
 		args = append(args, label)

@@ -319,6 +319,7 @@ export function InventoryPage() {
           onChange={(e) => setLabelFilter(e.target.value)}
         >
           <option value="">All Labels</option>
+          <option value="__none__">No Label</option>
           {labels.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
         </select>
         <label className="flex items-center gap-2 text-sm text-parchment-dim">

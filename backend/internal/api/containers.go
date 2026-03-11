@@ -70,7 +70,17 @@ func handleCreateContainer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if c.ID == "" {
-		c.ID = strings.ToLower(strings.ReplaceAll(c.Name, " ", "-"))
+		base := strings.ToLower(strings.ReplaceAll(c.Name, " ", "-"))
+		c.ID = base
+		// If the generated ID already exists, append a numeric suffix
+		for i := 2; ; i++ {
+			var exists bool
+			db.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM containers WHERE id = ?)", c.ID).Scan(&exists)
+			if !exists {
+				break
+			}
+			c.ID = fmt.Sprintf("%s-%d", base, i)
+		}
 	}
 	now := time.Now()
 	c.CreatedAt = now

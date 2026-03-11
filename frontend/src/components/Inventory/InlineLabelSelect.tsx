@@ -1,4 +1,5 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useLayoutEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useClickOutside } from '../../hooks/useClickOutside'
 import { hexWithAlpha } from '../../constants'
 import type { Item, Label } from '../../types'
@@ -21,9 +22,17 @@ export function InlineLabelSelect({
     () => new Set(currentLabels.map((l) => l.id)),
   )
   const initialIds = useMemo(() => new Set(currentLabels.map((l) => l.id)), [currentLabels])
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+  const placeholderRef = useRef<HTMLSpanElement>(null)
+
+  useLayoutEffect(() => {
+    const el = placeholderRef.current?.parentElement
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    setPos({ top: rect.bottom + 4, left: rect.left })
+  }, [])
 
   const saveAndClose = useCallback(async () => {
-    // Only save if labels actually changed
     const changed =
       selectedIds.size !== initialIds.size ||
       [...selectedIds].some((id) => !initialIds.has(id))
@@ -50,10 +59,11 @@ export function InlineLabelSelect({
 
   const sorted = useMemo(() => [...allLabels].sort((a, b) => a.sort_order - b.sort_order), [allLabels])
 
-  return (
+  const dropdown = (
     <div
       ref={ref}
-      className="absolute z-50 mt-1 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[180px] max-h-[240px] overflow-y-auto"
+      className="bg-card border border-border rounded-lg shadow-lg py-1 min-w-[180px] max-h-[240px] overflow-y-auto"
+      style={{ position: 'fixed', top: pos?.top ?? 0, left: pos?.left ?? 0, zIndex: 9999 }}
     >
       {sorted.map((label) => (
         <button
@@ -84,4 +94,10 @@ export function InlineLabelSelect({
       )}
     </div>
   )
+
+  if (!pos) {
+    return <span ref={placeholderRef} className="hidden" />
+  }
+
+  return createPortal(dropdown, document.body)
 }

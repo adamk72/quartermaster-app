@@ -1,4 +1,5 @@
-import { useCallback } from 'react'
+import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useClickOutside } from '../../hooks/useClickOutside'
 import { Check } from 'lucide-react'
 import type { Item, Container } from '../../types'
@@ -18,6 +19,16 @@ export function InlineContainerSelect({
   onSave,
   onClose,
 }: Props) {
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+  const placeholderRef = useRef<HTMLSpanElement>(null)
+
+  useLayoutEffect(() => {
+    const el = placeholderRef.current?.parentElement
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    setPos({ top: rect.bottom + 4, left: rect.left })
+  }, [])
+
   const ref = useClickOutside<HTMLDivElement>(onClose)
 
   const handleSelect = useCallback(
@@ -36,10 +47,11 @@ export function InlineContainerSelect({
     [item, onSave, onClose],
   )
 
-  return (
+  const dropdown = (
     <div
       ref={ref}
-      className="absolute z-50 mt-1 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[180px] max-h-[240px] overflow-y-auto"
+      className="bg-card border border-border rounded-lg shadow-lg py-1 min-w-[180px] max-h-[240px] overflow-y-auto"
+      style={{ position: 'fixed', top: pos?.top ?? 0, left: pos?.left ?? 0, zIndex: 9999 }}
     >
       {containers.map((c) => (
         <button
@@ -62,4 +74,10 @@ export function InlineContainerSelect({
       </button>
     </div>
   )
+
+  if (!pos) {
+    return <span ref={placeholderRef} className="hidden" />
+  }
+
+  return createPortal(dropdown, document.body)
 }
