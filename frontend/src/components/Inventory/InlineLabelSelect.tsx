@@ -1,25 +1,22 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useClickOutside } from '../../hooks/useClickOutside'
 import { hexWithAlpha } from '../../constants'
-import type { Label } from '../../types'
+import type { Item, Label } from '../../types'
 
 interface Props {
-  itemId: number
-  itemVersion: number
-  currentLabels: Label[]
+  item: Item
   allLabels: Label[]
-  onSave: (itemId: number, data: { label_ids: string[]; version: number }) => Promise<unknown>
+  onSave: (itemId: number, data: Partial<Item>) => Promise<unknown>
   onClose: () => void
 }
 
 export function InlineLabelSelect({
-  itemId,
-  itemVersion,
-  currentLabels,
+  item,
   allLabels,
   onSave,
   onClose,
 }: Props) {
+  const currentLabels = item.labels ?? []
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     () => new Set(currentLabels.map((l) => l.id)),
   )
@@ -32,13 +29,13 @@ export function InlineLabelSelect({
       [...selectedIds].some((id) => !initialIds.has(id))
     if (changed) {
       try {
-        await onSave(itemId, { label_ids: [...selectedIds], version: itemVersion })
+        await onSave(item.id, { ...item, label_ids: [...selectedIds] })
       } catch {
         // updateItem already handles 409 toast + refetch
       }
     }
     onClose()
-  }, [itemId, itemVersion, selectedIds, initialIds, onSave, onClose])
+  }, [item, selectedIds, initialIds, onSave, onClose])
 
   const ref = useClickOutside<HTMLDivElement>(saveAndClose)
 

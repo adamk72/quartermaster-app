@@ -497,9 +497,7 @@ export function InventoryPage() {
                     </button>
                     {editingLabelsId === item.id && (
                       <InlineLabelSelect
-                        itemId={item.id}
-                        itemVersion={item.version}
-                        currentLabels={item.labels ?? []}
+                        item={item}
                         allLabels={labels}
                         onSave={updateItem}
                         onClose={() => setEditingLabelsId(null)}
@@ -523,9 +521,7 @@ export function InventoryPage() {
                     </button>
                     {editingContainerId === item.id && (
                       <InlineContainerSelect
-                        itemId={item.id}
-                        itemVersion={item.version}
-                        currentContainerId={item.container_id}
+                        item={item}
                         containers={containers}
                         getContainerDisplayName={(c) => getContainerDisplayName(c, characters, mounts)}
                         onSave={updateItem}
