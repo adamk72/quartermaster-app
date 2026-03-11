@@ -2,13 +2,14 @@
 -- credit_gp values may be fractional (e.g. 2.5 gp), so we split into gp + sp + cp.
 
 -- Items with credit_gp → coin_ledger 'in' entries
+-- Use ROUND() to avoid floating-point precision issues with modular arithmetic
 INSERT INTO coin_ledger (game_date, description, gp, sp, cp, direction, item_id, created_at)
 SELECT
     game_date,
     'Migrated credit: ' || name,
-    CAST(credit_gp AS INTEGER),
-    CAST((credit_gp * 10) % 10 AS INTEGER),
-    CAST((credit_gp * 100) % 10 AS INTEGER),
+    CAST(ROUND(credit_gp - 0.5) AS INTEGER),
+    CAST(ROUND(credit_gp * 10) % 10 AS INTEGER),
+    CAST(ROUND(credit_gp * 100) % 10 AS INTEGER),
     'in',
     id,
     CURRENT_TIMESTAMP
@@ -19,9 +20,9 @@ INSERT INTO coin_ledger (game_date, description, gp, sp, cp, direction, item_id,
 SELECT
     game_date,
     'Migrated debit: ' || name,
-    CAST(debit_gp AS INTEGER),
-    CAST((debit_gp * 10) % 10 AS INTEGER),
-    CAST((debit_gp * 100) % 10 AS INTEGER),
+    CAST(ROUND(debit_gp - 0.5) AS INTEGER),
+    CAST(ROUND(debit_gp * 10) % 10 AS INTEGER),
+    CAST(ROUND(debit_gp * 100) % 10 AS INTEGER),
     'out',
     id,
     CURRENT_TIMESTAMP

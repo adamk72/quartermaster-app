@@ -66,7 +66,8 @@ export function SellModal({
           <button
             onClick={() => {
               const price = parseFloat(sellPriceStr)
-              const sellQty = Math.min(Math.max(parseInt(quantityStr) || item.quantity, 1), item.quantity)
+              const parsed = parseInt(quantityStr)
+              const sellQty = Math.min(Math.max(parsed > 0 ? parsed : 1, 1), item.quantity)
               onConfirm(price > 0 ? price : null, sellQty)
             }}
             className="px-4 py-2 text-base bg-gold font-heading font-semibold rounded-lg hover:bg-gold-bright transition-colors"

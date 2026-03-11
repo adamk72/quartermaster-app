@@ -14,6 +14,16 @@ import (
 	"github.com/adamk72/quartermaster-app/internal/types"
 )
 
+// gpToDenominations converts a GP float to integer gp, sp, cp values.
+func gpToDenominations(gpFloat float64) (gp, sp, cp int) {
+	totalCP := int(math.Round(gpFloat * 100))
+	gp = totalCP / 100
+	totalCP %= 100
+	sp = totalCP / 10
+	cp = totalCP % 10
+	return
+}
+
 // itemColumns is the canonical column list for item queries.
 // Keep in sync with scanItem.
 const itemColumns = "id, name, quantity, game_date, category, container_id, sold, unit_weight_lbs, unit_value_gp, weight_override, added_to_dndbeyond, identified, attuned_to, singular, notes, sort_order, created_at, updated_at, version"
@@ -195,11 +205,7 @@ func handleCreateItem(w http.ResponseWriter, r *http.Request) {
 	item.ID = int(id)
 
 	if item.BuyPriceGP != nil && *item.BuyPriceGP > 0 {
-		totalCP := int(math.Round(*item.BuyPriceGP * 100))
-		gp := totalCP / 100
-		totalCP %= 100
-		sp := totalCP / 10
-		cp := totalCP % 10
+		gp, sp, cp := gpToDenominations(*item.BuyPriceGP)
 		_, err := tx.Exec(
 			"INSERT INTO coin_ledger (game_date, description, cp, sp, gp, direction, item_id, created_at) VALUES (?, ?, ?, ?, ?, 'out', ?, ?)",
 			item.GameDate, fmt.Sprintf("Purchase: %s", item.Name), cp, sp, gp, item.ID, item.CreatedAt,
@@ -210,16 +216,22 @@ func handleCreateItem(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err := tx.Commit(); err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to commit item creation")
-		return
-	}
-
 	if len(item.LabelIDs) > 0 {
-		if err := saveItemLabels(item.ID, item.LabelIDs); err != nil {
+		if _, err := tx.Exec("DELETE FROM item_labels WHERE item_id = ?", item.ID); err != nil {
 			writeError(w, http.StatusInternalServerError, "failed to save labels")
 			return
 		}
+		for _, lid := range item.LabelIDs {
+			if _, err := tx.Exec("INSERT OR IGNORE INTO item_labels (item_id, label_id) VALUES (?, ?)", item.ID, lid); err != nil {
+				writeError(w, http.StatusInternalServerError, "failed to save labels")
+				return
+			}
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to commit item creation")
+		return
 	}
 
 	singleItems := []types.Item{item}
@@ -294,13 +306,30 @@ func handleUpdateItem(w http.ResponseWriter, r *http.Request) {
 
 func handleDeleteItem(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	result, err := db.DB.Exec("DELETE FROM items WHERE id = ?", id)
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to begin transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	// Clean up linked coin_ledger entries before deleting the item
+	idInt, _ := strconv.Atoi(id)
+	tx.Exec("DELETE FROM coin_ledger WHERE item_id = ?", idInt)
+
+	result, err := tx.Exec("DELETE FROM items WHERE id = ?", id)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to delete item")
 		return
 	}
 	if n, _ := result.RowsAffected(); n == 0 {
 		writeError(w, http.StatusNotFound, "item not found")
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to commit delete")
 		return
 	}
 
@@ -357,12 +386,7 @@ func handleSellItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.SellPriceGP != nil && *req.SellPriceGP > 0 {
-		totalCP := int(math.Round(*req.SellPriceGP * 100))
-		gp := totalCP / 100
-		totalCP %= 100
-		sp := totalCP / 10
-		cp := totalCP % 10
-
+		gp, sp, cp := gpToDenominations(*req.SellPriceGP)
 		idInt, _ := strconv.Atoi(id)
 		desc := fmt.Sprintf("Sale: %s", itemName)
 		if sellQty < currentQty {
@@ -385,7 +409,11 @@ func handleSellItem(w http.ResponseWriter, r *http.Request) {
 
 	user := GetUser(r)
 	if user != nil {
-		LogChange(&user.ID, "items", id, "update", `{"sold":true}`)
+		if sellQty >= currentQty {
+			LogChange(&user.ID, "items", id, "update", `{"sold":true}`)
+		} else {
+			LogChange(&user.ID, "items", id, "update", fmt.Sprintf(`{"quantity_sold":%d,"remaining":%d}`, sellQty, currentQty-sellQty))
+		}
 	}
 
 	writeJSON(w, http.StatusOK, map[string]string{"status": "sold"})
@@ -549,9 +577,24 @@ func handleBulkSellItems(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 	for _, id := range req.ItemIDs {
+		var itemName, gameDate string
+		var unitValueGP *float64
+		var qty int
+		if err := tx.QueryRow("SELECT name, game_date, COALESCE(unit_value_gp, 0), quantity FROM items WHERE id = ?", id).Scan(&itemName, &gameDate, &unitValueGP, &qty); err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to look up item")
+			return
+		}
 		if _, err := tx.Exec("UPDATE items SET sold = 1, updated_at = ? WHERE id = ?", now, id); err != nil {
 			writeError(w, http.StatusInternalServerError, "failed to sell items")
 			return
+		}
+		if unitValueGP != nil && *unitValueGP > 0 {
+			totalGP := *unitValueGP * float64(qty)
+			gp, sp, cp := gpToDenominations(totalGP)
+			tx.Exec(
+				"INSERT INTO coin_ledger (game_date, description, cp, sp, gp, direction, item_id, created_at) VALUES (?, ?, ?, ?, ?, 'in', ?, ?)",
+				gameDate, fmt.Sprintf("Sale: %s", itemName), cp, sp, gp, id, now,
+			)
 		}
 	}
 
