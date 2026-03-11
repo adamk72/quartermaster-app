@@ -31,7 +31,7 @@ Convert the following tab-separated spreadsheet data into a JSON array. Each row
 - Any other value → use the value lowercased with spaces replaced by hyphens
 
 **Important rules:**
-- If a row is a duplicate of an earlier row (same item name), skip it — only keep the first occurrence
+- If a row is a duplicate of an earlier row (same item name), MERGE them: keep the first occurrence's `container_id`, but use the duplicate's `notes` if it has more detail. Output only one entry per unique item name.
 - Strip "x2", "x3", etc. suffixes from item names if the Qty column already has that number
 - Return ONLY a JSON array, no markdown code fences, no explanation
 
