@@ -172,6 +172,47 @@ func handleActiveUsers(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, users)
 }
 
+func handleForceLogout(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		CharacterID string `json:"character_id"`
+		AdminCode   string `json:"admin_code"`
+	}
+	if err := readJSON(r, &req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if req.CharacterID == "" || req.AdminCode == "" {
+		writeError(w, http.StatusBadRequest, "character_id and admin_code required")
+		return
+	}
+
+	adminCode, err := GetSetting("admin_code")
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "admin code not configured")
+		return
+	}
+	if req.AdminCode != adminCode {
+		writeError(w, http.StatusForbidden, "invalid admin code")
+		return
+	}
+
+	result, err := db.DB.Exec(
+		"UPDATE users SET session_token = '', token_expires_at = NULL WHERE character_id = ?",
+		req.CharacterID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to force logout")
+		return
+	}
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		writeError(w, http.StatusNotFound, "no active session for that character")
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func generateToken() string {
 	b := make([]byte, 32)
 	rand.Read(b)

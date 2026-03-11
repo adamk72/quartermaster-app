@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAppStore } from '../stores/useAppStore'
 import { api } from '../api/client'
 import { getCharacterIcon } from '../constants/characterIcons'
+import { Footprints } from 'lucide-react'
 import clsx from 'clsx'
 
 interface PublicCharacter {
@@ -20,6 +21,9 @@ export function LoginPage() {
   const [inviteCode, setInviteCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [loadingChars, setLoadingChars] = useState(true)
+  const [kickTarget, setKickTarget] = useState<string | null>(null)
+  const [adminCode, setAdminCode] = useState('')
+  const [kickError, setKickError] = useState('')
 
   useEffect(() => {
     api.get<PublicCharacter[]>('/auth/characters')
@@ -40,6 +44,20 @@ export function LoginPage() {
       // error handled in store
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleKick = async (characterId: string) => {
+    setKickError('')
+    try {
+      await api.post('/auth/force-logout', { character_id: characterId, admin_code: adminCode })
+      setKickTarget(null)
+      setAdminCode('')
+      // Refresh character list
+      const chars = await api.get<PublicCharacter[]>('/auth/characters')
+      setCharacters(chars)
+    } catch {
+      setKickError('Invalid admin code')
     }
   }
 
@@ -89,36 +107,80 @@ export function LoginPage() {
                       const Icon = getCharacterIcon(c.icon)
                       const selected = selectedId === c.id
                       const taken = c.active
+                      const kicking = kickTarget === c.id
                       return (
-                        <button
-                          key={c.id}
-                          type="button"
-                          disabled={taken}
-                          onClick={() => setSelectedId(selected ? null : c.id)}
-                          className={clsx(
-                            'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all duration-150',
-                            taken
-                              ? 'border-border bg-surface/50 opacity-40 cursor-not-allowed'
-                              : selected
-                                ? 'border-gold bg-gold/10 shadow-lg shadow-gold/10'
-                                : 'border-border bg-surface hover:border-border-light hover:bg-card-hover'
-                          )}
-                        >
-                          <div className={clsx(
-                            'w-10 h-10 rounded-full flex items-center justify-center',
-                            selected ? 'bg-gold/20' : 'bg-card'
-                          )}>
-                            <Icon className={clsx('w-5 h-5', selected ? 'text-gold' : 'text-parchment-dim')} />
-                          </div>
-                          <div className="text-center">
-                            <div className={clsx('text-sm font-heading font-bold', selected ? 'text-gold' : 'text-parchment')}>
-                              {c.name}
-                            </div>
-                            {c.player_name && (
-                              <div className="text-xs text-parchment-muted">{c.player_name}</div>
+                        <div key={c.id} className="relative">
+                          <button
+                            type="button"
+                            disabled={taken && !kicking}
+                            onClick={() => taken ? setKickTarget(kicking ? null : c.id) : setSelectedId(selected ? null : c.id)}
+                            className={clsx(
+                              'w-full flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all duration-150',
+                              taken
+                                ? kicking
+                                  ? 'border-wine bg-wine/10'
+                                  : 'border-border bg-surface/50 opacity-40 cursor-pointer'
+                                : selected
+                                  ? 'border-gold bg-gold/10 shadow-lg shadow-gold/10'
+                                  : 'border-border bg-surface hover:border-border-light hover:bg-card-hover'
                             )}
-                          </div>
-                        </button>
+                          >
+                            <div className={clsx(
+                              'w-10 h-10 rounded-full flex items-center justify-center',
+                              selected ? 'bg-gold/20' : 'bg-card'
+                            )}>
+                              <Icon className={clsx('w-5 h-5', selected ? 'text-gold' : 'text-parchment-dim')} />
+                            </div>
+                            <div className="text-center">
+                              <div className={clsx('text-sm font-heading font-bold', selected ? 'text-gold' : 'text-parchment')}>
+                                {c.name}
+                              </div>
+                              {c.player_name && (
+                                <div className="text-xs text-parchment-muted">{c.player_name}</div>
+                              )}
+                            </div>
+                          </button>
+                          {taken && !kicking && (
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setKickTarget(c.id) }}
+                              className="absolute top-1 right-1 p-1 rounded-md text-parchment-muted hover:text-wine hover:bg-wine/10 transition-colors"
+                              title="Force logout"
+                            >
+                              <Footprints className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                          {kicking && (
+                            <div className="mt-2 space-y-1.5">
+                              <input
+                                type="text"
+                                value={adminCode}
+                                onChange={(e) => { setAdminCode(e.target.value); setKickError('') }}
+                                className="input-themed text-sm py-1"
+                                placeholder="Admin code"
+                                autoFocus
+                                onKeyDown={(e) => e.key === 'Enter' && handleKick(c.id)}
+                              />
+                              {kickError && <p className="text-xs text-wine">{kickError}</p>}
+                              <div className="flex gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleKick(c.id)}
+                                  className="flex-1 text-xs py-1 bg-wine text-parchment rounded hover:bg-wine/80 transition-colors"
+                                >
+                                  Kick
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => { setKickTarget(null); setAdminCode(''); setKickError('') }}
+                                  className="flex-1 text-xs py-1 bg-surface text-parchment-muted rounded hover:bg-card-hover transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       )
                     })}
                   </div>

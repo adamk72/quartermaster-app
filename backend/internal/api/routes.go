@@ -6,6 +6,7 @@ func RegisterRoutes(mux *http.ServeMux) {
 	// Public routes
 	mux.HandleFunc("POST /api/v1/auth/login", handleLogin)
 	mux.HandleFunc("GET /api/v1/auth/characters", handlePublicCharacters)
+	mux.HandleFunc("POST /api/v1/auth/force-logout", handleForceLogout)
 
 	// Protected routes - wrap with auth middleware
 	auth := func(h http.HandlerFunc) http.Handler {

@@ -5,7 +5,7 @@ dev:
 	@make -j2 dev-backend dev-frontend
 
 dev-backend:
-	cd backend && go run ./cmd/server
+	cd backend && exec go run ./cmd/server
 
 dev-frontend:
 	cd frontend && pnpm dev

@@ -50,6 +50,15 @@ func main() {
 		log.Fatalf("Failed to seed invite code: %v", err)
 	}
 
+	// Seed admin code from env var (only if not already set in DB)
+	adminCode := os.Getenv("ADMIN_CODE")
+	if adminCode == "" {
+		adminCode = "wizard"
+	}
+	if _, err := db.DB.Exec("INSERT OR IGNORE INTO settings (key, value) VALUES ('admin_code', ?)", adminCode); err != nil {
+		log.Fatalf("Failed to seed admin code: %v", err)
+	}
+
 	mux := http.NewServeMux()
 	api.RegisterRoutes(mux)
 
