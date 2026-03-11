@@ -14,6 +14,7 @@ import { SellModal } from '../components/Inventory/SellModal'
 import { BulkSellModal } from '../components/Inventory/BulkSellModal'
 import { BulkLabelsModal } from '../components/Inventory/BulkLabelsModal'
 import { ImportModal } from '../components/Inventory/ImportModal'
+import { InlineContainerSelect } from '../components/Inventory/InlineContainerSelect'
 
 type SortMode = 'custom' | 'name' | 'labels' | 'date'
 
@@ -75,6 +76,7 @@ export function InventoryPage() {
   const [sortReversed, setSortReversed] = useState(false)
   const [showSortMenu, setShowSortMenu] = useState(false)
   const sortMenuRef = useRef<HTMLDivElement>(null)
+  const [editingContainerId, setEditingContainerId] = useState<number | null>(null)
 
   // Drag state
   const [dragId, setDragId] = useState<number | null>(null)
@@ -484,11 +486,32 @@ export function InventoryPage() {
                       )}
                     </div>
                   </td>
-                  <td className="text-xs text-parchment-dim">{(() => {
-                    const container = containers.find((c) => c.id === item.container_id)
-                    if (!container) return <span className="text-parchment-muted">--</span>
-                    return getContainerDisplayName(container, characters, mounts)
-                  })()}</td>
+                  <td className="relative text-xs text-parchment-dim">
+                    <button
+                      onClick={() => setEditingContainerId(editingContainerId === item.id ? null : item.id)}
+                      className="group cursor-pointer hover:bg-gold/5 -mx-2 -my-1 px-2 py-1 rounded transition-colors inline-flex items-center gap-1"
+                    >
+                      {(() => {
+                        const container = containers.find((c) => c.id === item.container_id)
+                        if (!container) return <span className="text-parchment-muted">--</span>
+                        return <span className="border-b border-dashed border-parchment-muted/30 group-hover:border-gold/50">{getContainerDisplayName(container, characters, mounts)}</span>
+                      })()}
+                      <ChevronDown className="w-3 h-3 text-parchment-muted/30 group-hover:text-gold/50" />
+                    </button>
+                    {editingContainerId === item.id && (
+                      <InlineContainerSelect
+                        itemId={item.id}
+                        itemVersion={item.version}
+                        currentContainerId={item.container_id}
+                        containers={containers}
+                        characters={characters}
+                        mounts={mounts}
+                        getContainerDisplayName={(c) => getContainerDisplayName(c, characters, mounts)}
+                        onSave={updateItem}
+                        onClose={() => setEditingContainerId(null)}
+                      />
+                    )}
+                  </td>
                   <td className="text-xs text-parchment-dim">{item.game_date ? formatGameDate(item.game_date) : <span className="text-parchment-muted">--</span>}</td>
                   <td>
                     <div className="flex gap-1">
