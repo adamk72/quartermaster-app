@@ -5,7 +5,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-const ICON_MAP: Record<string, LucideIcon> = {
+export const ICON_MAP: Record<string, LucideIcon> = {
   Sword,
   Shield,
   Crown,
