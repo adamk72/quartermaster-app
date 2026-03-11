@@ -4,7 +4,7 @@ import { useInventoryStore } from '../stores/useInventoryStore'
 import { Plus, Trash2, Minus, Settings } from 'lucide-react'
 import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
-import { CONSUMABLE_URGENT_DAYS, CONSUMABLE_WARNING_DAYS } from '../constants'
+import { CONSUMABLE_URGENT_DAYS, CONSUMABLE_WARNING_DAYS, todayGameDate } from '../constants'
 import clsx from 'clsx'
 import type { ConsumableType, ConsumableBalance, ConsumableLedgerEntry } from '../types'
 
@@ -16,7 +16,7 @@ export function ConsumablesPage() {
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
   const [showTypeForm, setShowTypeForm] = useState(false)
-  const [addForm, setAddForm] = useState({ consumable_type_id: '', quantity: 0, game_date: '', description: '' })
+  const [addForm, setAddForm] = useState({ consumable_type_id: '', quantity: 0, game_date: todayGameDate(), description: '' })
   const [typeForm, setTypeForm] = useState<Partial<ConsumableType>>({ id: '', name: '', unit: 'units', per_person_per_day: 1 })
   const [ledgerFilter, setLedgerFilter] = useState('')
 
@@ -45,7 +45,7 @@ export function ConsumablesPage() {
     const headCount = characters.length || 6
     if (!(await confirm(`Deduct 1 day of consumables for ${headCount} people?`))) return
     try {
-      await api.post('/consumables/consume-day', { head_count: headCount, game_date: '' })
+      await api.post('/consumables/consume-day', { head_count: headCount, game_date: todayGameDate() })
       fetchData()
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed to consume day')
@@ -60,7 +60,7 @@ export function ConsumablesPage() {
         direction: 'in',
       })
       setShowAdd(false)
-      setAddForm({ consumable_type_id: '', quantity: 0, game_date: '', description: '' })
+      setAddForm({ consumable_type_id: '', quantity: 0, game_date: todayGameDate(), description: '' })
       fetchData()
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed to add stock')

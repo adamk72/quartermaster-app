@@ -4,6 +4,7 @@ import { useInventoryStore } from '../stores/useInventoryStore'
 import { Plus, Trash2 } from 'lucide-react'
 import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
+import { todayGameDate } from '../constants'
 import type { XPEntry, XPTotal } from '../types'
 
 export function XPPage() {
@@ -12,7 +13,7 @@ export function XPPage() {
   const [totals, setTotals] = useState<XPTotal[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState<Partial<XPEntry>>({ xp_amount: 0, game_date: '', description: '' })
+  const [form, setForm] = useState<Partial<XPEntry>>({ xp_amount: 0, game_date: todayGameDate(), description: '' })
   const [xpInput, setXpInput] = useState('')
   const [attendance, setAttendance] = useState<Record<string, boolean>>({})
 
@@ -47,7 +48,7 @@ export function XPPage() {
         })),
       })
       setShowForm(false)
-      setForm({ xp_amount: 0, game_date: '', description: '' })
+      setForm({ xp_amount: 0, game_date: todayGameDate(), description: '' })
       setXpInput('')
       setAttendance({})
       fetchData()

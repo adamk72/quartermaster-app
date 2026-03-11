@@ -5,7 +5,7 @@ import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
 import clsx from 'clsx'
 import type { Quest } from '../types'
-import { QUEST_STATUSES, QUEST_STATUS_COLORS } from '../constants'
+import { QUEST_STATUSES, QUEST_STATUS_COLORS, todayGameDate } from '../constants'
 
 export function QuestsPage() {
   const [quests, setQuests] = useState<Quest[]>([])
@@ -13,7 +13,7 @@ export function QuestsPage() {
   const [filter, setFilter] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editQuest, setEditQuest] = useState<Quest | null>(null)
-  const [form, setForm] = useState<Partial<Quest>>({ title: '', status: 'active', description: '' })
+  const [form, setForm] = useState<Partial<Quest>>({ title: '', status: 'active', description: '', game_date_added: todayGameDate() })
 
   const fetchQuests = async () => {
     try {
@@ -38,7 +38,7 @@ export function QuestsPage() {
       }
       setShowForm(false)
       setEditQuest(null)
-      setForm({ title: '', status: 'active', description: '' })
+      setForm({ title: '', status: 'active', description: '', game_date_added: todayGameDate() })
       fetchQuests()
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed to save quest')
@@ -60,7 +60,7 @@ export function QuestsPage() {
       <div className="flex items-center justify-between mb-6">
         <h2 className="font-heading text-3xl font-bold text-parchment">Quests</h2>
         <button
-          onClick={() => { setEditQuest(null); setForm({ title: '', status: 'active', description: '' }); setShowForm(true) }}
+          onClick={() => { setEditQuest(null); setForm({ title: '', status: 'active', description: '', game_date_added: todayGameDate() }); setShowForm(true) }}
           className="flex items-center gap-2 px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright text-sm transition-colors"
         >
           <Plus className="w-4 h-4" /> Add Quest

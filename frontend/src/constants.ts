@@ -36,6 +36,12 @@ export function hexWithAlpha(hex: string, alpha: string): string {
   return `#${full}${alpha}`
 }
 
+/** Today's date in M/D game date format */
+export function todayGameDate(): string {
+  const d = new Date()
+  return `${d.getMonth() + 1}/${d.getDate()}`
+}
+
 export const QUEST_STATUS_COLORS: Record<string, string> = {
   active: 'bg-sky/15 text-sky',
   completed: 'bg-emerald/15 text-emerald',

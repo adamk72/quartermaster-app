@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MAX_ATTUNEMENT_SLOTS, hexWithAlpha } from '../../constants'
+import { MAX_ATTUNEMENT_SLOTS, hexWithAlpha, todayGameDate } from '../../constants'
 import clsx from 'clsx'
 import type { Item, Container, Label } from '../../types'
 
@@ -20,7 +20,7 @@ export function ItemFormModal({
 }) {
   const isNew = !item?.id
   const [form, setForm] = useState<Partial<Item>>(
-    item ?? { name: '', quantity: 1, game_date: '', category: 'Item', sold: false, label_ids: [] }
+    item ?? { name: '', quantity: 1, game_date: todayGameDate(), category: 'Item', sold: false, label_ids: [] }
   )
   const [selectedLabelIds, setSelectedLabelIds] = useState<Set<string>>(
     new Set(item?.labels?.map((l) => l.id) ?? item?.label_ids ?? [])

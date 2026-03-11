@@ -5,7 +5,7 @@ import { useInventoryStore } from '../stores/useInventoryStore'
 import { confirm } from '../stores/useConfirmStore'
 import { Trash2, Split, ChevronDown } from 'lucide-react'
 import clsx from 'clsx'
-import { DENOM_TO_CP, GEMS_JEWELRY_LABEL_IDS } from '../constants'
+import { DENOM_TO_CP, GEMS_JEWELRY_LABEL_IDS, todayGameDate } from '../constants'
 import type { CoinBalance, CoinLedgerEntry, ItemSummary, Character } from '../types'
 
 const DENOM_ORDER = ['pp', 'gp', 'ep', 'sp', 'cp'] as const
@@ -350,7 +350,7 @@ export function WealthPage() {
 }
 
 function CoinEntryForm({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
-  const [form, setForm] = useState({ game_date: '', description: '', cp: 0, sp: 0, ep: 0, gp: 0, pp: 0, direction: 'in' as 'in' | 'out', notes: '' })
+  const [form, setForm] = useState({ game_date: todayGameDate(), description: '', cp: 0, sp: 0, ep: 0, gp: 0, pp: 0, direction: 'in' as 'in' | 'out', notes: '' })
   const [submitting, setSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -464,7 +464,7 @@ function CoinConvertForm({ onDone }: { onDone: () => void }) {
 
 function LootSplitForm({ characters, balance, onDone, onCancel }: { characters: Character[]; balance: CoinBalance | null; onDone: () => void; onCancel: () => void }) {
   const [mode, setMode] = useState<'all' | 'custom'>('all')
-  const [form, setForm] = useState({ game_date: '', description: '', cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 })
+  const [form, setForm] = useState({ game_date: todayGameDate(), description: '', cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 })
   const [partyReserveStr, setPartyReserveStr] = useState('')
   const partyReserveGP = Number(partyReserveStr) || 0
   const [selected, setSelected] = useState<Set<string>>(new Set(characters.map((c) => c.id)))
