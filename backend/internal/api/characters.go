@@ -113,6 +113,14 @@ func handleUpdateCharacter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if c.Icon == "" {
+		var existingIcon string
+		err := db.DB.QueryRow("SELECT icon FROM characters WHERE id = ?", id).Scan(&existingIcon)
+		if err == nil {
+			c.Icon = existingIcon
+		}
+	}
+
 	c.UpdatedAt = time.Now()
 	diffJSON, n, err := diffUpdate("characters", id, func(tx *sql.Tx) (sql.Result, error) {
 		return tx.Exec(
