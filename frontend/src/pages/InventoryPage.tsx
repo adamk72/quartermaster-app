@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { useLabelStore } from '../stores/useLabelStore'
 import { hexWithAlpha } from '../constants'
-import { Plus, Trash2, DollarSign, Pencil, Sparkles, Undo2, GripVertical, ArrowUpDown, ArrowDownUp, ChevronDown, Search, Package, Upload } from 'lucide-react'
+import { Plus, Trash2, DollarSign, Pencil, Sparkles, Undo2, GripVertical, ArrowUpDown, ArrowDownUp, ChevronDown, Search, Package, Upload, X } from 'lucide-react'
 import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
 import clsx from 'clsx'
@@ -315,11 +315,19 @@ export function InventoryPage() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-parchment-muted" />
           <input
-            className="input-themed !pl-9 !w-[200px]"
+            className="input-themed !pl-9 !pr-8 !w-[300px]"
             placeholder="Search items..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-parchment-muted hover:text-parchment transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
         <select
           className="input-themed !w-auto"
