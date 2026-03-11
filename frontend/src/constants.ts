@@ -27,7 +27,7 @@ export const CHANGELOG_PAGE_SIZE = 50
 export const CONSUMABLE_URGENT_DAYS = 3
 export const CONSUMABLE_WARNING_DAYS = 7
 
-export const TREASURE_LABEL_ID = 'treasure'
+export const GEMS_JEWELRY_LABEL_IDS = new Set(['jewelry', 'gems'])
 
 /** Expand 3-digit hex (#abc) to 6-digit (#aabbcc) so appending alpha chars works correctly */
 export function hexWithAlpha(hex: string, alpha: string): string {

@@ -529,9 +529,9 @@ export function InventoryPage() {
       {identifyTarget && (
         <IdentifyModal
           item={identifyTarget}
-          onConfirm={async (name) => {
+          onConfirm={async (name, magic) => {
             try {
-              await identifyItem(identifyTarget.id, name !== identifyTarget.name ? name : undefined)
+              await identifyItem(identifyTarget.id, name !== identifyTarget.name ? name : undefined, magic)
               setIdentifyTarget(null)
             } catch (e) {
               toast.error(e instanceof Error ? e.message : 'Failed to identify item')

@@ -7,7 +7,7 @@ export function IdentifyModal({
   onClose,
 }: {
   item: Item
-  onConfirm: (name: string) => void
+  onConfirm: (name: string, magic: boolean) => void
   onClose: () => void
 }) {
   const [name, setName] = useState(item.name)
@@ -32,10 +32,16 @@ export function IdentifyModal({
             Cancel
           </button>
           <button
-            onClick={() => onConfirm(name)}
+            onClick={() => onConfirm(name, false)}
+            className="px-4 py-2 text-parchment-dim bg-surface border border-border rounded-lg hover:bg-card-hover transition-colors font-heading font-semibold"
+          >
+            Not Magic
+          </button>
+          <button
+            onClick={() => onConfirm(name, true)}
             className="px-4 py-2 text-parchment bg-arcane rounded-lg hover:bg-arcane-dim transition-colors font-heading font-semibold"
           >
-            Identify
+            Magic
           </button>
         </div>
       </div>

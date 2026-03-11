@@ -460,7 +460,8 @@ func handleIdentifyItem(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
 	var req struct {
-		Name string `json:"name"`
+		Name  string `json:"name"`
+		Magic *bool  `json:"magic"`
 	}
 	if err := readJSON(r, &req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
@@ -473,12 +474,12 @@ func handleIdentifyItem(w http.ResponseWriter, r *http.Request) {
 
 	if req.Name != "" {
 		result, err = db.DB.Exec(
-			"UPDATE items SET identified = 1, name = ?, category = 'Magic', updated_at = ? WHERE id = ?",
+			"UPDATE items SET identified = 1, name = ?, updated_at = ? WHERE id = ?",
 			req.Name, now, id,
 		)
 	} else {
 		result, err = db.DB.Exec(
-			"UPDATE items SET identified = 1, category = 'Magic', updated_at = ? WHERE id = ?",
+			"UPDATE items SET identified = 1, updated_at = ? WHERE id = ?",
 			now, id,
 		)
 	}
@@ -491,12 +492,11 @@ func handleIdentifyItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Add 'magic' label if not already present.
-	// NOTE: This assumes the seeded 'magic' label exists. If it has been deleted
-	// via Settings, this INSERT silently does nothing (OR IGNORE + FK constraint).
-	// A future improvement could prevent deletion of built-in labels.
-	idInt, _ := strconv.Atoi(id)
-	db.DB.Exec("INSERT OR IGNORE INTO item_labels (item_id, label_id) VALUES (?, 'magic')", idInt)
+	isMagic := req.Magic == nil || *req.Magic // default true for backward compat
+	if isMagic {
+		idInt, _ := strconv.Atoi(id)
+		db.DB.Exec("INSERT OR IGNORE INTO item_labels (item_id, label_id) VALUES (?, 'magic')", idInt)
+	}
 
 	user := GetUser(r)
 	if user != nil {

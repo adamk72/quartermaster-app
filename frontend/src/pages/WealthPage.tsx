@@ -5,7 +5,7 @@ import { useInventoryStore } from '../stores/useInventoryStore'
 import { confirm } from '../stores/useConfirmStore'
 import { Trash2, Split } from 'lucide-react'
 import clsx from 'clsx'
-import { DENOM_TO_CP, TREASURE_LABEL_ID } from '../constants'
+import { DENOM_TO_CP, GEMS_JEWELRY_LABEL_IDS } from '../constants'
 import type { CoinBalance, CoinLedgerEntry, ItemSummary, Character } from '../types'
 
 const DENOM_ORDER = ['pp', 'gp', 'ep', 'sp', 'cp'] as const
@@ -38,7 +38,7 @@ export function WealthPage() {
 
   useEffect(() => { fetchAll(); fetchItems({ sold: 'false' }); fetchCharacters() }, [fetchAll])
 
-  const gemsAndJewelry = items.filter((i) => i.labels?.some((l) => l.id === TREASURE_LABEL_ID) && !i.sold)
+  const gemsAndJewelry = items.filter((i) => i.labels?.some((l) => GEMS_JEWELRY_LABEL_IDS.has(l.id)) && !i.sold)
   const gemsTotal = gemsAndJewelry.reduce((sum, i) => sum + (i.unit_value_gp ?? 0) * i.quantity, 0)
 
   const handleDeleteEntry = async (id: number) => {

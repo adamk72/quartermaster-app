@@ -25,9 +25,11 @@ INSERT OR IGNORE INTO labels (id, name, color, sort_order) VALUES
     ('potions',      'Potions',         '#4a9e6e', 2),
     ('weapons-armor','Weapons & Armor', '#5b8fb9', 3),
     ('item',         'Item',            '#7d7568', 4),
-    ('treasure',     'Treasure',        '#c8a951', 5),
+    ('jewelry',      'Jewelry',         '#c8a951', 5),
     ('expense',      'Expense',         '#a63d5b', 6),
-    ('coin',         'Coin',            '#c8a951', 7);
+    ('gems',         'Gems',            '#4fc3f7', 7),
+    ('supplies',     'Supplies',        '#6b8f71', 8),
+    ('quest',        'Quest Item',      '#d4a03c', 9);
 
 -- Migrate existing item categories to item_labels
 INSERT OR IGNORE INTO item_labels (item_id, label_id)
@@ -37,8 +39,7 @@ SELECT id, CASE category
     WHEN 'Potions' THEN 'potions'
     WHEN 'Weapons & Armor' THEN 'weapons-armor'
     WHEN 'Item' THEN 'item'
-    WHEN 'Treasure' THEN 'treasure'
+    WHEN 'Treasure' THEN 'jewelry'
     WHEN 'Expense' THEN 'expense'
-    WHEN 'Coin' THEN 'coin'
 END
 FROM items WHERE category IS NOT NULL AND category != '';
