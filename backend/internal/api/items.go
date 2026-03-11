@@ -424,9 +424,9 @@ func handleDeleteItem(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
-	// Clean up linked coin_ledger entries before deleting the item
+	// Unlink coin_ledger references before deleting the item
 	idInt, _ := strconv.Atoi(id)
-	tx.Exec("DELETE FROM coin_ledger WHERE item_id = ?", idInt)
+	tx.Exec("UPDATE coin_ledger SET item_id = NULL WHERE item_id = ?", idInt)
 
 	result, err := tx.Exec("DELETE FROM items WHERE id = ?", id)
 	if err != nil {
@@ -748,9 +748,9 @@ func handleBulkDeleteItems(w http.ResponseWriter, r *http.Request) {
 	defer tx.Rollback()
 
 	for _, id := range req.ItemIDs {
-		// Clean up linked coin_ledger entries (no ON DELETE CASCADE on FK)
-		if _, err := tx.Exec("DELETE FROM coin_ledger WHERE item_id = ?", id); err != nil {
-			writeError(w, http.StatusInternalServerError, "failed to clean up coin ledger")
+		// Unlink coin_ledger references (no ON DELETE CASCADE on FK)
+		if _, err := tx.Exec("UPDATE coin_ledger SET item_id = NULL WHERE item_id = ?", id); err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to unlink coin ledger")
 			return
 		}
 		if _, err := tx.Exec("DELETE FROM items WHERE id = ?", id); err != nil {
