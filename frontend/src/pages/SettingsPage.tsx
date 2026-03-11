@@ -7,6 +7,23 @@ import { toast } from '../stores/useToastStore'
 import { DEFAULT_LABEL_COLOR, hexWithAlpha } from '../constants'
 import type { Label } from '../types'
 
+function randomHexColor(): string {
+  const h = Math.random() * 360
+  const s = 0.5, l = 0.45
+  const c = (1 - Math.abs(2 * l - 1)) * s
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1))
+  const m = l - c / 2
+  let r = 0, g = 0, b = 0
+  if (h < 60) { r = c; g = x }
+  else if (h < 120) { r = x; g = c }
+  else if (h < 180) { g = c; b = x }
+  else if (h < 240) { g = x; b = c }
+  else if (h < 300) { r = x; b = c }
+  else { r = c; b = x }
+  const toHex = (v: number) => Math.round((v + m) * 255).toString(16).padStart(2, '0')
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+}
+
 function LabelForm({
   label,
   onSave,
@@ -16,9 +33,11 @@ function LabelForm({
   onSave: (data: Partial<Label>) => void
   onCancel: () => void
 }) {
-  const [form, setForm] = useState<Partial<Label>>(
-    label ?? { name: '', color: DEFAULT_LABEL_COLOR, text_color: '#ffffff' }
-  )
+  const [form, setForm] = useState<Partial<Label>>(() => {
+    if (label) return label
+    const color = randomHexColor()
+    return { name: '', color, text_color: color }
+  })
 
   return (
     <form
@@ -70,20 +89,15 @@ function LabelForm({
             />
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-heading font-semibold text-parchment-dim mb-1">Preview</label>
-          <span
-            className="inline-block px-2.5 py-1 rounded text-xs font-medium"
-            style={{ backgroundColor: hexWithAlpha(form.color ?? DEFAULT_LABEL_COLOR, '40'), color: form.text_color ?? '#ffffff' }}
-          >
-            {form.name || 'Label'}
-          </span>
-        </div>
-      </div>
-      <div className="flex gap-2">
         <button type="submit" className="px-4 py-2 bg-gold text-base font-heading font-semibold rounded-lg hover:bg-gold-bright transition-colors text-sm">
           {label?.id ? 'Update' : 'Add'}
         </button>
+        <span
+          className="inline-block px-2.5 py-1 rounded text-xs font-medium self-center"
+          style={{ backgroundColor: hexWithAlpha(form.color ?? DEFAULT_LABEL_COLOR, '40'), color: form.text_color ?? '#ffffff' }}
+        >
+          {form.name || 'Label'}
+        </span>
         {label?.id && (
           <button type="button" onClick={onCancel} className="px-4 py-2 bg-surface text-parchment-dim border border-border rounded-lg hover:bg-card-hover transition-colors text-sm">
             Cancel
@@ -98,6 +112,7 @@ export function SettingsPage() {
   const { labels, loading, fetchLabels, createLabel, updateLabel, deleteLabel } = useLabelStore()
   const { settings, fetchSettings, updateSetting } = useSettingsStore()
   const [editLabel, setEditLabel] = useState<Label | null>(null)
+  const [formKey, setFormKey] = useState(0)
   const [inviteCode, setInviteCode] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -112,6 +127,7 @@ export function SettingsPage() {
         toast.success('Label updated')
       } else {
         await createLabel(data)
+        setFormKey((k) => k + 1)
         toast.success('Label created')
       }
     } catch (e) {
@@ -181,7 +197,7 @@ export function SettingsPage() {
         </div>
 
         <LabelForm
-          key={editLabel?.id ?? 'new'}
+          key={editLabel?.id ?? `new-${formKey}`}
           label={editLabel}
           onSave={handleSave}
           onCancel={() => setEditLabel(null)}
