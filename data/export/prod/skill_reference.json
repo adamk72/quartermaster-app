@@ -1,0 +1,110 @@
+[
+  {
+    "best_combo": "Sachan *",
+    "modifier": "dex",
+    "num_proficient": 1,
+    "skill_name": "Acrobatics"
+  },
+  {
+    "best_combo": "Ayloc help Ruya",
+    "modifier": "wis",
+    "num_proficient": 1,
+    "skill_name": "Animal Handling"
+  },
+  {
+    "best_combo": "Ruya help Ingvild",
+    "modifier": "int",
+    "num_proficient": 2,
+    "skill_name": "Arcana"
+  },
+  {
+    "best_combo": "Hrothgar/Sachan help Andurin *",
+    "modifier": "str",
+    "num_proficient": 3,
+    "skill_name": "Athletics"
+  },
+  {
+    "best_combo": "Sachan help Ayloc",
+    "modifier": "cha",
+    "num_proficient": 1,
+    "skill_name": "Deception"
+  },
+  {
+    "best_combo": "Ayloc help Ingvild",
+    "modifier": "int",
+    "num_proficient": 2,
+    "skill_name": "History"
+  },
+  {
+    "best_combo": "Hrothgar/Sachan help Ruya",
+    "modifier": "wis",
+    "num_proficient": 3,
+    "skill_name": "Insight"
+  },
+  {
+    "best_combo": "Andurin/Hrothgar help Ayloc",
+    "modifier": "cha",
+    "num_proficient": 3,
+    "skill_name": "Intimidation"
+  },
+  {
+    "best_combo": "Sachan help Ingvild",
+    "modifier": "int",
+    "num_proficient": 2,
+    "skill_name": "Investigation"
+  },
+  {
+    "best_combo": "Ruya",
+    "modifier": "wis",
+    "num_proficient": 0,
+    "skill_name": "Medicine"
+  },
+  {
+    "best_combo": "Ayloc help Ingvild/Ruya",
+    "modifier": "int",
+    "num_proficient": 1,
+    "skill_name": "Nature"
+  },
+  {
+    "best_combo": "Andurin/Ayloc help Sachan",
+    "modifier": "wis",
+    "num_proficient": 3,
+    "skill_name": "Perception"
+  },
+  {
+    "best_combo": "Ayloc",
+    "modifier": "cha",
+    "num_proficient": 0,
+    "skill_name": "Performance"
+  },
+  {
+    "best_combo": "Hrothgar/Sachan help Andurin/Ayloc",
+    "modifier": "cha",
+    "num_proficient": 4,
+    "skill_name": "Persuasion"
+  },
+  {
+    "best_combo": "Andurin/Ruya help Ingvild",
+    "modifier": "int",
+    "num_proficient": 3,
+    "skill_name": "Religion"
+  },
+  {
+    "best_combo": "Sachan *",
+    "modifier": "dex",
+    "num_proficient": 1,
+    "skill_name": "Sleight of Hand"
+  },
+  {
+    "best_combo": "Ayloc/Ruya help Sachan *",
+    "modifier": "dex",
+    "num_proficient": 3,
+    "skill_name": "Stealth"
+  },
+  {
+    "best_combo": "Hrothgar/Sachan help Ruya",
+    "modifier": "wis",
+    "num_proficient": 3,
+    "skill_name": "Survival"
+  }
+]

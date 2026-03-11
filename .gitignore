@@ -19,4 +19,5 @@ static/
 backend/server
 quartermaster-app
 backend/data/archives/
+data/archives/
 .superpowers/

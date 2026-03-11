@@ -1,0 +1,38 @@
+[
+  {
+    "character_id": "andurin",
+    "id": 1,
+    "present": 1,
+    "xp_entry_id": 1
+  },
+  {
+    "character_id": "ayloc",
+    "id": 2,
+    "present": 1,
+    "xp_entry_id": 1
+  },
+  {
+    "character_id": "hrothgar",
+    "id": 3,
+    "present": 1,
+    "xp_entry_id": 1
+  },
+  {
+    "character_id": "ingvild",
+    "id": 4,
+    "present": 1,
+    "xp_entry_id": 1
+  },
+  {
+    "character_id": "ruya",
+    "id": 5,
+    "present": 1,
+    "xp_entry_id": 1
+  },
+  {
+    "character_id": "sachan",
+    "id": 6,
+    "present": 1,
+    "xp_entry_id": 1
+  }
+]
