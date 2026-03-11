@@ -10,12 +10,12 @@ Add a clickable icon picker popover on character cards, and fix the backend to p
 
 ## Bug Fix — Backend
 
-In `handleUpdateCharacter`: if `c.Icon` is empty, load the existing icon from the DB before writing the update. This prevents the edit form (which doesn't send icon) from blanking it.
+In `handleUpdateCharacter`: if `c.Icon` is empty, query the existing icon with `SELECT icon FROM characters WHERE id = ?` and set `c.Icon` to that value before writing. This is icon-specific — other fields that legitimately get cleared (like notes) are unaffected.
 
 ## Icon Picker — Frontend
 
 ### Interaction
-- Click the icon on any character card → compact popover appears
+- Click the icon on any character card → compact popover appears below the icon
 - 4-column grid showing all 14 Lucide icons from `ICON_MAP`
 - Current icon: highlighted (gold background)
 - Taken by another character: dimmed, unclickable
@@ -23,14 +23,12 @@ In `handleUpdateCharacter`: if `c.Icon` is empty, load the existing icon from th
 - Click an available icon → calls `updateCharacter` with the new icon → popover closes
 - Click outside or Escape → closes without changes
 
-### New API Endpoint
+### No New API Endpoint
 
-**GET `/api/v1/characters/icons`** — returns which icons are in use:
-```json
-{ "used": { "Crown": "character-id-1", "Snowflake": "character-id-2" } }
+The characters list is already in the Zustand store. Derive used icons on the frontend:
+```ts
+const usedIcons = Object.fromEntries(characters.map(c => [c.icon, c.id]))
 ```
-
-The frontend uses this to determine which icons to dim in the picker.
 
 ### New Component
 
@@ -41,17 +39,23 @@ The frontend uses this to determine which icons to dim in the picker.
 - `onSelect(iconName: string)`: callback when an icon is picked
 - `onClose()`: callback to dismiss
 
-Uses existing `ICON_MAP` from `constants/characterIcons.ts`.
+Requires exporting `ICON_MAP` from `constants/characterIcons.ts` (currently only `getCharacterIcon` is exported).
 
 ### Integration Point
 
 On the character card in `CharactersPage.tsx`, the existing icon render becomes clickable. Clicking it opens the `IconPicker` popover positioned relative to the icon.
 
+## Edge Cases
+
+- **All 14 icons taken**: With 6 party members and 14 icons this won't happen in practice. If it did, all icons would be dimmed except the character's own current icon. The backend `pickUnusedIcon()` already falls back to `iconPool[0]`.
+- **Concurrent selection**: Last-write-wins. Two players could pick the same icon simultaneously. Acceptable risk with 6 players — the second save would succeed and both would have the same icon until one changes. No uniqueness constraint needed.
+- **Changelog**: Icon changes go through the existing `updateCharacter` endpoint, so `LogChange` with diff captures them automatically.
+
 ## What Doesn't Change
 
 - `pickUnusedIcon()` still auto-assigns on create when no icon is provided
 - The character edit form has no icon field — the card popover is the only picker
-- Icons are exclusive: once picked, unavailable to others
+- Icons are exclusive: once picked, unavailable to others (enforced in UI, not DB)
 
 ## Icon Pool (14 icons)
 
