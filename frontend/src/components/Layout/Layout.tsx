@@ -115,7 +115,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
       {/* Main content */}
       <main className="lg:ml-64 min-h-screen">
-        <div className="p-6 max-w-7xl">
+        <div className="p-6 max-w-[1600px]">
           {children}
         </div>
       </main>
