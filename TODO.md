@@ -5,8 +5,10 @@
   Display all currently logged-in users (not just yourself — that's already by the logout button). Replace the free-text username field on the login page with a pick list of known characters so players can't enter random names.
 - [x] Plan deployment for multi-player usage
   Need cheap/free hosting. Willing to self-host on local network. Single-binary Go + SQLite makes this straightforward (Raspberry Pi, NAS, old laptop). Evaluate: Tailscale Funnel / Cloudflare Tunnel for exposing local server, Fly.io/Railway free tiers for cloud, Docker on home server.
-- [ ] Fix character icon assignment #bug #ux
+- [x] Fix character icon assignment #bug #ux
   Icons are being cleared on character update, causing everyone to show the generic User icon. Solution: let players pick from a limited icon pool on their character sheet. Once an icon is picked, it's unavailable to others until freed. Backend already has `pickUnusedIcon()` — extend to a proper selection UI and prevent updates from blanking the field.
+- [ ] Rework weight calculation system #ux #bug
+  "Total weight" is meaningless — replace with per-character carry weight and per-mount carry weight. Character weight = items in their containers, **excluding** Bag of Holding contents. Mount weight = capacity vs actual load. Coin weight should be calculated (FYI/display only, not a carrying concern for characters). Some of this infrastructure exists but needs cleanup and a proper UI pass.
 
 ## 📌 P2 — Normal
 - [ ] Build CSV-based inventory import system
