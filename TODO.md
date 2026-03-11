@@ -3,9 +3,8 @@
 ## ✋ P1 — High Priority
 - [x] Show all active users and use character pick list for login #ux
   Display all currently logged-in users (not just yourself — that's already by the logout button). Replace the free-text username field on the login page with a pick list of known characters so players can't enter random names.
-- [ ] Plan deployment for multi-player usage
+- [x] Plan deployment for multi-player usage
   Need cheap/free hosting. Willing to self-host on local network. Single-binary Go + SQLite makes this straightforward (Raspberry Pi, NAS, old laptop). Evaluate: Tailscale Funnel / Cloudflare Tunnel for exposing local server, Fly.io/Railway free tiers for cloud, Docker on home server.
-- [ ] Create product requirements document (`docs/prd.md`)
 
 ## 📌 P2 — Normal
 - [ ] Build CSV-based inventory import system

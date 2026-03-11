@@ -1,0 +1,64 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read(**)",
+      "Edit(**)",
+      "Write(**)",
+      "Glob(**)",
+      "Grep(**)",
+      "Bash(go build **)",
+      "Bash(go run **)",
+      "Bash(go test **)",
+      "Bash(go mod **)",
+      "Bash(go fmt **)",
+      "Bash(go vet **)",
+      "Bash(npm run **)",
+      "Bash(npm install **)",
+      "Bash(npm ci)",
+      "Bash(npx **)",
+      "Bash(pnpm **)",
+      "Bash(git status **)",
+      "Bash(git diff **)",
+      "Bash(git log **)",
+      "Bash(git add **)",
+      "Bash(git checkout **)",
+      "Bash(git branch **)",
+      "Bash(git stash **)",
+      "Bash(git rm **)",
+      "Bash(git show **)",
+      "Bash(ls)",
+      "Bash(ls **)",
+      "Bash(mkdir **)",
+      "Bash(cat **)",
+      "Bash(head **)",
+      "Bash(tail **)",
+      "Bash(wc **)",
+      "Bash(which **)",
+      "Bash(echo **)",
+      "Bash(find **)",
+      "Bash(cd ** && **)",
+      "Bash(sqlite3 **)",
+      "WebFetch(domain:linear.app)",
+      "WebFetch(domain:github.com)",
+      "mcp__claude_ai_Linear__*",
+      "mcp__github__*"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Bash(rm -rf **)",
+      "Bash(git push --force **)",
+      "Bash(git reset --hard **)"
+    ],
+    "ask": [
+      "Bash(git push **)",
+      "Bash(docker **)",
+      "Bash(gcloud **)",
+      "Bash(git commit **)"
+    ],
+    "additionalDirectives": [
+      "Command contains quoted characters in flag names"
+    ]
+  }
+}
