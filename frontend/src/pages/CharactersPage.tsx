@@ -6,12 +6,19 @@ import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
 import { MAX_ATTUNEMENT_SLOTS } from '../constants'
 import type { Character } from '../types'
+import { IconPicker } from '../components/IconPicker'
 
 export function CharactersPage() {
   const { characters, items, fetchCharacters, fetchItems, createCharacter, updateCharacter, deleteCharacter } = useInventoryStore()
   const [showForm, setShowForm] = useState(false)
   const [editChar, setEditChar] = useState<Character | null>(null)
   const [form, setForm] = useState<Partial<Character>>({ name: '', player_name: '', class: '', level: 1, race: '', ac: 10, hp_max: 0 })
+  const [iconPickerCharId, setIconPickerCharId] = useState<string | null>(null)
+
+  const usedIcons = useMemo(
+    () => Object.fromEntries(characters.filter(c => c.icon).map(c => [c.icon, c.id])),
+    [characters]
+  )
 
   useEffect(() => { fetchCharacters(); fetchItems() }, [fetchCharacters, fetchItems])
 
@@ -138,7 +145,31 @@ export function CharactersPage() {
             <div key={c.id} className="tt-card hover:border-border-light transition-colors">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  {(() => { const Icon = getCharacterIcon(c.icon); return <Icon className="w-5 h-5 text-gold" /> })()}
+                  <div className="relative">
+                    <button
+                      onClick={() => setIconPickerCharId(iconPickerCharId === c.id ? null : c.id)}
+                      className="p-0.5 rounded hover:bg-card-hover transition-colors"
+                      title="Change icon"
+                    >
+                      {(() => { const Icon = getCharacterIcon(c.icon); return <Icon className="w-5 h-5 text-gold" /> })()}
+                    </button>
+                    {iconPickerCharId === c.id && (
+                      <IconPicker
+                        characterId={c.id}
+                        currentIcon={c.icon}
+                        usedIcons={usedIcons}
+                        onSelect={async (iconName) => {
+                          try {
+                            await updateCharacter(c.id, { ...c, icon: iconName })
+                            setIconPickerCharId(null)
+                          } catch (e) {
+                            toast.error(e instanceof Error ? e.message : 'Failed to update icon')
+                          }
+                        }}
+                        onClose={() => setIconPickerCharId(null)}
+                      />
+                    )}
+                  </div>
                   <h3 className="font-heading text-lg font-bold text-parchment">{c.name}</h3>
                 </div>
                 <div className="flex gap-1">
