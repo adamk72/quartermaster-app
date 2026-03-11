@@ -19,7 +19,7 @@ Multi-user webapp replacing Google Sheets + Docs for tracking a weekly D&D campa
 - `uploads/` - Journal images
 
 ## Dev Workflow
-- `make dev` - Runs both Go backend (`:8080`) + Vite dev server (`:5173`, proxies `/api` -> `:8080`)
+- `make dev` - Runs both Go backend (`:9090`) + Vite dev server (`:1337`, proxies `/api` -> `:9090`)
 - `make seed` - Imports CSV archive data into SQLite
 - `make export` / `make restore` - JSON dump/restore
 - `make build` - Production build

@@ -117,7 +117,7 @@ Every create, update, and delete across the app is logged with: who, what table,
 - Optimistic locking on items and containers (version column, 409 on conflict)
 
 ### Deployment Model (Current)
-- Development: `make dev` runs Go backend on `:8080` + Vite dev server on `:5173` (proxies API)
+- Development: `make dev` runs Go backend on `:9090` + Vite dev server on `:1337` (proxies API)
 - Production: `make build` produces a single binary serving both API and SPA
 - Data: single `campaign.db` SQLite file + `uploads/` directory for images
 - Backup: `make export` dumps all tables to JSON; `make restore` reimports

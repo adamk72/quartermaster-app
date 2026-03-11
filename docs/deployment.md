@@ -119,7 +119,7 @@ STATIC_DIR=cmd/server/static ../quartermaster-app
 |----------------|----------------------------------------------|
 | Remote browser | `https://quartermasterapp.duckdns.org`       |
 | Local browser  | `http://localhost:9090`                       |
-| Local dev mode | `http://localhost:5173` (via `make dev`)      |
+| Local dev mode | `http://localhost:1337` (via `make dev`)      |
 
 **Note:** You cannot access the DuckDNS URL from the same network (most routers don't support NAT hairpinning). Use `localhost:9090` locally.
 

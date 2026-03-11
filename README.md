@@ -43,7 +43,7 @@ make dev
 ## Running
 
 ```bash
-make dev        # backend on :8080, frontend dev server on :5173
+make dev        # backend on :9090, frontend dev server on :1337
 ```
 
 Both backend and frontend logs are interleaved in the same terminal. To see them separately, run each in its own terminal:
@@ -53,7 +53,7 @@ make dev-backend   # Terminal 1 — Go backend logs
 make dev-frontend  # Terminal 2 — Vite output
 ```
 
-Open [http://localhost:5173](http://localhost:5173).
+Open [http://localhost:1337](http://localhost:1337).
 
 ## Other Commands
 
