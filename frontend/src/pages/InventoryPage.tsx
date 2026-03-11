@@ -15,6 +15,7 @@ import { BulkSellModal } from '../components/Inventory/BulkSellModal'
 import { BulkLabelsModal } from '../components/Inventory/BulkLabelsModal'
 import { ImportModal } from '../components/Inventory/ImportModal'
 import { InlineContainerSelect } from '../components/Inventory/InlineContainerSelect'
+import { InlineLabelSelect } from '../components/Inventory/InlineLabelSelect'
 
 type SortMode = 'custom' | 'name' | 'labels' | 'date'
 
@@ -77,6 +78,7 @@ export function InventoryPage() {
   const [showSortMenu, setShowSortMenu] = useState(false)
   const sortMenuRef = useRef<HTMLDivElement>(null)
   const [editingContainerId, setEditingContainerId] = useState<number | null>(null)
+  const [editingLabelsId, setEditingLabelsId] = useState<number | null>(null)
 
   // Drag state
   const [dragId, setDragId] = useState<number | null>(null)
@@ -470,25 +472,46 @@ export function InventoryPage() {
                   </td>
                   <td>{item.quantity}</td>
                   <td className="text-gold text-sm">{item.unit_value_gp != null ? `${item.unit_value_gp} gp` : <span className="text-parchment-muted">--</span>}</td>
-                  <td>
-                    <div className="flex flex-wrap gap-1">
-                      {item.labels?.map((l) => (
-                        <span
-                          key={l.id}
-                          className="px-2 py-0.5 rounded text-xs font-medium"
-                          style={{ backgroundColor: hexWithAlpha(l.color, '40'), color: l.text_color || '#ffffff' }}
-                        >
-                          {l.name}
-                        </span>
-                      ))}
-                      {(!item.labels || item.labels.length === 0) && (
-                        <span className="text-parchment-muted text-xs">--</span>
-                      )}
-                    </div>
+                  <td className="relative">
+                    <button
+                      onClick={() => {
+                        setEditingContainerId(null)
+                        setEditingLabelsId(editingLabelsId === item.id ? null : item.id)
+                      }}
+                      className="cursor-pointer hover:bg-gold/5 -mx-2 -my-1 px-2 py-1 rounded transition-colors"
+                    >
+                      <div className="flex flex-wrap gap-1">
+                        {item.labels?.map((l) => (
+                          <span
+                            key={l.id}
+                            className="px-2 py-0.5 rounded text-xs font-medium"
+                            style={{ backgroundColor: hexWithAlpha(l.color, '40'), color: l.text_color || '#ffffff' }}
+                          >
+                            {l.name}
+                          </span>
+                        ))}
+                        {(!item.labels || item.labels.length === 0) && (
+                          <span className="text-parchment-muted text-xs">--</span>
+                        )}
+                      </div>
+                    </button>
+                    {editingLabelsId === item.id && (
+                      <InlineLabelSelect
+                        itemId={item.id}
+                        itemVersion={item.version}
+                        currentLabels={item.labels ?? []}
+                        allLabels={labels}
+                        onSave={updateItem}
+                        onClose={() => setEditingLabelsId(null)}
+                      />
+                    )}
                   </td>
                   <td className="relative text-xs text-parchment-dim">
                     <button
-                      onClick={() => setEditingContainerId(editingContainerId === item.id ? null : item.id)}
+                      onClick={() => {
+                        setEditingLabelsId(null)
+                        setEditingContainerId(editingContainerId === item.id ? null : item.id)
+                      }}
                       className="group cursor-pointer hover:bg-gold/5 -mx-2 -my-1 px-2 py-1 rounded transition-colors inline-flex items-center gap-1"
                     >
                       {(() => {
