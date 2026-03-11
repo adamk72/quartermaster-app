@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/adamk72/quartermaster-app/internal/db"
 )
@@ -17,7 +18,7 @@ func main() {
 	if dbPath == "" {
 		dbPath = "data/campaign.db"
 	}
-	os.MkdirAll("data", 0755)
+	os.MkdirAll(filepath.Dir(dbPath), 0755)
 
 	migrationsDir := os.Getenv("MIGRATIONS_DIR")
 	if migrationsDir == "" {
@@ -29,7 +30,10 @@ func main() {
 	}
 	defer db.Close()
 
-	exportDir := "data/export"
+	exportDir := os.Getenv("EXPORT_DIR")
+	if exportDir == "" {
+		exportDir = "data/export"
+	}
 	os.MkdirAll(exportDir, 0755)
 
 	if *restore {

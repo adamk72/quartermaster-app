@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/adamk72/quartermaster-app/internal/api"
 	"github.com/adamk72/quartermaster-app/internal/db"
@@ -29,7 +30,7 @@ func main() {
 	}
 	api.UploadsDir = uploadsDir
 	os.MkdirAll(uploadsDir, 0755)
-	os.MkdirAll("data", 0755)
+	os.MkdirAll(filepath.Dir(dbPath), 0755)
 
 	migrationsDir := os.Getenv("MIGRATIONS_DIR")
 	if migrationsDir == "" {

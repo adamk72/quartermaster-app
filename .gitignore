@@ -3,6 +3,7 @@ dist/
 data/campaign.db
 data/campaign.db-shm
 data/campaign.db-wal
+data/prod/
 backend/data/campaign.db
 backend/data/campaign.db-shm
 backend/data/campaign.db-wal
@@ -14,6 +15,7 @@ uploads/*
 .DS_Store
 frontend/node_modules/
 backend/cmd/server/static/
+static/
 backend/server
 quartermaster-app
 backend/data/archives/

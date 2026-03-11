@@ -1,0 +1,16 @@
+[
+  {
+    "id": "rations",
+    "name": "Rations",
+    "per_person_per_day": 1,
+    "sort_order": 1,
+    "unit": "days"
+  },
+  {
+    "id": "water",
+    "name": "Water",
+    "per_person_per_day": 1,
+    "sort_order": 2,
+    "unit": "gallons"
+  }
+]

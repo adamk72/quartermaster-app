@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/adamk72/quartermaster-app/internal/db"
@@ -15,7 +16,7 @@ func main() {
 	if dbPath == "" {
 		dbPath = "data/campaign.db"
 	}
-	os.MkdirAll("data", 0755)
+	os.MkdirAll(filepath.Dir(dbPath), 0755)
 
 	migrationsDir := os.Getenv("MIGRATIONS_DIR")
 	if migrationsDir == "" {

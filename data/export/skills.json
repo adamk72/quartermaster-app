@@ -1,0 +1,866 @@
+[
+  {
+    "bonus": 1,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 1,
+    "proficient": 0,
+    "skill_name": "Acrobatics"
+  },
+  {
+    "bonus": 1,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 2,
+    "proficient": 0,
+    "skill_name": "Animal Handling"
+  },
+  {
+    "bonus": 1,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 3,
+    "proficient": 0,
+    "skill_name": "Arcana"
+  },
+  {
+    "bonus": 8,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 4,
+    "proficient": 1,
+    "skill_name": "Athletics"
+  },
+  {
+    "bonus": 4,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 5,
+    "proficient": 0,
+    "skill_name": "Deception"
+  },
+  {
+    "bonus": 1,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 6,
+    "proficient": 0,
+    "skill_name": "History"
+  },
+  {
+    "bonus": 1,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 7,
+    "proficient": 0,
+    "skill_name": "Insight"
+  },
+  {
+    "bonus": 7,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 8,
+    "proficient": 1,
+    "skill_name": "Intimidation"
+  },
+  {
+    "bonus": 1,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 9,
+    "proficient": 0,
+    "skill_name": "Investigation"
+  },
+  {
+    "bonus": 1,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 10,
+    "proficient": 0,
+    "skill_name": "Medicine"
+  },
+  {
+    "bonus": 1,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 11,
+    "proficient": 0,
+    "skill_name": "Nature"
+  },
+  {
+    "bonus": 4,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 12,
+    "proficient": 1,
+    "skill_name": "Perception"
+  },
+  {
+    "bonus": 4,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 13,
+    "proficient": 0,
+    "skill_name": "Performance"
+  },
+  {
+    "bonus": 7,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 14,
+    "proficient": 1,
+    "skill_name": "Persuasion"
+  },
+  {
+    "bonus": 4,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 15,
+    "proficient": 1,
+    "skill_name": "Religion"
+  },
+  {
+    "bonus": 1,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 16,
+    "proficient": 0,
+    "skill_name": "Sleight of Hand"
+  },
+  {
+    "bonus": 1,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 17,
+    "proficient": 0,
+    "skill_name": "Stealth"
+  },
+  {
+    "bonus": 1,
+    "character_id": "andurin",
+    "expertise": 0,
+    "id": 18,
+    "proficient": 0,
+    "skill_name": "Survival"
+  },
+  {
+    "bonus": 3,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 19,
+    "proficient": 0,
+    "skill_name": "Acrobatics"
+  },
+  {
+    "bonus": 4,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 20,
+    "proficient": 1,
+    "skill_name": "Animal Handling"
+  },
+  {
+    "bonus": 2,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 21,
+    "proficient": 0,
+    "skill_name": "Arcana"
+  },
+  {
+    "bonus": 1,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 22,
+    "proficient": 0,
+    "skill_name": "Athletics"
+  },
+  {
+    "bonus": 5,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 23,
+    "proficient": 1,
+    "skill_name": "Deception"
+  },
+  {
+    "bonus": 5,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 24,
+    "proficient": 1,
+    "skill_name": "History"
+  },
+  {
+    "bonus": 1,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 25,
+    "proficient": 0,
+    "skill_name": "Insight"
+  },
+  {
+    "bonus": 8,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 26,
+    "proficient": 1,
+    "skill_name": "Intimidation"
+  },
+  {
+    "bonus": 2,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 27,
+    "proficient": 0,
+    "skill_name": "Investigation"
+  },
+  {
+    "bonus": 1,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 28,
+    "proficient": 0,
+    "skill_name": "Medicine"
+  },
+  {
+    "bonus": 5,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 29,
+    "proficient": 1,
+    "skill_name": "Nature"
+  },
+  {
+    "bonus": 4,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 30,
+    "proficient": 1,
+    "skill_name": "Perception"
+  },
+  {
+    "bonus": 5,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 31,
+    "proficient": 1,
+    "skill_name": "Performance"
+  },
+  {
+    "bonus": 8,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 32,
+    "proficient": 1,
+    "skill_name": "Persuasion"
+  },
+  {
+    "bonus": 2,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 33,
+    "proficient": 0,
+    "skill_name": "Religion"
+  },
+  {
+    "bonus": 3,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 34,
+    "proficient": 0,
+    "skill_name": "Sleight of Hand"
+  },
+  {
+    "bonus": 6,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 35,
+    "proficient": 1,
+    "skill_name": "Stealth"
+  },
+  {
+    "bonus": 1,
+    "character_id": "ayloc",
+    "expertise": 0,
+    "id": 36,
+    "proficient": 0,
+    "skill_name": "Survival"
+  },
+  {
+    "bonus": 0,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 37,
+    "proficient": 0,
+    "skill_name": "Acrobatics"
+  },
+  {
+    "bonus": 2,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 38,
+    "proficient": 0,
+    "skill_name": "Animal Handling"
+  },
+  {
+    "bonus": 0,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 39,
+    "proficient": 0,
+    "skill_name": "Arcana"
+  },
+  {
+    "bonus": 7,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 40,
+    "proficient": 1,
+    "skill_name": "Athletics"
+  },
+  {
+    "bonus": 1,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 41,
+    "proficient": 0,
+    "skill_name": "Deception"
+  },
+  {
+    "bonus": 0,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 42,
+    "proficient": 0,
+    "skill_name": "History"
+  },
+  {
+    "bonus": 5,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 43,
+    "proficient": 1,
+    "skill_name": "Insight"
+  },
+  {
+    "bonus": 4,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 44,
+    "proficient": 1,
+    "skill_name": "Intimidation"
+  },
+  {
+    "bonus": 0,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 45,
+    "proficient": 0,
+    "skill_name": "Investigation"
+  },
+  {
+    "bonus": 2,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 46,
+    "proficient": 0,
+    "skill_name": "Medicine"
+  },
+  {
+    "bonus": 0,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 47,
+    "proficient": 0,
+    "skill_name": "Nature"
+  },
+  {
+    "bonus": 2,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 48,
+    "proficient": 0,
+    "skill_name": "Perception"
+  },
+  {
+    "bonus": 1,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 49,
+    "proficient": 0,
+    "skill_name": "Performance"
+  },
+  {
+    "bonus": 4,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 50,
+    "proficient": 1,
+    "skill_name": "Persuasion"
+  },
+  {
+    "bonus": 0,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 51,
+    "proficient": 0,
+    "skill_name": "Religion"
+  },
+  {
+    "bonus": 0,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 52,
+    "proficient": 0,
+    "skill_name": "Sleight of Hand"
+  },
+  {
+    "bonus": 0,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 53,
+    "proficient": 0,
+    "skill_name": "Stealth"
+  },
+  {
+    "bonus": 5,
+    "character_id": "hrothgar",
+    "expertise": 0,
+    "id": 54,
+    "proficient": 1,
+    "skill_name": "Survival"
+  },
+  {
+    "bonus": 2,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 55,
+    "proficient": 0,
+    "skill_name": "Acrobatics"
+  },
+  {
+    "bonus": -1,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 56,
+    "proficient": 0,
+    "skill_name": "Animal Handling"
+  },
+  {
+    "bonus": 11,
+    "character_id": "ingvild",
+    "expertise": 1,
+    "id": 57,
+    "proficient": 1,
+    "skill_name": "Arcana"
+  },
+  {
+    "bonus": -1,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 58,
+    "proficient": 0,
+    "skill_name": "Athletics"
+  },
+  {
+    "bonus": 1,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 59,
+    "proficient": 0,
+    "skill_name": "Deception"
+  },
+  {
+    "bonus": 8,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 60,
+    "proficient": 1,
+    "skill_name": "History"
+  },
+  {
+    "bonus": -1,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 61,
+    "proficient": 0,
+    "skill_name": "Insight"
+  },
+  {
+    "bonus": 1,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 62,
+    "proficient": 0,
+    "skill_name": "Intimidation"
+  },
+  {
+    "bonus": 11,
+    "character_id": "ingvild",
+    "expertise": 1,
+    "id": 63,
+    "proficient": 1,
+    "skill_name": "Investigation"
+  },
+  {
+    "bonus": -1,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 64,
+    "proficient": 0,
+    "skill_name": "Medicine"
+  },
+  {
+    "bonus": 5,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 65,
+    "proficient": 1,
+    "skill_name": "Nature"
+  },
+  {
+    "bonus": -1,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 66,
+    "proficient": 0,
+    "skill_name": "Perception"
+  },
+  {
+    "bonus": 1,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 67,
+    "proficient": 0,
+    "skill_name": "Performance"
+  },
+  {
+    "bonus": 1,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 68,
+    "proficient": 0,
+    "skill_name": "Persuasion"
+  },
+  {
+    "bonus": 8,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 69,
+    "proficient": 1,
+    "skill_name": "Religion"
+  },
+  {
+    "bonus": 2,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 70,
+    "proficient": 0,
+    "skill_name": "Sleight of Hand"
+  },
+  {
+    "bonus": 2,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 71,
+    "proficient": 0,
+    "skill_name": "Stealth"
+  },
+  {
+    "bonus": -1,
+    "character_id": "ingvild",
+    "expertise": 0,
+    "id": 72,
+    "proficient": 0,
+    "skill_name": "Survival"
+  },
+  {
+    "bonus": 2,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 73,
+    "proficient": 0,
+    "skill_name": "Acrobatics"
+  },
+  {
+    "bonus": 4,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 74,
+    "proficient": 1,
+    "skill_name": "Animal Handling"
+  },
+  {
+    "bonus": 8,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 75,
+    "proficient": 1,
+    "skill_name": "Arcana"
+  },
+  {
+    "bonus": -1,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 76,
+    "proficient": 0,
+    "skill_name": "Athletics"
+  },
+  {
+    "bonus": -1,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 77,
+    "proficient": 0,
+    "skill_name": "Deception"
+  },
+  {
+    "bonus": 1,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 78,
+    "proficient": 0,
+    "skill_name": "History"
+  },
+  {
+    "bonus": 7,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 79,
+    "proficient": 1,
+    "skill_name": "Insight"
+  },
+  {
+    "bonus": -1,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 80,
+    "proficient": 0,
+    "skill_name": "Intimidation"
+  },
+  {
+    "bonus": 1,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 81,
+    "proficient": 0,
+    "skill_name": "Investigation"
+  },
+  {
+    "bonus": 4,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 82,
+    "proficient": 1,
+    "skill_name": "Medicine"
+  },
+  {
+    "bonus": 5,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 83,
+    "proficient": 1,
+    "skill_name": "Nature"
+  },
+  {
+    "bonus": 4,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 84,
+    "proficient": 1,
+    "skill_name": "Perception"
+  },
+  {
+    "bonus": -1,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 85,
+    "proficient": 0,
+    "skill_name": "Performance"
+  },
+  {
+    "bonus": -1,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 86,
+    "proficient": 0,
+    "skill_name": "Persuasion"
+  },
+  {
+    "bonus": 4,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 87,
+    "proficient": 1,
+    "skill_name": "Religion"
+  },
+  {
+    "bonus": 2,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 88,
+    "proficient": 0,
+    "skill_name": "Sleight of Hand"
+  },
+  {
+    "bonus": 5,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 89,
+    "proficient": 1,
+    "skill_name": "Stealth"
+  },
+  {
+    "bonus": 7,
+    "character_id": "ruya",
+    "expertise": 0,
+    "id": 90,
+    "proficient": 1,
+    "skill_name": "Survival"
+  },
+  {
+    "bonus": 7,
+    "character_id": "sachan",
+    "expertise": 0,
+    "id": 91,
+    "proficient": 1,
+    "skill_name": "Acrobatics"
+  },
+  {
+    "bonus": -1,
+    "character_id": "sachan",
+    "expertise": 0,
+    "id": 92,
+    "proficient": 0,
+    "skill_name": "Animal Handling"
+  },
+  {
+    "bonus": 4,
+    "character_id": "sachan",
+    "expertise": 0,
+    "id": 93,
+    "proficient": 0,
+    "skill_name": "Arcana"
+  },
+  {
+    "bonus": 4,
+    "character_id": "sachan",
+    "expertise": 0,
+    "id": 94,
+    "proficient": 1,
+    "skill_name": "Athletics"
+  },
+  {
+    "bonus": 3,
+    "character_id": "sachan",
+    "expertise": 0,
+    "id": 95,
+    "proficient": 0,
+    "skill_name": "Deception"
+  },
+  {
+    "bonus": 4,
+    "character_id": "sachan",
+    "expertise": 0,
+    "id": 96,
+    "proficient": 0,
+    "skill_name": "History"
+  },
+  {
+    "bonus": 2,
+    "character_id": "sachan",
+    "expertise": 0,
+    "id": 97,
+    "proficient": 0,
+    "skill_name": "Insight"
+  },
+  {
+    "bonus": 0,
+    "character_id": "sachan",
+    "expertise": 0,
+    "id": 98,
+    "proficient": 0,
+    "skill_name": "Intimidation"
+  },
+  {
+    "bonus": 10,
+    "character_id": "sachan",
+    "expertise": 1,
+    "id": 99,
+    "proficient": 1,
+    "skill_name": "Investigation"
+  },
+  {
+    "bonus": -1,
+    "character_id": "sachan",
+    "expertise": 0,
+    "id": 100,
+    "proficient": 0,
+    "skill_name": "Medicine"
+  },
+  {
+    "bonus": 4,
+    "character_id": "sachan",
+    "expertise": 0,
+    "id": 101,
+    "proficient": 0,
+    "skill_name": "Nature"
+  },
+  {
+    "bonus": 5,
+    "character_id": "sachan",
+    "expertise": 0,
+    "id": 102,
+    "proficient": 1,
+    "skill_name": "Perception"
+  },
+  {
+    "bonus": 0,
+    "character_id": "sachan",
+    "expertise": 0,
+    "id": 103,
+    "proficient": 0,
+    "skill_name": "Performance"
+  },
+  {
+    "bonus": 3,
+    "character_id": "sachan",
+    "expertise": 0,
+    "id": 104,
+    "proficient": 1,
+    "skill_name": "Persuasion"
+  },
+  {
+    "bonus": 4,
+    "character_id": "sachan",
+    "expertise": 0,
+    "id": 105,
+    "proficient": 1,
+    "skill_name": "Religion"
+  },
+  {
+    "bonus": 15,
+    "character_id": "sachan",
+    "expertise": 1,
+    "id": 106,
+    "proficient": 1,
+    "skill_name": "Sleight of Hand"
+  },
+  {
+    "bonus": 10,
+    "character_id": "sachan",
+    "expertise": 1,
+    "id": 107,
+    "proficient": 1,
+    "skill_name": "Stealth"
+  },
+  {
+    "bonus": 2,
+    "character_id": "sachan",
+    "expertise": 0,
+    "id": 108,
+    "proficient": 0,
+    "skill_name": "Survival"
+  }
+]
