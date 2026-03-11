@@ -56,4 +56,3 @@ All endpoints under `/api/v1/`. Auth via `Authorization: Bearer <token>`.
 - Party members: Andurin, Ayloc, Rüya, Sachan, Ingvild, Hrothgar
 - Currency: 1pp = 10gp, 1ep = 0.5gp, 1sp = 0.1gp, 1cp = 0.01gp
 - TBI = "to be identified" (unidentified magic items)
-- Game dates: M/D for 2025, M/D/YY for 2026

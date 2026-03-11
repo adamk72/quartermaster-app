@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useInventoryStore } from '../stores/useInventoryStore'
 import { useLabelStore } from '../stores/useLabelStore'
 import { hexWithAlpha } from '../constants'
-import { Plus, Trash2, DollarSign, Pencil, Sparkles, Undo2, GripVertical, ArrowUpDown, ChevronDown, Search, Package } from 'lucide-react'
+import { Plus, Trash2, DollarSign, Pencil, Sparkles, Undo2, GripVertical, ArrowUpDown, ArrowDownUp, ChevronDown, Search, Package } from 'lucide-react'
 import { confirm } from '../stores/useConfirmStore'
 import { toast } from '../stores/useToastStore'
 import clsx from 'clsx'
@@ -13,6 +13,31 @@ import { ContainerManagerModal } from '../components/Inventory/ContainerManagerM
 import { SellModal } from '../components/Inventory/SellModal'
 
 type SortMode = 'custom' | 'name' | 'labels' | 'date'
+
+/** Parse "M/D" (assumes 2025) or "M/D/YY" into a sortable number (YYYYMMDD). Returns 0 for unparseable. */
+function parseGameDate(d: string): { month: number; day: number; year: number } | null {
+  if (!d) return null
+  const parts = d.split('/')
+  if (parts.length < 2) return null
+  const month = parseInt(parts[0]!, 10)
+  const day = parseInt(parts[1]!, 10)
+  const year = parts.length >= 3 ? 2000 + parseInt(parts[2]!, 10) : 2025
+  if (isNaN(month) || isNaN(day) || isNaN(year)) return null
+  return { month, day, year }
+}
+
+function gameDateSortKey(d: string): number {
+  const parsed = parseGameDate(d)
+  if (!parsed) return 0
+  return parsed.year * 10000 + parsed.month * 100 + parsed.day
+}
+
+function formatGameDate(d: string): string {
+  const parsed = parseGameDate(d)
+  if (!parsed) return d
+  const yy = String(parsed.year).slice(-2)
+  return `${parsed.month}/${parsed.day}/${yy}`
+}
 
 function getContainerDisplayName(container: Container, characters: { id: string; name: string }[], mounts: Mount[]): string {
   const charOwner = container.character_id ? characters.find((ch) => ch.id === container.character_id) : null
@@ -43,6 +68,7 @@ export function InventoryPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showSold, setShowSold] = useState(false)
   const [sortMode, setSortMode] = useState<SortMode>('custom')
+  const [sortReversed, setSortReversed] = useState(false)
   const [showSortMenu, setShowSortMenu] = useState(false)
   const sortMenuRef = useRef<HTMLDivElement>(null)
 
@@ -99,11 +125,12 @@ export function InventoryPage() {
         })
         break
       case 'date':
-        sorted.sort((a, b) => (b.game_date || '').localeCompare(a.game_date || '') || a.name.localeCompare(b.name))
+        sorted.sort((a, b) => gameDateSortKey(b.game_date) - gameDateSortKey(a.game_date) || a.name.localeCompare(b.name))
         break
     }
+    if (sortReversed) sorted.reverse()
     return sorted
-  }, [items, containers, sortMode, searchQuery])
+  }, [items, containers, sortMode, sortReversed, searchQuery])
 
   const handleDragStart = useCallback((id: number) => {
     setDragId(id)
@@ -273,7 +300,20 @@ export function InventoryPage() {
           Show sold
         </label>
 
-        <div className="relative ml-auto" ref={sortMenuRef}>
+        <div className="flex items-center gap-1 ml-auto">
+          {sortMode !== 'custom' && (
+            <button
+              onClick={() => setSortReversed((r) => !r)}
+              className={clsx(
+                'p-2 border border-border rounded-lg text-sm transition-colors',
+                sortReversed ? 'text-gold bg-gold/10 border-gold/30' : 'text-parchment-dim hover:bg-surface hover:text-parchment'
+              )}
+              title={sortReversed ? 'Reversed' : 'Reverse sort'}
+            >
+              <ArrowDownUp className="w-4 h-4" />
+            </button>
+          )}
+        <div className="relative" ref={sortMenuRef}>
           <button
             onClick={() => setShowSortMenu(!showSortMenu)}
             className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg text-sm text-parchment-dim hover:bg-surface hover:text-parchment transition-colors"
@@ -299,6 +339,7 @@ export function InventoryPage() {
               ))}
             </div>
           )}
+        </div>
         </div>
       </div>
 
@@ -417,7 +458,7 @@ export function InventoryPage() {
                     if (!container) return <span className="text-parchment-muted">--</span>
                     return getContainerDisplayName(container, characters, mounts)
                   })()}</td>
-                  <td className="text-parchment-dim">{item.game_date || <span className="text-parchment-muted">--</span>}</td>
+                  <td className="text-xs text-parchment-dim">{item.game_date ? formatGameDate(item.game_date) : <span className="text-parchment-muted">--</span>}</td>
                   <td>
                     <div className="flex gap-1">
                       <button
