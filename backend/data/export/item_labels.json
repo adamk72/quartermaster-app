@@ -1,0 +1,326 @@
+[
+  {
+    "item_id": 93,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 94,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 109,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 113,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 116,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 118,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 119,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 121,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 123,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 124,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 127,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 128,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 175,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 139,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 107,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 108,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 110,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 114,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 115,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 120,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 122,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 125,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 126,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 131,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 134,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 135,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 95,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 96,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 97,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 98,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 99,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 101,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 102,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 103,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 104,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 105,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 112,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 133,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 137,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 157,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 163,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 165,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 166,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 177,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 178,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 179,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 180,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 185,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 106,
+    "label_id": "potions"
+  },
+  {
+    "item_id": 129,
+    "label_id": "potions"
+  },
+  {
+    "item_id": 130,
+    "label_id": "potions"
+  },
+  {
+    "item_id": 176,
+    "label_id": "potions"
+  },
+  {
+    "item_id": 158,
+    "label_id": "scrolls"
+  },
+  {
+    "item_id": 159,
+    "label_id": "scrolls"
+  },
+  {
+    "item_id": 160,
+    "label_id": "scrolls"
+  },
+  {
+    "item_id": 181,
+    "label_id": "scrolls"
+  },
+  {
+    "item_id": 95,
+    "label_id": "weapons-armor"
+  },
+  {
+    "item_id": 96,
+    "label_id": "weapons-armor"
+  },
+  {
+    "item_id": 97,
+    "label_id": "weapons-armor"
+  },
+  {
+    "item_id": 103,
+    "label_id": "weapons-armor"
+  },
+  {
+    "item_id": 138,
+    "label_id": "weapons-armor"
+  },
+  {
+    "item_id": 150,
+    "label_id": "weapons-armor"
+  },
+  {
+    "item_id": 151,
+    "label_id": "weapons-armor"
+  },
+  {
+    "item_id": 152,
+    "label_id": "weapons-armor"
+  },
+  {
+    "item_id": 153,
+    "label_id": "weapons-armor"
+  },
+  {
+    "item_id": 154,
+    "label_id": "weapons-armor"
+  },
+  {
+    "item_id": 155,
+    "label_id": "weapons-armor"
+  },
+  {
+    "item_id": 156,
+    "label_id": "weapons-armor"
+  },
+  {
+    "item_id": 174,
+    "label_id": "weapons-armor"
+  },
+  {
+    "item_id": 136,
+    "label_id": "supplies"
+  },
+  {
+    "item_id": 141,
+    "label_id": "supplies"
+  },
+  {
+    "item_id": 142,
+    "label_id": "supplies"
+  },
+  {
+    "item_id": 143,
+    "label_id": "supplies"
+  },
+  {
+    "item_id": 144,
+    "label_id": "supplies"
+  },
+  {
+    "item_id": 145,
+    "label_id": "supplies"
+  },
+  {
+    "item_id": 146,
+    "label_id": "supplies"
+  },
+  {
+    "item_id": 147,
+    "label_id": "supplies"
+  },
+  {
+    "item_id": 148,
+    "label_id": "supplies"
+  },
+  {
+    "item_id": 149,
+    "label_id": "supplies"
+  },
+  {
+    "item_id": 183,
+    "label_id": "supplies"
+  },
+  {
+    "item_id": 184,
+    "label_id": "supplies"
+  }
+]

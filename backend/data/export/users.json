@@ -9,12 +9,21 @@
     "username": "test"
   },
   {
-    "character_id": null,
+    "character_id": "ruya",
     "created_at": "2026-03-05T04:34:02Z",
     "id": "rüya",
     "invite_code": "dragons",
-    "session_token": "61c816d3f94e9fc5f6902e8d486df4b8d0566db009553ed6e583627ebda0738e",
-    "token_expires_at": "2026-04-04T01:39:17.611894-05:00",
+    "session_token": "c85bfad68926bf3547280d50b1a5801a9b8e1a113d1f88edab86b32efb6bb07f",
+    "token_expires_at": "2026-04-09T22:51:12.495879-05:00",
     "username": "Rüya"
+  },
+  {
+    "character_id": null,
+    "created_at": "2026-03-11T01:58:16Z",
+    "id": "adam",
+    "invite_code": "dragons",
+    "session_token": "4cdd8ebf5953cad9e36e17ac9c4698c25ff75a97e6857cfd8c91d0cc42d589e4",
+    "token_expires_at": "2026-04-09T21:02:26.920797-05:00",
+    "username": "Adam"
   }
 ]

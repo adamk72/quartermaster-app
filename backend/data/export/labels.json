@@ -1,0 +1,83 @@
+[
+  {
+    "color": "#8b6cc1",
+    "created_at": "2026-03-11T02:04:10Z",
+    "id": "magic",
+    "name": "Magic",
+    "sort_order": 0,
+    "text_color": "#b9adcc",
+    "updated_at": "2026-03-10T21:58:06.40641-05:00"
+  },
+  {
+    "color": "#3653d3",
+    "created_at": "2026-03-11T02:04:10Z",
+    "id": "implements",
+    "name": "Implements",
+    "sort_order": 1,
+    "text_color": "#5c77f0",
+    "updated_at": "2026-03-10T21:58:24.811299-05:00"
+  },
+  {
+    "color": "#4a9e6e",
+    "created_at": "2026-03-11T02:04:10Z",
+    "id": "potions",
+    "name": "Potions",
+    "sort_order": 2,
+    "text_color": "#ffffff",
+    "updated_at": "2026-03-11T02:04:10Z"
+  },
+  {
+    "color": "#5b8fb9",
+    "created_at": "2026-03-11T02:04:10Z",
+    "id": "weapons-armor",
+    "name": "Weapons \u0026 Armor",
+    "sort_order": 3,
+    "text_color": "#ffffff",
+    "updated_at": "2026-03-11T02:04:10Z"
+  },
+  {
+    "color": "#c8a951",
+    "created_at": "2026-03-11T02:04:10Z",
+    "id": "jewelry",
+    "name": "Jewelry",
+    "sort_order": 5,
+    "text_color": "#ffffff",
+    "updated_at": "2026-03-11T02:04:10Z"
+  },
+  {
+    "color": "#6b8f71",
+    "created_at": "2026-03-11T02:04:10Z",
+    "id": "supplies",
+    "name": "Supplies",
+    "sort_order": 7,
+    "text_color": "#ffffff",
+    "updated_at": "2026-03-11T02:04:10Z"
+  },
+  {
+    "color": "#d4a03c",
+    "created_at": "2026-03-11T02:04:10Z",
+    "id": "quest",
+    "name": "Quest Item",
+    "sort_order": 8,
+    "text_color": "#ffffff",
+    "updated_at": "2026-03-11T02:04:10Z"
+  },
+  {
+    "color": "#4fc3f7",
+    "created_at": "2026-03-11T02:10:54Z",
+    "id": "gems",
+    "name": "Gems",
+    "sort_order": 6,
+    "text_color": "#ffffff",
+    "updated_at": "2026-03-11T02:10:54Z"
+  },
+  {
+    "color": "#3b6638",
+    "created_at": "2026-03-10T21:33:00.012877-05:00",
+    "id": "scrolls",
+    "name": "Scrolls",
+    "sort_order": 0,
+    "text_color": "#13b508",
+    "updated_at": "2026-03-10T21:57:35.881916-05:00"
+  }
+]
