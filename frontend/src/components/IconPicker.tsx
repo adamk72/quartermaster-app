@@ -35,10 +35,10 @@ export function IconPicker({ characterId, currentIcon, usedIcons, onSelect, onCl
   return (
     <div
       ref={ref}
-      className="absolute z-50 top-full left-0 mt-1 bg-surface border border-border rounded-lg p-2 shadow-lg"
+      className="absolute z-50 top-full left-0 mt-1 bg-surface border border-border rounded-lg p-3 shadow-lg w-[340px]"
     >
       <div className="text-xs text-parchment-muted uppercase tracking-wide mb-2">Choose Icon</div>
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-7 gap-1.5">
         {iconEntries.map(([name, Icon]) => {
           const isCurrent = name === currentIcon
           const takenBy = usedIcons[name]
@@ -49,7 +49,7 @@ export function IconPicker({ characterId, currentIcon, usedIcons, onSelect, onCl
               key={name}
               onClick={() => { if (!isTaken) onSelect(name) }}
               disabled={!!isTaken}
-              className={`w-9 h-9 flex items-center justify-center rounded-md transition-colors ${
+              className={`w-10 h-10 flex items-center justify-center rounded-md transition-colors ${
                 isCurrent
                   ? 'bg-gold text-base'
                   : isTaken
@@ -58,7 +58,7 @@ export function IconPicker({ characterId, currentIcon, usedIcons, onSelect, onCl
               }`}
               title={isTaken ? `${name} (taken)` : name}
             >
-              <Icon className="w-4.5 h-4.5" />
+              <Icon className="w-5 h-5" />
             </button>
           )
         })}
