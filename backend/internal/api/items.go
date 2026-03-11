@@ -748,6 +748,11 @@ func handleBulkDeleteItems(w http.ResponseWriter, r *http.Request) {
 	defer tx.Rollback()
 
 	for _, id := range req.ItemIDs {
+		// Clean up linked coin_ledger entries (no ON DELETE CASCADE on FK)
+		if _, err := tx.Exec("DELETE FROM coin_ledger WHERE item_id = ?", id); err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to clean up coin ledger")
+			return
+		}
 		if _, err := tx.Exec("DELETE FROM items WHERE id = ?", id); err != nil {
 			writeError(w, http.StatusInternalServerError, "failed to delete items")
 			return
