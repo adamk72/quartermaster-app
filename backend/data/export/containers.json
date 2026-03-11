@@ -104,7 +104,7 @@
     "weight_limit": null
   },
   {
-    "character_id": "sachan",
+    "character_id": "andurin",
     "created_at": "2026-03-05T04:12:32Z",
     "id": "quiver-of-sylvana",
     "location": "",
@@ -112,8 +112,8 @@
     "name": "Quiver of Sylvana",
     "notes": "",
     "type": "bag",
-    "updated_at": "2026-03-05T04:12:32Z",
-    "version": 1,
+    "updated_at": "2026-03-10T23:55:37.726561-05:00",
+    "version": 2,
     "weight_limit": null
   },
   {
@@ -126,6 +126,19 @@
     "notes": "",
     "type": "mount",
     "updated_at": "2026-03-05T04:12:32Z",
+    "version": 1,
+    "weight_limit": null
+  },
+  {
+    "character_id": "ruya",
+    "created_at": "2026-03-10T23:58:30.629318-05:00",
+    "id": "bag-of-holding-2",
+    "location": "",
+    "mount_id": null,
+    "name": "Bag of Holding",
+    "notes": "",
+    "type": "bag",
+    "updated_at": "2026-03-10T23:58:30.629318-05:00",
     "version": 1,
     "weight_limit": null
   }

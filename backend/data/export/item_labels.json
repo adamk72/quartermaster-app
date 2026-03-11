@@ -1,22 +1,6 @@
 [
   {
-    "item_id": 93,
-    "label_id": "gems"
-  },
-  {
     "item_id": 94,
-    "label_id": "gems"
-  },
-  {
-    "item_id": 109,
-    "label_id": "gems"
-  },
-  {
-    "item_id": 113,
-    "label_id": "gems"
-  },
-  {
-    "item_id": 116,
     "label_id": "gems"
   },
   {
@@ -296,10 +280,6 @@
     "label_id": "supplies"
   },
   {
-    "item_id": 145,
-    "label_id": "supplies"
-  },
-  {
     "item_id": 146,
     "label_id": "supplies"
   },
@@ -321,6 +301,54 @@
   },
   {
     "item_id": 184,
+    "label_id": "supplies"
+  },
+  {
+    "item_id": 93,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 116,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 113,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 167,
+    "label_id": "coins"
+  },
+  {
+    "item_id": 168,
+    "label_id": "coins"
+  },
+  {
+    "item_id": 169,
+    "label_id": "coins"
+  },
+  {
+    "item_id": 170,
+    "label_id": "coins"
+  },
+  {
+    "item_id": 171,
+    "label_id": "coins"
+  },
+  {
+    "item_id": 172,
+    "label_id": "coins"
+  },
+  {
+    "item_id": 173,
+    "label_id": "coins"
+  },
+  {
+    "item_id": 109,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 145,
     "label_id": "supplies"
   }
 ]
