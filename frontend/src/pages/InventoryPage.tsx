@@ -14,14 +14,14 @@ import { SellModal } from '../components/Inventory/SellModal'
 
 type SortMode = 'custom' | 'name' | 'labels' | 'date'
 
-/** Parse "M/D" (assumes 2025) or "M/D/YY" into a sortable number (YYYYMMDD). Returns 0 for unparseable. */
+/** Parse "M/D" (assumes current year) or "M/D/YY" into components. Returns null for unparseable. */
 function parseGameDate(d: string): { month: number; day: number; year: number } | null {
   if (!d) return null
   const parts = d.split('/')
   if (parts.length < 2) return null
   const month = parseInt(parts[0]!, 10)
   const day = parseInt(parts[1]!, 10)
-  const year = parts.length >= 3 ? 2000 + parseInt(parts[2]!, 10) : 2025
+  const year = parts.length >= 3 ? 2000 + parseInt(parts[2]!, 10) : new Date().getFullYear()
   if (isNaN(month) || isNaN(day) || isNaN(year)) return null
   return { month, day, year }
 }
