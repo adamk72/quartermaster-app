@@ -51,7 +51,7 @@ export function InlineLabelSelect({
     })
   }
 
-  const sorted = [...allLabels].sort((a, b) => a.sort_order - b.sort_order)
+  const sorted = useMemo(() => [...allLabels].sort((a, b) => a.sort_order - b.sort_order), [allLabels])
 
   return (
     <div
