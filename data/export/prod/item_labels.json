@@ -1,9 +1,5 @@
 [
   {
-    "item_id": 94,
-    "label_id": "gems"
-  },
-  {
     "item_id": 118,
     "label_id": "gems"
   },
@@ -350,5 +346,85 @@
   {
     "item_id": 145,
     "label_id": "supplies"
+  },
+  {
+    "item_id": 94,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 186,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 187,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 190,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 190,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 191,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 192,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 195,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 196,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 197,
+    "label_id": "gems"
+  },
+  {
+    "item_id": 199,
+    "label_id": "supplies"
+  },
+  {
+    "item_id": 200,
+    "label_id": "supplies"
+  },
+  {
+    "item_id": 202,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 203,
+    "label_id": "supplies"
+  },
+  {
+    "item_id": 205,
+    "label_id": "scrolls"
+  },
+  {
+    "item_id": 205,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 209,
+    "label_id": "jewelry"
+  },
+  {
+    "item_id": 206,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 207,
+    "label_id": "magic"
+  },
+  {
+    "item_id": 207,
+    "label_id": "gems"
   }
 ]

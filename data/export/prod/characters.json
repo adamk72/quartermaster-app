@@ -1,45 +1,45 @@
 [
   {
-    "ac": 10,
-    "class": "Fighter",
+    "ac": 30,
+    "class": "Paladin / Bard",
     "created_at": "2026-03-05T04:12:32Z",
     "hp_max": 0,
-    "icon": "",
+    "icon": "Shield",
     "id": "andurin",
     "level": 5,
     "name": "Andurin",
     "notes": "{}",
     "player_name": "",
-    "race": "Human",
-    "updated_at": "2026-03-05T04:12:32Z"
+    "race": "Elf",
+    "updated_at": "2026-03-11T21:13:51.94396-05:00"
   },
   {
-    "ac": 10,
-    "class": "Rogue",
+    "ac": 16,
+    "class": "Warlock",
     "created_at": "2026-03-05T04:12:32Z",
-    "hp_max": 0,
-    "icon": "",
+    "hp_max": 67,
+    "icon": "Moon",
     "id": "ayloc",
-    "level": 5,
+    "level": 9,
     "name": "Ayloc",
     "notes": "{}",
     "player_name": "",
-    "race": "Halfling",
-    "updated_at": "2026-03-05T04:12:32Z"
+    "race": "Drow",
+    "updated_at": "2026-03-11T21:09:57.976099-05:00"
   },
   {
-    "ac": 10,
-    "class": "Cleric",
+    "ac": 16,
+    "class": "Circle of the Stars Druid",
     "created_at": "2026-03-05T04:12:32Z",
-    "hp_max": 0,
-    "icon": "",
+    "hp_max": 66,
+    "icon": "Snowflake",
     "id": "ruya",
-    "level": 5,
+    "level": 9,
     "name": "Rüya",
     "notes": "{}",
     "player_name": "",
-    "race": "Human",
-    "updated_at": "2026-03-05T04:12:32Z"
+    "race": "Wood Elf",
+    "updated_at": "2026-03-11T22:19:28.12091-05:00"
   },
   {
     "ac": 10,
@@ -70,17 +70,17 @@
     "updated_at": "2026-03-05T04:12:32Z"
   },
   {
-    "ac": 10,
-    "class": "Barbarian",
+    "ac": 22,
+    "class": "Fighter/Cleric",
     "created_at": "2026-03-05T04:12:32Z",
-    "hp_max": 0,
-    "icon": "",
+    "hp_max": 9999,
+    "icon": "Axe",
     "id": "hrothgar",
-    "level": 5,
+    "level": 9,
     "name": "Hrothgar",
     "notes": "{}",
-    "player_name": "",
-    "race": "Half-Orc",
-    "updated_at": "2026-03-05T04:12:32Z"
+    "player_name": "Pierre",
+    "race": "Dwarf",
+    "updated_at": "2026-03-11T21:08:37.917593-05:00"
   }
 ]

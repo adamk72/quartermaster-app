@@ -13,8 +13,8 @@
     "created_at": "2026-03-05T04:34:02Z",
     "id": "rüya",
     "invite_code": "dragons",
-    "session_token": "81fb22ffec9059c289b415e50ba2822abb5cbd4aa245aa6ab56c6adcde0ee3d3",
-    "token_expires_at": "2026-04-10T10:45:44.759105-05:00",
+    "session_token": "4b2156dcc40d1507c9593c178e89d72de6462cedecddb02d7ee0c98c2272d07c",
+    "token_expires_at": "2026-04-10T21:10:02.42669-05:00",
     "username": "Rüya"
   },
   {
@@ -25,5 +25,41 @@
     "session_token": "4cdd8ebf5953cad9e36e17ac9c4698c25ff75a97e6857cfd8c91d0cc42d589e4",
     "token_expires_at": "2026-04-09T21:02:26.920797-05:00",
     "username": "Adam"
+  },
+  {
+    "character_id": "sachan",
+    "created_at": "2026-03-11T19:13:28Z",
+    "id": "sachan",
+    "invite_code": "dragons",
+    "session_token": "",
+    "token_expires_at": null,
+    "username": "Sachan"
+  },
+  {
+    "character_id": "ayloc",
+    "created_at": "2026-03-12T02:04:42Z",
+    "id": "ayloc",
+    "invite_code": "dragons",
+    "session_token": "ba2b8248a43b10c188b4378ed5e9f43e08989929b7ac79d2b7abfb3d5ceafdc2",
+    "token_expires_at": "2026-04-10T21:06:59.202828-05:00",
+    "username": "Ayloc"
+  },
+  {
+    "character_id": "hrothgar",
+    "created_at": "2026-03-12T02:07:39Z",
+    "id": "hrothgar",
+    "invite_code": "dragons",
+    "session_token": "0ed7248d44f98e65100276990f401065b53b652fefd522587e99a1c4368db798",
+    "token_expires_at": "2026-04-10T21:07:39.193802-05:00",
+    "username": "Hrothgar"
+  },
+  {
+    "character_id": "andurin",
+    "created_at": "2026-03-12T02:12:41Z",
+    "id": "andurin",
+    "invite_code": "dragons",
+    "session_token": "d6ad93a05b9dcdaab99238a6896abd112f3cf16138d10503fb0bcb3cd24ed0da",
+    "token_expires_at": "2026-04-10T21:12:41.701774-05:00",
+    "username": "Andurin"
   }
 ]

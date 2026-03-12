@@ -27,6 +27,8 @@
   Two users reordering inventory simultaneously causes last-write-wins on `sort_order`. Optimistic locking covers item/container updates but not reorder specifically.
 - [ ] Base item catalog with costs, weights, and sell factors
   Create a reference table of standard item costs (gp) and weights (lbs) that serves as the baseline. Editable per-item. Include a "sell factor" per category — e.g. mundane items sell at 50% of base value, gems at 100%. Use this to auto-populate new items and calculate party net worth more accurately.
+- [ ] Add attribute saves to critters
+  Track saving throw modifiers (STR, DEX, CON, INT, WIS, CHA) on critters for quick reference during combat.
 - [ ] Exclude personally-held items from net worth and sale
   If an item is directly assigned to a character or is in a container owned by a single character, exclude it from party net worth totals and disallow selling it. The player will have already recorded the item on their own sheet — the app is a convenience for visibility so the party can see what everyone has for discussion. Only shared/party loot should count toward net worth and be sellable.
 
