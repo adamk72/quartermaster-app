@@ -108,13 +108,46 @@ export interface CoinBalance {
   total_gp: number
 }
 
+export interface CritterTemplate {
+  id: number
+  name: string
+  hp_max: number
+  ac: number
+  speed: number
+  initiative: number
+  save_str: number
+  save_dex: number
+  save_con: number
+  save_int: number
+  save_wis: number
+  save_cha: number
+  notes: string
+  created_at: string
+  updated_at: string
+}
+
+export interface SummonRequest {
+  template_id: number
+  character_id: string
+}
+
 export interface Critter {
   id: number
   name: string
+  template_id: number | null
   character_id: string
+  instance_number: number
   hp_current: number
   hp_max: number
   ac: number
+  speed: number
+  initiative: number
+  save_str: number
+  save_dex: number
+  save_con: number
+  save_int: number
+  save_wis: number
+  save_cha: number
   notes: string
   active: boolean
   created_at: string
