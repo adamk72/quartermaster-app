@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Swords, Pencil, Trash2, Plus } from 'lucide-react'
 import type { CritterTemplate, Character } from '../../types'
 
@@ -18,7 +19,9 @@ export function RosterSidebar({
   onNew: () => void
 }) {
   const [summonPickerId, setSummonPickerId] = useState<number | null>(null)
+  const [pickerPos, setPickerPos] = useState<{ top: number; left: number } | null>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
+  const buttonRefs = useRef<Map<number, HTMLButtonElement>>(new Map())
 
   useEffect(() => {
     if (summonPickerId === null) return
@@ -26,6 +29,7 @@ export function RosterSidebar({
     const handleClickOutside = (e: MouseEvent) => {
       if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
         setSummonPickerId(null)
+        setPickerPos(null)
       }
     }
 
@@ -33,8 +37,22 @@ export function RosterSidebar({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [summonPickerId])
 
+  const openPicker = (templateId: number) => {
+    if (summonPickerId === templateId) {
+      setSummonPickerId(null)
+      setPickerPos(null)
+      return
+    }
+    const btn = buttonRefs.current.get(templateId)
+    if (btn) {
+      const rect = btn.getBoundingClientRect()
+      setPickerPos({ top: rect.bottom + 4, left: rect.left })
+    }
+    setSummonPickerId(templateId)
+  }
+
   return (
-    <div className="w-56 flex-shrink-0 border-r border-border overflow-visible">
+    <div className="w-56 flex-shrink-0 border-r border-border">
       <div className="flex items-center justify-between px-3 py-3 border-b border-border">
         <h3 className="font-heading font-semibold text-parchment text-sm">Roster</h3>
         <button
@@ -53,7 +71,7 @@ export function RosterSidebar({
         {templates.map((t) => (
           <div
             key={t.id}
-            className="relative flex items-center gap-1 px-3 py-2 border-b border-border hover:bg-surface transition-colors group"
+            className="flex items-center gap-1 px-3 py-2 border-b border-border hover:bg-surface transition-colors group"
           >
             <span className="flex-1 text-sm text-parchment truncate">{t.name}</span>
 
@@ -74,36 +92,42 @@ export function RosterSidebar({
             </button>
 
             <button
-              onClick={() => setSummonPickerId(summonPickerId === t.id ? null : t.id)}
+              ref={(el) => {
+                if (el) buttonRefs.current.set(t.id, el)
+              }}
+              onClick={() => openPicker(t.id)}
               className="p-1 text-emerald hover:text-emerald/80 transition-colors"
               title="Summon"
             >
               <Swords className="w-3.5 h-3.5" />
             </button>
-
-            {/* Character picker popover */}
-            {summonPickerId === t.id && (
-              <div
-                ref={popoverRef}
-                className="absolute right-0 top-full z-40 mt-1 bg-card border border-border rounded-lg shadow-xl shadow-black/30 py-1 min-w-[140px]"
-              >
-                {characters.map((ch) => (
-                  <button
-                    key={ch.id}
-                    onClick={() => {
-                      onSummon(t.id, ch.id)
-                      setSummonPickerId(null)
-                    }}
-                    className="w-full text-left px-3 py-1.5 text-sm text-parchment hover:bg-surface transition-colors"
-                  >
-                    {ch.name}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         ))}
       </div>
+
+      {/* Character picker popover via portal */}
+      {summonPickerId !== null && pickerPos && createPortal(
+        <div
+          ref={popoverRef}
+          className="fixed z-50 bg-card border border-border rounded-lg shadow-xl shadow-black/30 py-1 min-w-[140px]"
+          style={{ top: pickerPos.top, left: pickerPos.left }}
+        >
+          {characters.map((ch) => (
+            <button
+              key={ch.id}
+              onClick={() => {
+                onSummon(summonPickerId, ch.id)
+                setSummonPickerId(null)
+                setPickerPos(null)
+              }}
+              className="w-full text-left px-3 py-1.5 text-sm text-parchment hover:bg-surface transition-colors"
+            >
+              {ch.name}
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
     </div>
   )
 }
