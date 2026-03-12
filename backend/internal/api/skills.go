@@ -48,6 +48,35 @@ func handleListSkillReferences(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, refs)
 }
 
+func handleUpdateSkillReference(w http.ResponseWriter, r *http.Request) {
+	skillName := r.PathValue("skill_name")
+
+	var body struct {
+		BestCombo string `json:"best_combo"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	res, err := db.DB.Exec("UPDATE skill_reference SET best_combo = ? WHERE skill_name = ?", body.BestCombo, skillName)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to update skill reference")
+		return
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		writeError(w, http.StatusNotFound, "skill not found")
+		return
+	}
+
+	user := GetUser(r)
+	if user != nil {
+		LogChange(&user.ID, "skill_reference", skillName, "update", "{}")
+	}
+
+	writeJSON(w, http.StatusOK, map[string]string{"status": "updated"})
+}
+
 func handleUpdateSkills(w http.ResponseWriter, r *http.Request) {
 	charID := r.PathValue("character_id")
 

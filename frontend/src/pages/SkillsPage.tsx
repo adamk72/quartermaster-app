@@ -15,6 +15,7 @@ export function SkillsPage() {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [draft, setDraft] = useState<Map<string, DraftSkill>>(new Map())
+  const [draftRefs, setDraftRefs] = useState<Map<string, string>>(new Map())
 
   useEffect(() => {
     fetchCharacters()
@@ -88,13 +89,26 @@ export function SkillsPage() {
         if (!byChar.has(charId)) byChar.set(charId, [])
         byChar.get(charId)!.push({ skill_name: skillName, ...val })
       }
-      await Promise.all(
-        Array.from(byChar.entries()).map(([charId, skills]) =>
-          api.put(`/skills/${charId}`, skills)
+      const refUpdates = Array.from(draftRefs.entries())
+        .filter(([name, combo]) => {
+          const orig = refs.find((r) => r.skill_name === name)
+          return orig?.best_combo !== combo
+        })
+        .map(([name, combo]) =>
+          api.put(`/skills/reference/${encodeURIComponent(name)}`, { best_combo: combo })
         )
-      )
-      const freshSkills = await api.get<Skill[]>('/skills')
+      await Promise.all([
+        ...Array.from(byChar.entries()).map(([charId, skills]) =>
+          api.put(`/skills/${charId}`, skills)
+        ),
+        ...refUpdates,
+      ])
+      const [freshSkills, freshRefs] = await Promise.all([
+        api.get<Skill[]>('/skills'),
+        api.get<SkillReference[]>('/skills/reference'),
+      ])
       setSkills(freshSkills)
+      setRefs(freshRefs)
       setEditing(false)
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Failed to save skills')
@@ -128,7 +142,11 @@ export function SkillsPage() {
         ) : (
           <button
             className="px-4 py-1.5 text-sm rounded-lg border border-border text-parchment-muted hover:bg-surface"
-            onClick={() => { setDraft(initDraft()); setEditing(true) }}
+            onClick={() => {
+              setDraft(initDraft())
+              setDraftRefs(new Map(refs.map((r) => [r.skill_name, r.best_combo])))
+              setEditing(true)
+            }}
           >
             Edit
           </button>
@@ -208,7 +226,22 @@ export function SkillsPage() {
                       </td>
                     )
                   })}
-                  <td className="text-parchment-dim text-xs whitespace-nowrap">{ref?.best_combo ?? '--'}</td>
+                  <td className="text-parchment-dim text-xs whitespace-nowrap">
+                    {editing ? (
+                      <input
+                        type="text"
+                        className="bg-surface border border-border rounded px-2 py-0.5 text-xs text-parchment w-full min-w-[120px]"
+                        value={draftRefs.get(skillName) ?? ''}
+                        onChange={(e) => setDraftRefs((prev) => {
+                          const next = new Map(prev)
+                          next.set(skillName, e.target.value)
+                          return next
+                        })}
+                      />
+                    ) : (
+                      ref?.best_combo ?? '--'
+                    )}
+                  </td>
                 </tr>
               )
             })}

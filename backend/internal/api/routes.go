@@ -82,6 +82,7 @@ func RegisterRoutes(mux *http.ServeMux) {
 	// Skills
 	mux.Handle("GET /api/v1/skills", auth(handleListSkills))
 	mux.Handle("GET /api/v1/skills/reference", auth(handleListSkillReferences))
+	mux.Handle("PUT /api/v1/skills/reference/{skill_name}", auth(handleUpdateSkillReference))
 	mux.Handle("PUT /api/v1/skills/{character_id}", auth(handleUpdateSkills))
 
 	// XP
