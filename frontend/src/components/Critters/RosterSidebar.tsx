@@ -19,7 +19,7 @@ export function RosterSidebar({
   onNew: () => void
 }) {
   const [summonPickerId, setSummonPickerId] = useState<number | null>(null)
-  const [pickerPos, setPickerPos] = useState<{ top: number; left: number } | null>(null)
+  const [pickerPos, setPickerPos] = useState<{ top: number; right: number } | null>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
   const buttonRefs = useRef<Map<number, HTMLButtonElement>>(new Map())
 
@@ -46,7 +46,8 @@ export function RosterSidebar({
     const btn = buttonRefs.current.get(templateId)
     if (btn) {
       const rect = btn.getBoundingClientRect()
-      setPickerPos({ top: rect.bottom + 4, left: rect.left })
+      // Align right edge of popover with right edge of button
+      setPickerPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
     }
     setSummonPickerId(templateId)
   }
@@ -110,7 +111,7 @@ export function RosterSidebar({
         <div
           ref={popoverRef}
           className="fixed z-50 bg-card border border-border rounded-lg shadow-xl shadow-black/30 py-1 min-w-[140px]"
-          style={{ top: pickerPos.top, left: pickerPos.left }}
+          style={{ top: pickerPos.top, right: pickerPos.right }}
         >
           {characters.map((ch) => (
             <button
