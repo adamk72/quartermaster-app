@@ -101,7 +101,7 @@ export function CrittersPage() {
       </div>
 
       {/* Main layout: sidebar + grid */}
-      <div className="flex gap-6">
+      <div className="flex gap-6 overflow-hidden">
         <RosterSidebar
           templates={templates}
           characters={characters}
