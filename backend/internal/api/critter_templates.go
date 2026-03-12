@@ -113,6 +113,8 @@ func handleUpdateCritterTemplate(w http.ResponseWriter, r *http.Request) {
 
 func handleDeleteCritterTemplate(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
+	// Detach any critters referencing this template before deleting
+	db.DB.Exec("UPDATE critters SET template_id = NULL WHERE template_id = ?", id)
 	result, err := db.DB.Exec("DELETE FROM critter_templates WHERE id = ?", id)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to delete critter template")

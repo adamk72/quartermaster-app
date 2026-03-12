@@ -19,10 +19,11 @@ export function CritterCard({
   const [showOwnerPicker, setShowOwnerPicker] = useState(false)
   const ownerRef = useRef<HTMLDivElement>(null)
 
-  const ownerName = characters.find((c) => c.id === critter.character_id)?.name ?? critter.character_id
+  const ownerName = critter.character_id
+    ? characters.find((c) => c.id === critter.character_id)?.name ?? critter.character_id
+    : null
   const displayName = `${critter.name} ${critter.instance_number}`
   const pct = critter.hp_max > 0 ? (critter.hp_current / critter.hp_max) * 100 : 0
-  const hasNotes = !!critter.notes
 
   useEffect(() => {
     if (!showOwnerPicker) return
@@ -62,7 +63,7 @@ export function CritterCard({
               onClick={() => setShowOwnerPicker(!showOwnerPicker)}
               className="text-xs text-parchment-muted hover:text-parchment transition-colors truncate"
             >
-              ({ownerName})
+              {ownerName ? `(${ownerName})` : '(Unassigned)'}
             </button>
             {showOwnerPicker && (
               <div className="absolute left-0 top-full z-40 mt-1 bg-card border border-border rounded-lg shadow-xl shadow-black/30 py-1 min-w-[140px]">
@@ -130,7 +131,7 @@ export function CritterCard({
       <div className="flex items-center gap-1.5">
         <input
           type="number"
-          className="input-themed text-sm w-16 text-center"
+          className="input-themed text-xs w-14 text-center !py-1 !px-2"
           value={hpDelta}
           onChange={(e) => setHpDelta(e.target.value)}
           placeholder="HP"
@@ -158,39 +159,39 @@ export function CritterCard({
       </div>
 
       {/* Save bonuses */}
-      <div className="grid grid-cols-6 gap-1 text-xs text-center text-parchment-muted">
+      <div className="grid grid-cols-3 gap-1 text-xs text-parchment-muted">
         {([
           ['S', critter.save_str],
           ['D', critter.save_dex],
-          ['C', critter.save_con],
+          ['Cn', critter.save_con],
           ['I', critter.save_int],
           ['W', critter.save_wis],
           ['Ch', critter.save_cha],
-        ] as const).map(([label, val]) => (
-          <div key={label} className="px-1 py-0.5 bg-card rounded border border-border font-mono">
-            <div className="text-parchment-muted/60 text-[10px]">{label}</div>
-            <div>{formatSave(val)}</div>
-          </div>
+        ] as const).map(([label, val], i) => (
+          <span key={i} className="px-1 py-0.5 bg-card rounded border border-border font-mono text-center">
+            {label} {formatSave(val)}
+          </span>
         ))}
       </div>
 
       {/* Collapsible notes */}
-      {hasNotes && (
-        <div>
-          <button
-            onClick={() => setShowNotes(!showNotes)}
-            className="flex items-center gap-1 text-xs text-parchment-muted hover:text-parchment transition-colors"
-          >
-            {showNotes ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            Notes
-          </button>
-          {showNotes && (
-            <p className="mt-1 text-xs text-parchment-dim bg-card rounded border border-border p-2 whitespace-pre-wrap">
-              {critter.notes}
-            </p>
-          )}
-        </div>
-      )}
+      <div>
+        <button
+          onClick={() => setShowNotes(!showNotes)}
+          className="flex items-center gap-1 text-xs text-parchment-muted hover:text-parchment transition-colors"
+        >
+          {showNotes ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          Notes
+        </button>
+        {showNotes && (
+          <textarea
+            className="mt-1 w-full text-xs text-parchment-dim bg-card rounded border border-border p-2 min-h-[40px] resize-y focus:border-gold/50 focus:outline-none"
+            value={critter.notes}
+            onChange={(e) => onUpdate(critter.id, { ...critter, notes: e.target.value })}
+            placeholder="Add notes..."
+          />
+        )}
+      </div>
     </div>
   )
 }

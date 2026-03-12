@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Skull, XCircle } from 'lucide-react'
+import { Bug, XCircle } from 'lucide-react'
 import { useCritterStore } from '../stores/useCritterStore'
 import { useCritterTemplateStore } from '../stores/useCritterTemplateStore'
 import { useInventoryStore } from '../stores/useInventoryStore'
@@ -24,9 +24,9 @@ export function CrittersPage() {
     fetchCharacters()
   }, [fetchCritters, fetchTemplates, fetchCharacters])
 
-  const handleSummon = async (templateId: number, characterId: string) => {
+  const handleSummon = async (templateId: number) => {
     try {
-      await summonCritter({ template_id: templateId, character_id: characterId })
+      await summonCritter({ template_id: templateId })
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed to summon critter')
     }
@@ -87,7 +87,7 @@ export function CrittersPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Skull className="w-7 h-7 text-parchment" />
+          <Bug className="w-7 h-7 text-parchment" />
           <h2 className="font-heading text-3xl font-bold text-parchment">Critters</h2>
         </div>
         {critters.length > 0 && (
@@ -104,7 +104,6 @@ export function CrittersPage() {
       <div className="flex gap-6">
         <RosterSidebar
           templates={templates}
-          characters={characters}
           onSummon={handleSummon}
           onEdit={(template) => {
             setEditingTemplate(template)
@@ -124,7 +123,7 @@ export function CrittersPage() {
               No critters summoned. Use the roster to summon one.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {critters.map((critter) => (
                 <CritterCard
                   key={critter.id}

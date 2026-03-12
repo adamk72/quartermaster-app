@@ -126,7 +126,7 @@ type Critter struct {
 	ID             int       `json:"id"`
 	Name           string    `json:"name"`
 	TemplateID     *int      `json:"template_id"`
-	CharacterID    string    `json:"character_id"`
+	CharacterID    *string   `json:"character_id"`
 	InstanceNumber int       `json:"instance_number"`
 	HPCurrent      int       `json:"hp_current"`
 	HPMax          int       `json:"hp_max"`
@@ -146,8 +146,7 @@ type Critter struct {
 }
 
 type SummonRequest struct {
-	TemplateID  int    `json:"template_id"`
-	CharacterID string `json:"character_id"`
+	TemplateID int `json:"template_id"`
 }
 
 type Session struct {

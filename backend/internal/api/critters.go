@@ -85,7 +85,7 @@ func handleCreateCritter(w http.ResponseWriter, r *http.Request) {
 			save_str, save_dex, save_con, save_int, save_wis, save_cha,
 			notes, active, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		t.Name, t.ID, req.CharacterID, instanceNumber,
+		t.Name, t.ID, nil, instanceNumber,
 		t.HPMax, t.HPMax, t.AC, t.Speed, t.Initiative,
 		t.SaveSTR, t.SaveDEX, t.SaveCON, t.SaveINT, t.SaveWIS, t.SaveCHA,
 		t.Notes, true, now, now,
@@ -105,7 +105,7 @@ func handleCreateCritter(w http.ResponseWriter, r *http.Request) {
 		ID:             int(id),
 		Name:           t.Name,
 		TemplateID:     &t.ID,
-		CharacterID:    req.CharacterID,
+		CharacterID:    nil,
 		InstanceNumber: instanceNumber,
 		HPCurrent:      t.HPMax,
 		HPMax:          t.HPMax,

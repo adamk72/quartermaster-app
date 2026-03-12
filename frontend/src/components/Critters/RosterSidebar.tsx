@@ -1,57 +1,19 @@
-import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { Swords, Pencil, Trash2, Plus } from 'lucide-react'
-import type { CritterTemplate, Character } from '../../types'
+import type { CritterTemplate } from '../../types'
 
 export function RosterSidebar({
   templates,
-  characters,
   onSummon,
   onEdit,
   onDelete,
   onNew,
 }: {
   templates: CritterTemplate[]
-  characters: Character[]
-  onSummon: (templateId: number, characterId: string) => void
+  onSummon: (templateId: number) => void
   onEdit: (template: CritterTemplate) => void
   onDelete: (templateId: number) => void
   onNew: () => void
 }) {
-  const [summonPickerId, setSummonPickerId] = useState<number | null>(null)
-  const [pickerPos, setPickerPos] = useState<{ top: number; right: number } | null>(null)
-  const popoverRef = useRef<HTMLDivElement>(null)
-  const buttonRefs = useRef<Map<number, HTMLButtonElement>>(new Map())
-
-  useEffect(() => {
-    if (summonPickerId === null) return
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
-        setSummonPickerId(null)
-        setPickerPos(null)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [summonPickerId])
-
-  const openPicker = (templateId: number) => {
-    if (summonPickerId === templateId) {
-      setSummonPickerId(null)
-      setPickerPos(null)
-      return
-    }
-    const btn = buttonRefs.current.get(templateId)
-    if (btn) {
-      const rect = btn.getBoundingClientRect()
-      // Align right edge of popover with right edge of button
-      setPickerPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
-    }
-    setSummonPickerId(templateId)
-  }
-
   return (
     <div className="w-56 flex-shrink-0 border-r border-border">
       <div className="flex items-center justify-between px-3 py-3 border-b border-border">
@@ -93,10 +55,7 @@ export function RosterSidebar({
             </button>
 
             <button
-              ref={(el) => {
-                if (el) buttonRefs.current.set(t.id, el)
-              }}
-              onClick={() => openPicker(t.id)}
+              onClick={() => onSummon(t.id)}
               className="p-1 text-emerald hover:text-emerald/80 transition-colors"
               title="Summon"
             >
@@ -105,32 +64,6 @@ export function RosterSidebar({
           </div>
         ))}
       </div>
-
-      {/* Character picker popover via portal */}
-      {summonPickerId !== null && pickerPos && createPortal(
-        <div
-          ref={popoverRef}
-          className="fixed z-50 bg-card border border-border rounded-lg shadow-xl shadow-black/30 py-1 min-w-[140px]"
-          style={{ top: pickerPos.top, right: pickerPos.right }}
-        >
-          {characters.length === 0 ? (
-            <p className="px-3 py-1.5 text-sm text-parchment-muted">No characters loaded</p>
-          ) : characters.map((ch) => (
-            <button
-              key={ch.id}
-              onClick={() => {
-                onSummon(summonPickerId, ch.id)
-                setSummonPickerId(null)
-                setPickerPos(null)
-              }}
-              className="w-full text-left px-3 py-1.5 text-sm text-parchment hover:bg-surface transition-colors"
-            >
-              {ch.name}
-            </button>
-          ))}
-        </div>,
-        document.body
-      )}
     </div>
   )
 }

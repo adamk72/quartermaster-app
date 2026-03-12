@@ -129,14 +129,13 @@ export interface CritterTemplate {
 
 export interface SummonRequest {
   template_id: number
-  character_id: string
 }
 
 export interface Critter {
   id: number
   name: string
   template_id: number | null
-  character_id: string
+  character_id: string | null
   instance_number: number
   hp_current: number
   hp_max: number
