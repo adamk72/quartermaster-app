@@ -45,7 +45,7 @@ func main() {
 
 var tables = []string{
 	"characters", "mounts", "containers", "items", "labels", "item_labels",
-	"coin_ledger", "critters",
+	"coin_ledger", "critter_templates", "critters",
 	"sessions", "session_images", "skills", "skill_reference", "xp_entries", "xp_attendance",
 	"quests", "watch_schedules", "watch_slots", "consumable_types", "consumable_ledger",
 	"settings", "users", "changelog",
