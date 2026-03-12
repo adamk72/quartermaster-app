@@ -204,8 +204,7 @@ export function SkillsPage() {
                     return (
                       <td key={c.id} className={clsx('text-center', isMax && 'font-bold text-emerald bg-emerald/10')}>
                         {bonus >= 0 ? `+${bonus}` : bonus}
-                        {skill?.proficient && <span className="text-sky ml-1">P</span>}
-                        {skill?.expertise && <span className="text-arcane ml-1">E</span>}
+                        {skill?.expertise ? <span className="text-arcane ml-1">E</span> : skill?.proficient ? <span className="text-sky ml-1">P</span> : null}
                       </td>
                     )
                   })}
