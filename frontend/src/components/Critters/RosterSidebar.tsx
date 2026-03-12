@@ -113,7 +113,9 @@ export function RosterSidebar({
           className="fixed z-50 bg-card border border-border rounded-lg shadow-xl shadow-black/30 py-1 min-w-[140px]"
           style={{ top: pickerPos.top, right: pickerPos.right }}
         >
-          {characters.map((ch) => (
+          {characters.length === 0 ? (
+            <p className="px-3 py-1.5 text-sm text-parchment-muted">No characters loaded</p>
+          ) : characters.map((ch) => (
             <button
               key={ch.id}
               onClick={() => {
