@@ -103,17 +103,50 @@ type Mount struct {
 	UpdatedAt        time.Time `json:"updated_at"`
 }
 
+type CritterTemplate struct {
+	ID         int       `json:"id"`
+	Name       string    `json:"name"`
+	HPMax      int       `json:"hp_max"`
+	AC         int       `json:"ac"`
+	Speed      int       `json:"speed"`
+	Initiative int       `json:"initiative"`
+	SaveSTR    int       `json:"save_str"`
+	SaveDEX    int       `json:"save_dex"`
+	SaveCON    int       `json:"save_con"`
+	SaveINT    int       `json:"save_int"`
+	SaveWIS    int       `json:"save_wis"`
+	SaveCHA    int       `json:"save_cha"`
+	Notes      string    `json:"notes"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
+
 type Critter struct {
-	ID          int       `json:"id"`
-	Name        string    `json:"name"`
-	CharacterID string    `json:"character_id"`
-	HPCurrent   int       `json:"hp_current"`
-	HPMax       int       `json:"hp_max"`
-	AC          int       `json:"ac"`
-	Notes       string    `json:"notes"`
-	Active      bool      `json:"active"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID             int       `json:"id"`
+	Name           string    `json:"name"`
+	TemplateID     *int      `json:"template_id"`
+	CharacterID    string    `json:"character_id"`
+	InstanceNumber int       `json:"instance_number"`
+	HPCurrent      int       `json:"hp_current"`
+	HPMax          int       `json:"hp_max"`
+	AC             int       `json:"ac"`
+	Speed          int       `json:"speed"`
+	Initiative     int       `json:"initiative"`
+	SaveSTR        int       `json:"save_str"`
+	SaveDEX        int       `json:"save_dex"`
+	SaveCON        int       `json:"save_con"`
+	SaveINT        int       `json:"save_int"`
+	SaveWIS        int       `json:"save_wis"`
+	SaveCHA        int       `json:"save_cha"`
+	Notes          string    `json:"notes"`
+	Active         bool      `json:"active"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+}
+
+type SummonRequest struct {
+	TemplateID  int    `json:"template_id"`
+	CharacterID string `json:"character_id"`
 }
 
 type Session struct {
