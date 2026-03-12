@@ -34,7 +34,7 @@ export function RosterSidebar({
   }, [summonPickerId])
 
   return (
-    <div className="w-56 flex-shrink-0 border-r border-border">
+    <div className="w-56 flex-shrink-0 border-r border-border overflow-visible">
       <div className="flex items-center justify-between px-3 py-3 border-b border-border">
         <h3 className="font-heading font-semibold text-parchment text-sm">Roster</h3>
         <button
@@ -45,7 +45,7 @@ export function RosterSidebar({
         </button>
       </div>
 
-      <div className="overflow-y-auto">
+      <div>
         {templates.length === 0 && (
           <p className="px-3 py-4 text-sm text-parchment-muted">No blueprints yet</p>
         )}
