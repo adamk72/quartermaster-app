@@ -13,13 +13,11 @@ import (
 )
 
 func handleListCritters(w http.ResponseWriter, r *http.Request) {
-	query := "SELECT id, name, character_id, hp_current, hp_max, ac, notes, active, created_at, updated_at FROM critters"
-	if r.URL.Query().Get("active") == "true" {
-		query += " WHERE active = 1"
-	}
-	query += " ORDER BY name"
-
-	rows, err := db.DB.Query(query)
+	rows, err := db.DB.Query(`SELECT id, name, template_id, character_id, instance_number,
+		hp_current, hp_max, ac, speed, initiative,
+		save_str, save_dex, save_con, save_int, save_wis, save_cha,
+		notes, active, created_at, updated_at
+		FROM critters ORDER BY name, instance_number`)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to query critters")
 		return
@@ -29,7 +27,10 @@ func handleListCritters(w http.ResponseWriter, r *http.Request) {
 	critters := []types.Critter{}
 	for rows.Next() {
 		var c types.Critter
-		if err := rows.Scan(&c.ID, &c.Name, &c.CharacterID, &c.HPCurrent, &c.HPMax, &c.AC, &c.Notes, &c.Active, &c.CreatedAt, &c.UpdatedAt); err != nil {
+		if err := rows.Scan(&c.ID, &c.Name, &c.TemplateID, &c.CharacterID, &c.InstanceNumber,
+			&c.HPCurrent, &c.HPMax, &c.AC, &c.Speed, &c.Initiative,
+			&c.SaveSTR, &c.SaveDEX, &c.SaveCON, &c.SaveINT, &c.SaveWIS, &c.SaveCHA,
+			&c.Notes, &c.Active, &c.CreatedAt, &c.UpdatedAt); err != nil {
 			log.Printf("critter scan error: %v", err)
 			continue
 		}
@@ -39,26 +40,89 @@ func handleListCritters(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleCreateCritter(w http.ResponseWriter, r *http.Request) {
-	var c types.Critter
-	if err := readJSON(r, &c); err != nil {
+	var req types.SummonRequest
+	if err := readJSON(r, &req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	now := time.Now()
-	c.CreatedAt = now
-	c.UpdatedAt = now
-	c.Active = true
 
-	result, err := db.DB.Exec(
-		"INSERT INTO critters (name, character_id, hp_current, hp_max, ac, notes, active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-		c.Name, c.CharacterID, c.HPCurrent, c.HPMax, c.AC, c.Notes, c.Active, c.CreatedAt, c.UpdatedAt,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, fmt.Sprintf("failed to create critter: %v", err))
+	// Look up template
+	var t types.CritterTemplate
+	err := db.DB.QueryRow(`SELECT id, name, hp_max, ac, speed, initiative,
+		save_str, save_dex, save_con, save_int, save_wis, save_cha, notes
+		FROM critter_templates WHERE id = ?`, req.TemplateID).Scan(
+		&t.ID, &t.Name, &t.HPMax, &t.AC, &t.Speed, &t.Initiative,
+		&t.SaveSTR, &t.SaveDEX, &t.SaveCON, &t.SaveINT, &t.SaveWIS, &t.SaveCHA, &t.Notes)
+	if err == sql.ErrNoRows {
+		writeError(w, http.StatusNotFound, "template not found")
 		return
 	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, fmt.Sprintf("failed to look up template: %v", err))
+		return
+	}
+
+	// Use transaction to get next instance number and insert
+	tx, err := db.DB.Begin()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to begin transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	var maxInstance int
+	err = tx.QueryRow("SELECT COALESCE(MAX(instance_number), 0) FROM critters WHERE name = ?", t.Name).Scan(&maxInstance)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to query instance number")
+		return
+	}
+
+	now := time.Now()
+	instanceNumber := maxInstance + 1
+	result, err := tx.Exec(
+		`INSERT INTO critters (name, template_id, character_id, instance_number,
+			hp_current, hp_max, ac, speed, initiative,
+			save_str, save_dex, save_con, save_int, save_wis, save_cha,
+			notes, active, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		t.Name, t.ID, req.CharacterID, instanceNumber,
+		t.HPMax, t.HPMax, t.AC, t.Speed, t.Initiative,
+		t.SaveSTR, t.SaveDEX, t.SaveCON, t.SaveINT, t.SaveWIS, t.SaveCHA,
+		t.Notes, true, now, now,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, fmt.Sprintf("failed to summon critter: %v", err))
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to commit transaction")
+		return
+	}
+
 	id, _ := result.LastInsertId()
-	c.ID = int(id)
+	c := types.Critter{
+		ID:             int(id),
+		Name:           t.Name,
+		TemplateID:     &t.ID,
+		CharacterID:    req.CharacterID,
+		InstanceNumber: instanceNumber,
+		HPCurrent:      t.HPMax,
+		HPMax:          t.HPMax,
+		AC:             t.AC,
+		Speed:          t.Speed,
+		Initiative:     t.Initiative,
+		SaveSTR:        t.SaveSTR,
+		SaveDEX:        t.SaveDEX,
+		SaveCON:        t.SaveCON,
+		SaveINT:        t.SaveINT,
+		SaveWIS:        t.SaveWIS,
+		SaveCHA:        t.SaveCHA,
+		Notes:          t.Notes,
+		Active:         true,
+		CreatedAt:      now,
+		UpdatedAt:      now,
+	}
 
 	user := GetUser(r)
 	if user != nil {
@@ -79,8 +143,15 @@ func handleUpdateCritter(w http.ResponseWriter, r *http.Request) {
 	c.UpdatedAt = time.Now()
 	diffJSON, n, err := diffUpdate("critters", id, func(tx *sql.Tx) (sql.Result, error) {
 		return tx.Exec(
-			"UPDATE critters SET name=?, character_id=?, hp_current=?, hp_max=?, ac=?, notes=?, active=?, updated_at=? WHERE id=?",
-			c.Name, c.CharacterID, c.HPCurrent, c.HPMax, c.AC, c.Notes, c.Active, c.UpdatedAt, id,
+			`UPDATE critters SET name=?, character_id=?, instance_number=?,
+				hp_current=?, hp_max=?, ac=?, speed=?, initiative=?,
+				save_str=?, save_dex=?, save_con=?, save_int=?, save_wis=?, save_cha=?,
+				notes=?, active=?, updated_at=?
+			WHERE id=?`,
+			c.Name, c.CharacterID, c.InstanceNumber,
+			c.HPCurrent, c.HPMax, c.AC, c.Speed, c.Initiative,
+			c.SaveSTR, c.SaveDEX, c.SaveCON, c.SaveINT, c.SaveWIS, c.SaveCHA,
+			c.Notes, c.Active, c.UpdatedAt, id,
 		)
 	})
 	if err != nil {
@@ -121,14 +192,15 @@ func handleDeleteCritter(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleDismissAllCritters(w http.ResponseWriter, r *http.Request) {
-	_, err := db.DB.Exec("UPDATE critters SET active = 0, updated_at = ?", time.Now())
+	result, err := db.DB.Exec("DELETE FROM critters")
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to dismiss critters")
 		return
 	}
+	count, _ := result.RowsAffected()
 	user := GetUser(r)
 	if user != nil {
-		LogChange(&user.ID, "critters", "all", "update", `{"active":false}`)
+		LogChange(&user.ID, "critters", "all", "delete", fmt.Sprintf(`{"count":%d}`, count))
 	}
 	writeJSON(w, http.StatusOK, map[string]string{"status": "all dismissed"})
 }
