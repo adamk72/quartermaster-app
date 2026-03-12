@@ -64,6 +64,12 @@ func RegisterRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /api/v1/coins/archive", auth(handleArchiveCoins))
 	mux.Handle("GET /api/v1/coins/archive/preview", auth(handleArchivePreview))
 
+	// Critter Templates
+	mux.Handle("GET /api/v1/critter-templates", auth(handleListCritterTemplates))
+	mux.Handle("POST /api/v1/critter-templates", auth(handleCreateCritterTemplate))
+	mux.Handle("PUT /api/v1/critter-templates/{id}", auth(handleUpdateCritterTemplate))
+	mux.Handle("DELETE /api/v1/critter-templates/{id}", auth(handleDeleteCritterTemplate))
+
 	// Critters
 	mux.Handle("GET /api/v1/critters", auth(handleListCritters))
 	mux.Handle("POST /api/v1/critters", auth(handleCreateCritter))
