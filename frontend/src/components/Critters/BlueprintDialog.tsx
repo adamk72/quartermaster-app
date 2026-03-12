@@ -42,7 +42,7 @@ export function BlueprintDialog({
     }
   }, [template])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     onSave({
       ...(isEdit ? { id: template.id } : {}),
