@@ -122,6 +122,7 @@ export interface CritterTemplate {
   save_wis: number
   save_cha: number
   notes: string
+  next_instance: number
   created_at: string
   updated_at: string
 }

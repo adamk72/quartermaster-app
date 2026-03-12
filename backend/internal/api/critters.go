@@ -46,13 +46,21 @@ func handleCreateCritter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Look up template
+	// Use transaction to look up template, get next instance number, and insert
+	tx, err := db.DB.Begin()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to begin transaction")
+		return
+	}
+	defer tx.Rollback()
+
 	var t types.CritterTemplate
-	err := db.DB.QueryRow(`SELECT id, name, hp_max, ac, speed, initiative,
-		save_str, save_dex, save_con, save_int, save_wis, save_cha, notes
+	err = tx.QueryRow(`SELECT id, name, hp_max, ac, speed, initiative,
+		save_str, save_dex, save_con, save_int, save_wis, save_cha, notes, next_instance
 		FROM critter_templates WHERE id = ?`, req.TemplateID).Scan(
 		&t.ID, &t.Name, &t.HPMax, &t.AC, &t.Speed, &t.Initiative,
-		&t.SaveSTR, &t.SaveDEX, &t.SaveCON, &t.SaveINT, &t.SaveWIS, &t.SaveCHA, &t.Notes)
+		&t.SaveSTR, &t.SaveDEX, &t.SaveCON, &t.SaveINT, &t.SaveWIS, &t.SaveCHA,
+		&t.Notes, &t.NextInstance)
 	if err == sql.ErrNoRows {
 		writeError(w, http.StatusNotFound, "template not found")
 		return
@@ -62,23 +70,15 @@ func handleCreateCritter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use transaction to get next instance number and insert
-	tx, err := db.DB.Begin()
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to begin transaction")
-		return
-	}
-	defer tx.Rollback()
-
-	var maxInstance int
-	err = tx.QueryRow("SELECT COALESCE(MAX(instance_number), 0) FROM critters WHERE name = ?", t.Name).Scan(&maxInstance)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to query instance number")
-		return
-	}
-
 	now := time.Now()
-	instanceNumber := maxInstance + 1
+	instanceNumber := t.NextInstance
+
+	// Atomically increment next_instance on the template
+	if _, err = tx.Exec("UPDATE critter_templates SET next_instance = next_instance + 1 WHERE id = ?", t.ID); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to increment instance counter")
+		return
+	}
+
 	result, err := tx.Exec(
 		`INSERT INTO critters (name, template_id, character_id, instance_number,
 			hp_current, hp_max, ac, speed, initiative,

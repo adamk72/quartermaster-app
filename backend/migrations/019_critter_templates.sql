@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS critter_templates (
     save_wis INTEGER NOT NULL DEFAULT 0,
     save_cha INTEGER NOT NULL DEFAULT 0,
     notes TEXT NOT NULL DEFAULT '',
+    next_instance INTEGER NOT NULL DEFAULT 1,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -42,6 +43,19 @@ UPDATE critters SET template_id = (
 
 -- Delete dismissed critters (active=0) — instances are now ephemeral
 DELETE FROM critters WHERE active = 0;
+
+-- Assign distinct instance numbers to existing same-name critters
+-- Uses rowid ordering within each name group
+UPDATE critters SET instance_number = (
+    SELECT COUNT(*) FROM critters c2
+    WHERE c2.name = critters.name AND c2.id <= critters.id
+);
+
+-- Set next_instance on templates to max existing instance + 1
+UPDATE critter_templates SET next_instance = (
+    SELECT COALESCE(MAX(c.instance_number), 0) + 1
+    FROM critters c WHERE c.name = critter_templates.name
+);
 
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_critter_templates_name ON critter_templates(name);

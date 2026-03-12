@@ -15,7 +15,7 @@ import (
 func handleListCritterTemplates(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.DB.Query(`SELECT id, name, hp_max, ac, speed, initiative,
 		save_str, save_dex, save_con, save_int, save_wis, save_cha,
-		notes, created_at, updated_at
+		notes, next_instance, created_at, updated_at
 		FROM critter_templates ORDER BY name`)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to query critter templates")
@@ -28,7 +28,7 @@ func handleListCritterTemplates(w http.ResponseWriter, r *http.Request) {
 		var t types.CritterTemplate
 		if err := rows.Scan(&t.ID, &t.Name, &t.HPMax, &t.AC, &t.Speed, &t.Initiative,
 			&t.SaveSTR, &t.SaveDEX, &t.SaveCON, &t.SaveINT, &t.SaveWIS, &t.SaveCHA,
-			&t.Notes, &t.CreatedAt, &t.UpdatedAt); err != nil {
+			&t.Notes, &t.NextInstance, &t.CreatedAt, &t.UpdatedAt); err != nil {
 			log.Printf("critter template scan error: %v", err)
 			continue
 		}
@@ -47,14 +47,15 @@ func handleCreateCritterTemplate(w http.ResponseWriter, r *http.Request) {
 	t.CreatedAt = now
 	t.UpdatedAt = now
 
+	t.NextInstance = 1
 	result, err := db.DB.Exec(
 		`INSERT INTO critter_templates (name, hp_max, ac, speed, initiative,
 			save_str, save_dex, save_con, save_int, save_wis, save_cha,
-			notes, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			notes, next_instance, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		t.Name, t.HPMax, t.AC, t.Speed, t.Initiative,
 		t.SaveSTR, t.SaveDEX, t.SaveCON, t.SaveINT, t.SaveWIS, t.SaveCHA,
-		t.Notes, t.CreatedAt, t.UpdatedAt,
+		t.Notes, t.NextInstance, t.CreatedAt, t.UpdatedAt,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, fmt.Sprintf("failed to create critter template: %v", err))

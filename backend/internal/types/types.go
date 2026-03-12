@@ -116,9 +116,10 @@ type CritterTemplate struct {
 	SaveINT    int       `json:"save_int"`
 	SaveWIS    int       `json:"save_wis"`
 	SaveCHA    int       `json:"save_cha"`
-	Notes      string    `json:"notes"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	Notes        string    `json:"notes"`
+	NextInstance int       `json:"next_instance"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 type Critter struct {
